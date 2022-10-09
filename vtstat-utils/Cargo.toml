@@ -1,0 +1,21 @@
+[package]
+name = "vtstat-utils"
+version = "0.1.0"
+authors = ["PoiScript <poiscript@gmail.com>"]
+edition = "2021"
+publish = false
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+dotenvy = "0.15.5"
+log = "0.4.14"
+tracing = "0.1.30"
+tracing-newrelic = { version = "0.1.2", default-features = false, features = [
+    "rustls-tls"
+] }
+tracing-subscriber = { version = "0.3.8", default-features = false, features = [
+    "fmt",
+    "registry",
+] }

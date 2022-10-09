@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "vtstat-database",
+    "vtstat-request",
+    "vtstat-utils",
+    "vtstat-web",
+    "vtstat-worker"
+]
+resolver = "2"
+
+[profile.release]
+lto = true
+strip = true

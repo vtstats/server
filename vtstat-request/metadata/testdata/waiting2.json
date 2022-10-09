@@ -1,0 +1,66 @@
+{
+  "continuation": {
+    "timedContinuationData": {
+      "timeoutMs": 60000,
+      "continuation": "-of5rQMXGgtMejhFWm5vbGhkOCD2tdGYBjgBQAA%3D"
+    }
+  },
+  "actions": [
+    {
+      "updateViewershipAction": {
+        "viewCount": {
+          "videoViewCountRenderer": {
+            "viewCount": {
+              "simpleText": "1,026 waiting"
+            },
+            "isLive": true,
+            "extraShortViewCount": {
+              "accessibility": {
+                "accessibilityData": {
+                  "label": "1K"
+                }
+              },
+              "simpleText": "1K"
+            }
+          }
+        }
+      }
+    },
+    {
+      "updateToggleButtonTextAction": {
+        "defaultText": {
+          "simpleText": "491"
+        },
+        "toggledText": {
+          "simpleText": "492"
+        },
+        "buttonId": "TOGGLE_BUTTON_ID_TYPE_LIKE"
+      }
+    },
+    {
+      "updateDateTextAction": {
+        "dateText": {
+          "simpleText": "Scheduled for Sep 4, 2022"
+        }
+      }
+    },
+    {
+      "updateTitleAction": {
+        "title": {
+          "runs": [
+            {
+              "text": "【 Minecraft 】ホグワーツ編！まもなく門完成だ～～～！✨【ホロライブ/はあちゃま】"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "updateDescriptionAction": {
+        "description": {
+          "runs": []
+        }
+      }
+    }
+  ]
+}
