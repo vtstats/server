@@ -12,3 +12,7 @@ pub mod vtubers;
 pub use sqlx::PgPool;
 
 pub use sqlx::Error as DatabaseError;
+
+use sqlx::migrate::Migrator;
+
+pub static MIGRATOR: Migrator = sqlx::migrate!();
