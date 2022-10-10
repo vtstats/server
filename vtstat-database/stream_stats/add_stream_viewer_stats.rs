@@ -9,17 +9,17 @@ pub struct AddStreamViewerStatsQuery {
 
 impl AddStreamViewerStatsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
-        let query = sqlx::query!(
+        let query = sqlx::query(
             r#"
 INSERT INTO stream_viewer_stats AS s (stream_id, time, count)
      VALUES ($1, $2, $3)
 ON CONFLICT (stream_id, time) DO UPDATE
         SET count = GREATEST(excluded.count, s.count)
             "#,
-            self.stream_id,
-            self.time,
-            self.count
         )
+        .bind(self.stream_id)
+        .bind(self.time)
+        .bind(self.count)
         .execute(pool);
 
         crate::otel::instrument("INSERT", "stream_viewer_stats", query).await
@@ -58,12 +58,10 @@ async fn test(pool: PgPool) -> Result<()> {
     .execute(&pool)
     .await?;
 
-    let stats = sqlx::query_as!(
-        StreamViewerStats,
-        "SELECT time, count FROM stream_viewer_stats ORDER BY time ASC"
-    )
-    .fetch_all(&pool)
-    .await?;
+    let stats: Vec<StreamViewerStats> =
+        sqlx::query_as("SELECT * FROM stream_viewer_stats ORDER BY time ASC")
+            .fetch_all(&pool)
+            .await?;
     assert_eq!(stats.len(), 2);
     assert_eq!(stats[0].count, 40);
     assert_eq!(stats[1].count, 20);

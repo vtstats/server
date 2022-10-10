@@ -3,6 +3,7 @@ use sqlx::{PgPool, Result};
 
 pub struct ListVtubersQuery;
 
+#[derive(sqlx::FromRow)]
 pub struct VTuber {
     pub vtuber_id: String,
     pub native_name: String,
@@ -14,8 +15,8 @@ pub struct VTuber {
 }
 
 impl ListVtubersQuery {
-    pub async fn execute(pool: &PgPool) -> Result<Vec<VTuber>> {
-        let query = sqlx::query_as!(VTuber, "SELECT * FROM vtubers").fetch_all(pool);
+    pub async fn execute(self, pool: &PgPool) -> Result<Vec<VTuber>> {
+        let query = sqlx::query_as::<_, VTuber>("SELECT * FROM vtubers").fetch_all(pool);
 
         crate::otel::instrument("SELECT", "vtubers", query).await
     }

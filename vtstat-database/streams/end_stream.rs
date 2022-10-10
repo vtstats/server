@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{PgPool, Result};
+use sqlx::{postgres::PgRow, PgPool, Result, Row};
 
 use super::StreamStatus;
 
@@ -19,27 +19,23 @@ pub struct EndStreamQuery<'q> {
 
 impl<'q> EndStreamQuery<'q> {
     pub async fn execute(&self, pool: &PgPool) -> Result<()> {
-        let query = sqlx::query!(
-            r#"SELECT status as "status: StreamStatus" FROM streams WHERE stream_id = $1"#,
-            self.stream_id
-        )
-        .map(|r| r.status)
-        .fetch_optional(pool);
+        let query = sqlx::query("SELECT status as status FROM streams WHERE stream_id = $1")
+            .bind(self.stream_id)
+            .try_map(|row: PgRow| row.try_get::<StreamStatus, _>("status"))
+            .fetch_optional(pool);
 
         let status = crate::otel::instrument("SELECT", "youtube_streams", query).await?;
 
         match status {
             Some(StreamStatus::Scheduled) => {
-                let query = sqlx::query!(
-                    r#"DELETE FROM streams WHERE stream_id = $1"#,
-                    self.stream_id, // $1
-                )
-                .execute(pool);
+                let query = sqlx::query("DELETE FROM streams WHERE stream_id = $1")
+                    .bind(self.stream_id)
+                    .execute(pool);
 
                 crate::otel::instrument("DELETE", "streams", query).await?;
             }
             Some(_) => {
-                let query = sqlx::query!(
+                let query = sqlx::query(
                     r#"
                  UPDATE streams
                     SET status        = 'ended',
@@ -51,14 +47,14 @@ impl<'q> EndStreamQuery<'q> {
                         updated_at    = COALESCE($6, updated_at)
                   WHERE stream_id     = $7
                         "#,
-                    self.title,         // $1
-                    self.end_time,      // $2
-                    self.start_time,    // $3
-                    self.schedule_time, // $4
-                    self.likes,         // $5
-                    self.updated_at,    // $6
-                    self.stream_id,     // $7
                 )
+                .bind(self.title) // $1
+                .bind(self.end_time) // $2
+                .bind(self.start_time) // $3
+                .bind(self.schedule_time) // $4
+                .bind(self.likes) // $5
+                .bind(self.updated_at) // $6
+                .bind(self.stream_id) // $7
                 .execute(pool);
 
                 crate::otel::instrument("UPDATE", "streams", query).await?;

@@ -13,7 +13,7 @@ pub struct StartStreamQuery<'q> {
 
 impl<'q> StartStreamQuery<'q> {
     pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
-        let query = sqlx::query!(
+        let query = sqlx::query(
             r#"
      UPDATE streams
         SET title          = COALESCE($1, title),
@@ -23,11 +23,11 @@ impl<'q> StartStreamQuery<'q> {
             like_max       = GREATEST($3, like_max)
       WHERE stream_id      = $4
             "#,
-            self.title,      // $1
-            self.start_time, // $2
-            self.likes,      // $3
-            self.stream_id,  // $4
         )
+        .bind(self.title) // $1
+        .bind(self.start_time) // $2
+        .bind(self.likes) // $3
+        .bind(self.stream_id) // $4
         .execute(pool);
 
         crate::otel::instrument("UPDATE", "streams", query).await
@@ -94,7 +94,10 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
         assert_eq!(row.title, "title_alt".to_string());
         assert_eq!(
             row.start_time,
-            Some(DateTime::from_utc(NaiveDateTime::from_timestamp(10000, 0), Utc))
+            Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp(10000, 0),
+                Utc
+            ))
         );
         assert_eq!(row.like_max, Some(100));
     }

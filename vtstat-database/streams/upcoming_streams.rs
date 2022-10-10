@@ -2,7 +2,7 @@ use sqlx::{PgPool, Result};
 
 pub struct GetUpcomingStreamsQuery;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, sqlx::FromRow)]
 pub struct UpcomingStream {
     pub stream_id: i32,
     pub platform_stream_id: String,
@@ -11,10 +11,9 @@ pub struct UpcomingStream {
 
 impl GetUpcomingStreamsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<UpcomingStream>> {
-        let query = sqlx::query_as!(
-            UpcomingStream,
+        let query = sqlx::query_as::<_, UpcomingStream>(
             r#"
-     SELECT stream_id, s.platform_id AS platform_stream_id, c.platform_id AS "platform_channel_id!"
+     SELECT stream_id, s.platform_id AS platform_stream_id, c.platform_id AS platform_channel_id
        FROM streams s
   LEFT JOIN channels c ON c.channel_id = s.channel_id
       WHERE end_time IS NULL
@@ -24,7 +23,7 @@ impl GetUpcomingStreamsQuery {
                 and schedule_time < NOW() + INTERVAL '5 minutes'
               )
             )
-            "#
+            "#,
         )
         .fetch_all(pool);
 

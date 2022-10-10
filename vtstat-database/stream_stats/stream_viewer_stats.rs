@@ -6,6 +6,7 @@ pub struct StreamViewerStatsQuery {
     platform_stream_id: String,
 }
 
+#[derive(sqlx::FromRow)]
 pub struct StreamViewerStats {
     pub time: DateTime<Utc>,
     pub count: i32,
@@ -13,8 +14,7 @@ pub struct StreamViewerStats {
 
 impl StreamViewerStatsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<StreamViewerStats>> {
-        sqlx::query_as!(
-            StreamViewerStats,
+        sqlx::query_as::<_, StreamViewerStats>(
             r#"
      SELECT time, count
        FROM stream_viewer_stats
@@ -26,9 +26,9 @@ impl StreamViewerStatsQuery {
                    AND platform_id = $2
             )
             "#,
-            self.platform,
-            self.platform_stream_id
         )
+        .bind(self.platform)
+        .bind(self.platform_stream_id)
         .fetch_all(pool)
         .await
     }

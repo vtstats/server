@@ -1,6 +1,6 @@
 use chrono::{DateTime, Duration, Utc};
 use futures_util::stream::TryStreamExt;
-use sqlx::{PgPool, Result};
+use sqlx::{postgres::PgRow, PgPool, Result, Row};
 use std::cmp::{max, min};
 
 type UtcTime = DateTime<Utc>;
@@ -21,9 +21,9 @@ impl<'q> Default for StreamTimesQuery<'q> {
 
 impl<'q> StreamTimesQuery<'q> {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<(i64, i64)>> {
-        let query = sqlx::query!(
+        let query = sqlx::query(
             r#"
-     SELECT start_time AS "start!", end_time AS "end!"
+     SELECT start_time, end_time
        FROM streams
       WHERE channel_id IN
             (
@@ -33,13 +33,13 @@ impl<'q> StreamTimesQuery<'q> {
         AND end_time IS NOT NULL
    ORDER BY start_time DESC
             "#,
-            self.vtuber_id, // $1
-            self.start_at,  // $2
         )
+        .bind(self.vtuber_id) // $1
+        .bind(self.start_at) // $2
         .fetch(pool)
-        .try_fold(Vec::<(i64, i64)>::new(), |mut acc, row| async move {
-            let start = row.start.timestamp();
-            let end = row.end.timestamp();
+        .try_fold(Vec::<(i64, i64)>::new(), |mut acc, row: PgRow| async move {
+            let start = row.try_get::<DateTime<Utc>, _>("start_time")?.timestamp();
+            let end = row.try_get::<DateTime<Utc>, _>("end_time")?.timestamp();
             let one_hour: i64 = 60 * 60;
 
             let mut time = end - (end % one_hour);

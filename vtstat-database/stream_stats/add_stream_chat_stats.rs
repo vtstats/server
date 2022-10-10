@@ -69,12 +69,9 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats = sqlx::query_as!(
-        StreamChatStats,
-        "SELECT time, count, from_member_count FROM stream_chat_stats"
-    )
-    .fetch_all(&pool)
-    .await?;
+    let stats: Vec<StreamChatStats> = sqlx::query_as("SELECT * FROM stream_chat_stats")
+        .fetch_all(&pool)
+        .await?;
     assert_eq!(stats.len(), 3);
     assert!(stats.iter().all(|s| s.time >= time));
 
@@ -102,12 +99,9 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats = sqlx::query_as!(
-        StreamChatStats,
-        "SELECT time, count, from_member_count FROM stream_chat_stats"
-    )
-    .fetch_all(&pool)
-    .await?;
+    let stats: Vec<StreamChatStats> = sqlx::query_as("SELECT * FROM stream_chat_stats")
+        .fetch_all(&pool)
+        .await?;
     assert_eq!(stats.len(), 4);
     assert!(stats.iter().all(|s| s.count == 40));
     assert!(stats.iter().all(|s| s.from_member_count == 20));
