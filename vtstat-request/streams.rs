@@ -1,8 +1,9 @@
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Timelike, Utc};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
+use std::env;
 use std::str::FromStr;
 use tracing::instrument;
 
@@ -107,13 +108,17 @@ impl RequestHub {
     }
 
     async fn youtube_videos_api(&self, id: &str) -> Result<Vec<Video>> {
+        let keys = env::var("YOUTUBE_API_KEYS")?;
+        let keys: Vec<_> = keys.split(',').collect();
+        let key = keys[(Utc::now().hour() as usize) % keys.len()];
+
         let url = Url::parse_with_params(
             "https://www.googleapis.com/youtube/v3/videos",
             &[
                 ("part", "id,statistics,liveStreamingDetails,snippet"),
                 ("fields", "items(id,statistics(likeCount),liveStreamingDetails(actualStartTime,actualEndTime,scheduledStartTime,concurrentViewers),snippet(title,channelId))"),
                 ("maxResults", "50"),
-                ("key", self.youtube_api_key()),
+                ("key", key),
                 ("id", id),
             ],
         )?;

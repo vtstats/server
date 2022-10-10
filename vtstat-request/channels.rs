@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::{Timelike, Utc};
 use reqwest::{header::COOKIE, Url};
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -60,13 +61,17 @@ pub struct BilibiliStatData {
 
 impl RequestHub {
     pub async fn youtube_channels(&self, id: &str) -> Result<YouTubeChannelsListResponse> {
+        let keys = env::var("YOUTUBE_API_KEYS")?;
+        let keys: Vec<_> = keys.split(',').collect();
+        let key = keys[(Utc::now().hour() as usize) % keys.len()];
+
         let url = Url::parse_with_params(
             "https://www.googleapis.com/youtube/v3/channels",
             &[
                 ("part", "statistics"),
                 ("fields", "items(id,statistics(viewCount,subscriberCount))"),
                 ("maxResults", "50"),
-                ("key", self.youtube_api_key()),
+                ("key", key),
                 ("id", id),
             ],
         )?;
