@@ -19,7 +19,9 @@ async fn main() -> anyhow::Result<()> {
 
     let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
 
-    vtstat_database::MIGRATOR.run(&pool).await?;
+    if !env::var("SKIP_SQLX_MIGRATE").is_ok() {
+        vtstat_database::MIGRATOR.run(&pool).await?;
+    }
 
     let whoami = warp::path!("whoami").and(warp::get()).map(|| "OK");
 
