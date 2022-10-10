@@ -9,24 +9,22 @@ pub use verify::verify_intent;
 use vtstat_database::PgPool;
 use warp::Filter;
 
-use crate::filters::{string_body, with_db};
+use crate::filters::{string_body, with_pool};
 
-pub fn pubsub(
-    db: PgPool,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("pubsub").and(pubsub_verify().or(pubsub_publish(db)))
+pub fn verify() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("pubsub")
+        .and(warp::get())
+        .and(warp::query())
+        .map(verify_intent)
 }
 
-pub fn pubsub_verify() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::get().and(warp::query()).map(verify_intent)
-}
-
-pub fn pubsub_publish(
-    db: PgPool,
+pub fn publish(
+    pool: PgPool,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::post()
+    warp::path!("pubsub")
+        .and(warp::post())
         .and(string_body())
         .and(warp::header::<String>("x-hub-signature"))
-        .and(with_db(db))
+        .and(with_pool(pool))
         .and_then(publish_content)
 }

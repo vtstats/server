@@ -1,4 +1,5 @@
-use filters::string_body;
+use std::{env, net::SocketAddr};
+use tracing::field::Empty;
 use vtstat_database::PgPool;
 use warp::Filter;
 
@@ -8,35 +9,52 @@ mod reject;
 
 // routes
 mod api_pubsub;
-// mod api_sitemap;
-// mod api_v4;
+mod api_sitemap;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     vtstat_utils::dotenv::load();
     vtstat_utils::tracing::init("web");
 
-    let pool = PgPool::connect("").await?;
+    let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
 
-    let with_pool = |pool: PgPool| warp::any().map(move || pool.clone());
+    let whoami = warp::path!("whoami").and(warp::get()).map(|| "OK");
 
-    let verify_pubsub = warp::path!("/api/pubsub").and(
-        warp::get()
-            .and(warp::query())
-            .map(api_pubsub::verify_intent),
+    let routes = warp::path("api").and(
+        whoami
+            .or(api_sitemap::sitemap(pool.clone()))
+            .or(api_pubsub::verify())
+            .or(api_pubsub::publish(pool)),
     );
 
-    let publish_content = warp::path!("/api/pubsub").and(
-        warp::post()
-            .and(string_body())
-            .and(warp::header::<String>("x-hub-signature"))
-            .and(with_pool(pool))
-            .and_then(api_pubsub::publish_content),
-    );
+    let filter = routes
+        .with(warp::cors().allow_any_origin())
+        .recover(reject::handle_rejection)
+        .with(warp::trace(|info| {
+            let span = tracing::info_span!(
+                "request",
+                name = Empty,
+                span.kind = "server",
+                service.name = "vtstat-web",
+                req.path = info.path(),
+                req.method = info.method().as_str(),
+                req.referer = Empty,
+                otel.status_code = Empty,
+                otel.status_description = Empty,
+            );
 
-    let routes = verify_pubsub.or(publish_content);
+            if let Some(referer) = info.referer() {
+                span.record("req.referer", &referer);
+            }
 
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+            span
+        }));
+
+    let address = env::var("SERVER_ADDRESS")?.parse::<SocketAddr>()?;
+
+    println!("Server listening at {address}");
+
+    warp::serve(filter).run(address).await;
 
     Ok(())
 }

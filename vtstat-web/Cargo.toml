@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [[bin]]
-name = "web"
+name = "vtstat-web"
 path = "main.rs"
 
 [dependencies]
