@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [[bin]]
-name = "worker"
+name = "vtstat-worker"
 path = "main.rs"
 
 [dependencies]
