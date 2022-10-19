@@ -1,6 +1,7 @@
 use anyhow::Error as AnyhowError;
 use std::convert::Infallible;
 use std::error::Error;
+use tracing::field::{debug, display};
 use tracing::Span;
 use vtstat_database::DatabaseError;
 use warp::http::StatusCode;
@@ -34,6 +35,10 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message = "NOT_FOUND";
     } else {
         if let Some(WarpError(err)) = err.find::<WarpError>() {
+            Span::current()
+                .record("error.message", display(err))
+                .record("error.cause_chain", debug(err));
+
             code = StatusCode::INTERNAL_SERVER_ERROR;
             message = "INTERNAL_SERVER_ERROR";
             description = if err.is::<DatabaseError>() {
