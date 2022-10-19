@@ -8,7 +8,7 @@ use vtstat_request::{RequestHub, StreamStatus};
 use super::JobResult;
 
 pub async fn execute(
-    pool: PgPool,
+    pool: &PgPool,
     hub: RequestHub,
     payload: UpsertYoutubeStreamJobPayload,
 ) -> anyhow::Result<JobResult> {
@@ -39,7 +39,7 @@ pub async fn execute(
         start_time: stream.start_time,
         end_time: stream.end_time,
     }
-    .execute(&pool)
+    .execute(pool)
     .await?;
 
     Ok(JobResult::Completed)

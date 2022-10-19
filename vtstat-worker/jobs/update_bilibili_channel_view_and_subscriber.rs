@@ -12,13 +12,13 @@ use vtstat_request::RequestHub;
 use super::JobResult;
 use crate::timer::{timer, Calendar};
 
-pub async fn execute(pool: PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
     let (current_run, next_run) = timer(Calendar::Hourly);
 
     let bilibili_channels = ListChannelsQuery {
         platform: "bilibili",
     }
-    .execute(&pool)
+    .execute(pool)
     .await?;
 
     let mut channel_view_stats = Vec::with_capacity(bilibili_channels.len());
@@ -46,7 +46,7 @@ pub async fn execute(pool: PgPool, hub: RequestHub) -> anyhow::Result<JobResult>
             time: current_run,
             rows: channel_view_stats,
         }
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 
@@ -55,7 +55,7 @@ pub async fn execute(pool: PgPool, hub: RequestHub) -> anyhow::Result<JobResult>
             time: current_run,
             rows: channel_subscribe_stats,
         }
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 

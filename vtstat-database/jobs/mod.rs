@@ -34,6 +34,7 @@ pub enum JobKind {
     UpsertYoutubeStream,
     CollectYoutubeStreamMetadata,
     CollectYoutubeStreamLiveChat,
+    UpdateUpcomingStream,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
@@ -69,6 +70,7 @@ pub enum JobPayload {
     UpsertYoutubeStream(UpsertYoutubeStreamJobPayload),
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
     CollectYoutubeStreamLiveChat(CollectYoutubeStreamLiveChatJobPayload),
+    UpdateUpcomingStream,
 }
 
 pub struct Job {
@@ -100,6 +102,7 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::UpdateBilibiliChannelViewAndSubscriber => {
                     JobPayload::UpdateBilibiliChannelViewAndSubscriber
                 }
+                JobKind::UpdateUpcomingStream => JobPayload::UpdateUpcomingStream,
                 JobKind::UpdateYoutubeChannelDonation => JobPayload::UpdateYoutubeChannelDonation,
                 JobKind::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
                 JobKind::UpsertYoutubeStream => JobPayload::UpsertYoutubeStream(

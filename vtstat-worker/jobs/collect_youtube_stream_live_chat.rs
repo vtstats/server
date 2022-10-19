@@ -19,12 +19,12 @@ use super::JobResult;
 use crate::timer::trunc_secs;
 
 pub async fn execute(
-    pool: PgPool,
+    pool: &PgPool,
     hub: RequestHub,
     continuation: Option<String>,
     payload: CollectYoutubeStreamLiveChatJobPayload,
 ) -> anyhow::Result<JobResult> {
-    let currencies = ListCurrenciesQuery.execute(&pool).await?;
+    let currencies = ListCurrenciesQuery.execute(pool).await?;
 
     let (messages, continuation) = match continuation {
         Some(continuation) => hub.youtube_live_chat_with_continuation(continuation).await,
@@ -151,7 +151,7 @@ pub async fn execute(
             stream_id: payload.stream_id,
             rows: chat_stats_rows,
         }
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 
@@ -160,7 +160,7 @@ pub async fn execute(
             stream_id: payload.stream_id,
             rows: donation_rows,
         }
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 

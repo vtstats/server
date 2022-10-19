@@ -15,7 +15,7 @@ mod api_sitemap;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     vtstat_utils::dotenv::load();
-    vtstat_utils::tracing::init("web");
+    vtstat_utils::tracing::init();
 
     let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
 
@@ -36,8 +36,12 @@ async fn main() -> anyhow::Result<()> {
         .with(warp::cors().allow_any_origin())
         .recover(reject::handle_rejection)
         .with(warp::trace(|info| {
+            if info.path() == "/api/whoami" {
+                return tracing::info_span!("Ignored");
+            }
+
             let span = tracing::info_span!(
-                "request",
+                "Request",
                 name = Empty,
                 span.kind = "server",
                 service.name = "vtstat-web",
@@ -46,6 +50,9 @@ async fn main() -> anyhow::Result<()> {
                 req.referer = Empty,
                 otel.status_code = Empty,
                 otel.status_description = Empty,
+                //// error
+                error.message = Empty,
+                error.cause_chain = Empty,
             );
 
             if let Some(referer) = info.referer() {

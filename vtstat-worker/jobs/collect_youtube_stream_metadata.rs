@@ -14,7 +14,7 @@ use vtstat_request::RequestHub;
 use super::JobResult;
 
 pub async fn execute(
-    pool: PgPool,
+    pool: &PgPool,
     hub: RequestHub,
     continuation: Option<String>,
     payload: CollectYoutubeStreamMetadataJobPayload,
@@ -42,7 +42,7 @@ pub async fn execute(
                 end_time: Some(Utc::now()),
                 ..Default::default()
             }
-            .execute(&pool)
+            .execute(pool)
             .await?;
 
             Ok(JobResult::Completed {})
@@ -69,7 +69,7 @@ pub async fn execute(
                 schedule_time: stream.schedule_time,
                 likes: stream.likes,
             }
-            .execute(&pool)
+            .execute(pool)
             .await?;
 
             if let Some(count) = stream.viewers {
@@ -78,7 +78,7 @@ pub async fn execute(
                     count,
                     time,
                 }
-                .execute(&pool)
+                .execute(pool)
                 .await?;
             }
 
@@ -101,7 +101,7 @@ pub async fn execute(
                 start_time: time,
                 likes: response.like_count(),
             }
-            .execute(&pool)
+            .execute(pool)
             .await?;
 
             if let Some(viewer) = response.view_count() {
@@ -110,7 +110,7 @@ pub async fn execute(
                     count: viewer,
                     stream_id,
                 }
-                .execute(&pool)
+                .execute(pool)
                 .await?;
             }
 
@@ -125,7 +125,7 @@ pub async fn execute(
                     },
                 ),
             }
-            .execute(&pool)
+            .execute(pool)
             .await?;
 
             Ok(JobResult::Next {

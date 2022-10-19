@@ -7,13 +7,13 @@ use vtstat_request::RequestHub;
 use super::JobResult;
 use crate::timer::{timer, Calendar};
 
-pub async fn execute(pool: PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
     let (_, next_run) = timer(Calendar::Daily);
 
     let channels = ListChannelsQuery {
         platform: "youtube",
     }
-    .execute(&pool)
+    .execute(pool)
     .await?;
 
     let _ = stream::unfold(channels.iter(), |mut iter| async {

@@ -16,7 +16,7 @@ pub use timer::*;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     vtstat_utils::dotenv::load();
-    vtstat_utils::tracing::init("worker");
+    vtstat_utils::tracing::init();
 
     let (shutdown_complete_tx, mut shutdown_complete_rx) = channel(1);
 

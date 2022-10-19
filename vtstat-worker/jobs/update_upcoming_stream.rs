@@ -7,7 +7,7 @@ use vtstat_database::{
 use super::JobResult;
 use crate::timer::{timer, Calendar};
 
-pub async fn execute(pool: PgPool) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool) -> anyhow::Result<JobResult> {
     let (_, next_run) = timer(Calendar::FifteenSeconds);
 
     let streams = GetUpcomingStreamsQuery.execute(&pool).await?;
@@ -24,7 +24,7 @@ pub async fn execute(pool: PgPool) -> anyhow::Result<JobResult> {
                 },
             ),
         }
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 

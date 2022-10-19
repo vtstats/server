@@ -27,6 +27,7 @@ impl PushJobQuery {
             JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
             JobPayload::CollectYoutubeStreamLiveChat(_) => JobKind::CollectYoutubeStreamLiveChat,
+            JobPayload::UpdateUpcomingStream => JobKind::UpdateUpcomingStream,
         };
 
         let query = sqlx::query_as::<_, Job>(
@@ -55,10 +56,7 @@ ON CONFLICT (kind, payload) DO UPDATE
 async fn test(pool: PgPool) -> Result<()> {
     use chrono::NaiveDateTime;
 
-    assert!(sqlx::query_as::<_, Job>("SELECT * FROM jobs")
-        .fetch_all(&pool)
-        .await?
-        .is_empty());
+    sqlx::query!("DELETE FROM jobs").execute(&pool).await?;
 
     // should push a new job
     {

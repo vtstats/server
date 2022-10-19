@@ -2,7 +2,7 @@ use log::Log;
 use std::env;
 use tracing::{Metadata, Subscriber};
 use tracing_subscriber::{
-    filter::LevelFilter,
+    filter::{filter_fn, LevelFilter},
     fmt::format::FmtSpan,
     layer::{Context, SubscriberExt},
     registry,
@@ -42,17 +42,18 @@ where
     }
 }
 
-pub fn init(target: &'static str) {
+pub fn init() {
     // initialize logger
     log::set_max_level(log::LevelFilter::Info);
     log::set_logger(&LOGGER).expect("failed to initialize telemetry logger");
 
+    let filter_layer = filter_fn(|metadata| {
+        metadata.target().starts_with("vtstat") && metadata.name() != "Ignored"
+    });
+
     let newrelic_layer = match env::var("NEWRELIC_API_KEY") {
         Ok(api_key) => Some(tracing_newrelic::layer(api_key.as_str())),
-        Err(_) => {
-            println!("`NEWRELIC_API_KEY` not found");
-            None
-        }
+        Err(_) => None,
     };
 
     let fmt_layer = tracing_subscriber::fmt::layer()
@@ -63,7 +64,7 @@ pub fn init(target: &'static str) {
     let subscriber = registry()
         .with(fmt_layer)
         .with(newrelic_layer)
-        .with(TargetFilterLayer(target));
+        .with(filter_layer);
 
     tracing::subscriber::set_global_default(subscriber)
         .expect("failed to initialize tracing subscriber");

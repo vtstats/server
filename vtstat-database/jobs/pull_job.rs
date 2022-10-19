@@ -34,6 +34,8 @@ impl PullJobQuery {
 #[cfg(test)]
 #[sqlx::test]
 async fn test(pool: PgPool) -> Result<()> {
+    sqlx::query!("DELETE FROM jobs").execute(&pool).await?;
+
     sqlx::query!(
         r#"
 INSERT INTO jobs (kind, payload, status, next_run)

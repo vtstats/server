@@ -9,7 +9,7 @@ use vtstat_request::{RequestHub, StreamStatus};
 use super::JobResult;
 use crate::timer::{timer, Calendar};
 
-pub async fn execute(pool: PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
     let (current_run, next_run) = timer(Calendar::Hourly);
 
     let now_str = current_run.to_string();
