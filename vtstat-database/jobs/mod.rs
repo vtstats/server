@@ -1,3 +1,4 @@
+mod list_job;
 mod pull_job;
 mod push_job;
 mod update_job;
@@ -6,6 +7,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
 
+pub use self::list_job::ListJobsQuery;
 pub use self::pull_job::PullJobQuery;
 pub use self::push_job::PushJobQuery;
 pub use self::update_job::UpdateJobQuery;

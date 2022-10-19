@@ -4,10 +4,15 @@ version = "0.1.0"
 authors = ["PoiScript <poiscript@gmail.com>"]
 edition = "2021"
 publish = false
+default-run = "vtstat-worker"
 
 [[bin]]
 name = "vtstat-worker"
 path = "main.rs"
+
+[[bin]]
+name = "vtstat-worker-healthcheck"
+path = "healthcheck.rs"
 
 [dependencies]
 anyhow = "1.0.65"
