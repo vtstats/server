@@ -1,7 +1,6 @@
 use std::env;
 use std::time::Duration;
 use tokio::{
-    signal::unix::{signal, SignalKind},
     sync::mpsc::{channel, Sender},
     time::sleep,
 };
@@ -20,21 +19,13 @@ async fn main() -> anyhow::Result<()> {
 
     let (shutdown_complete_tx, mut shutdown_complete_rx) = channel(1);
 
-    let mut sigint = signal(SignalKind::interrupt())?;
-    let mut sigterm = signal(SignalKind::terminate())?;
-
     tokio::select! {
         res = polling(shutdown_complete_tx) => {
             if let Err(err) = res {
                 eprintln!("[Polling Error] {err:?}");
             }
         },
-        _ = sigint.recv() => {
-            eprintln!("Received SIGINT signal");
-        },
-        _ = sigterm.recv() => {
-            eprintln!("Received SIGTERM signal");
-        },
+        _ = vtstat_utils::shutdown::signal() => {},
     };
 
     println!("Shuting down...");

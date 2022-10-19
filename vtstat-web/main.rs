@@ -1,5 +1,4 @@
 use std::{env, net::SocketAddr};
-use tokio::signal::unix::{signal, SignalKind};
 use tracing::field::Empty;
 use vtstat_database::PgPool;
 use warp::Filter;
@@ -64,23 +63,12 @@ async fn main() -> anyhow::Result<()> {
 
     let address = env::var("SERVER_ADDRESS")?.parse::<SocketAddr>()?;
 
-    println!("Server listening at {address}");
+    println!("Server started at {address}");
 
-    let mut sigint = signal(SignalKind::interrupt())?;
-    let mut sigterm = signal(SignalKind::terminate())?;
+    let (_, server) =
+        warp::serve(filter).bind_with_graceful_shutdown(address, vtstat_utils::shutdown::signal());
 
-    let (_, fut) = warp::serve(filter).bind_with_graceful_shutdown(address, async move {
-        tokio::select! {
-            _ = sigint.recv() => {
-                eprintln!("Received SIGINT signal, shutting down...");
-            },
-            _ = sigterm.recv() => {
-                eprintln!("Received SIGTERM signal, shutting down...");
-            },
-        };
-    });
-
-    fut.await;
+    server.await;
 
     Ok(())
 }

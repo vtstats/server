@@ -12,6 +12,7 @@ path = "lib.rs"
 dotenvy = "0.15.5"
 log = "0.4.14"
 tracing = "0.1.30"
+tokio = { version = "1.21.2", features = ["signal"] }
 tracing-newrelic = { version = "0.1.2", default-features = false, features = [
     "rustls-tls"
 ] }

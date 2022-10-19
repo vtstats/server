@@ -1871,6 +1871,7 @@ version = "0.1.0"
 dependencies = [
  "dotenvy",
  "log",
+ "tokio",
  "tracing",
  "tracing-newrelic",
  "tracing-subscriber",
