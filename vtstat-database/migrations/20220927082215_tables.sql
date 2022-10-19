@@ -113,8 +113,8 @@ CREATE TABLE donations (
 CREATE TABLE currencies (
   code text NOT NULL PRIMARY KEY,
   symbol text NOT NULL,
-  rate REAL NOT NULL,
-  updated_at timestamptz NOT NULL
+  rate REAL NOT NULL DEFAULT 0,
+  updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TYPE job_status AS ENUM (
@@ -134,14 +134,15 @@ CREATE TYPE job_kind AS ENUM (
   'update_currency_exchange_rate',
   'upsert_youtube_stream',
   'collect_youtube_stream_metadata',
-  'collect_youtube_stream_live_chat'
+  'collect_youtube_stream_live_chat',
+  'update_upcoming_stream'
 );
 
 CREATE TABLE jobs (
   job_id serial NOT NULL,
   kind job_kind NOT NULL,
-  payload jsonb NOT NULL,
-  status job_status NOT NULL,
+  payload jsonb NOT NULL DEFAULT 'null',
+  status job_status NOT NULL DEFAULT 'queued',
   created_at timestamptz NOT NULL DEFAULT NOW(),
   next_run timestamptz,
   last_run timestamptz,
