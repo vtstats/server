@@ -28,6 +28,8 @@ impl PushJobQuery {
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
             JobPayload::CollectYoutubeStreamLiveChat(_) => JobKind::CollectYoutubeStreamLiveChat,
             JobPayload::UpdateUpcomingStream => JobKind::UpdateUpcomingStream,
+            JobPayload::SendNotification(_) => JobKind::SendNotification,
+            JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,
         };
 
         let query = sqlx::query_as::<_, Job>(

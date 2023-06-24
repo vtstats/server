@@ -8,8 +8,10 @@ mod filters;
 mod reject;
 
 // routes
+mod api_discord;
 mod api_pubsub;
 mod api_sitemap;
+mod api_telegram;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -27,6 +29,8 @@ async fn main() -> anyhow::Result<()> {
     let routes = warp::path("api").and(
         whoami
             .or(api_sitemap::sitemap(pool.clone()))
+            .or(api_telegram::routes(pool.clone()))
+            .or(api_discord::routes(pool.clone()))
             .or(api_pubsub::verify())
             .or(api_pubsub::publish(pool)),
     );

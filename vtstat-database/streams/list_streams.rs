@@ -14,6 +14,7 @@ pub struct Stream {
     pub platform_id: String,
     pub stream_id: i32,
     pub title: String,
+    pub platform_channel_id: String,
     pub vtuber_id: String,
     pub thumbnail_url: Option<String>,
     #[serde(with = "ts_milliseconds_option")]
@@ -80,6 +81,7 @@ impl Ordering {
 }
 
 pub struct ListYouTubeStreamsQuery<'q> {
+    pub ids: &'q [i32],
     // TODO add platform
     pub vtuber_ids: &'q [String],
     pub platform_ids: &'q [String],
@@ -94,6 +96,7 @@ pub struct ListYouTubeStreamsQuery<'q> {
 impl<'q> Default for ListYouTubeStreamsQuery<'q> {
     fn default() -> Self {
         ListYouTubeStreamsQuery {
+            ids: &[],
             vtuber_ids: &[],
             platform_ids: &[],
             status: &[],
@@ -118,6 +121,7 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
     pub fn into_query_builder(self) -> QueryBuilder<'q, Postgres> {
         let init = "\
        SELECT s.platform_id, \
+              c.platform_id platform_channel_id, \
               stream_id, \
               title, \
               vtuber_id, \
@@ -137,6 +141,14 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
         let mut qb = QueryBuilder::<Postgres>::new(init);
 
         let mut word = " WHERE ";
+
+        if !self.ids.is_empty() {
+            qb.push(word);
+            word = " AND ";
+            qb.push("stream_id = ANY(");
+            qb.push_bind(self.ids);
+            qb.push(")");
+        }
 
         if !self.vtuber_ids.is_empty() {
             qb.push(word);
@@ -305,6 +317,17 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
     )
     .execute(&pool)
     .await?;
+
+    assert_eq!(
+        ListYouTubeStreamsQuery {
+            ids: &[1, 2],
+            ..Default::default()
+        }
+        .execute(&pool)
+        .await?
+        .len(),
+        2
+    );
 
     assert_eq!(
         ListYouTubeStreamsQuery {

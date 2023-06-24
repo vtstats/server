@@ -35,6 +35,8 @@ pub enum JobKind {
     CollectYoutubeStreamMetadata,
     CollectYoutubeStreamLiveChat,
     UpdateUpcomingStream,
+    SendNotification,
+    InstallDiscordCommands,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
@@ -57,6 +59,12 @@ pub struct CollectYoutubeStreamLiveChatJobPayload {
     pub platform_stream_id: String,
 }
 
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+pub struct SendNotificationJobPayload {
+    pub vtuber_id: String,
+    pub stream_id: i32,
+}
+
 #[derive(Serialize, PartialEq, Eq, Debug)]
 #[serde(untagged)]
 pub enum JobPayload {
@@ -71,6 +79,8 @@ pub enum JobPayload {
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
     CollectYoutubeStreamLiveChat(CollectYoutubeStreamLiveChatJobPayload),
     UpdateUpcomingStream,
+    SendNotification(SendNotificationJobPayload),
+    InstallDiscordCommands,
 }
 
 pub struct Job {
@@ -117,6 +127,11 @@ impl FromRow<'_, PgRow> for Job {
                     row.try_get::<Json<CollectYoutubeStreamLiveChatJobPayload>, _>("payload")?
                         .0,
                 ),
+                JobKind::SendNotification => JobPayload::SendNotification(
+                    row.try_get::<Json<SendNotificationJobPayload>, _>("payload")?
+                        .0,
+                ),
+                JobKind::InstallDiscordCommands => JobPayload::InstallDiscordCommands,
             },
         })
     }

@@ -34,6 +34,7 @@ tracing-futures = "0.2.5"
 warp = { version = "0.3.3", default-features = false }
 vtstat-database = { path = "../vtstat-database" }
 vtstat-utils = { path = "../vtstat-utils" }
+integration-discord = { path = "../integration-discord" }
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

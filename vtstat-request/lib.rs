@@ -5,6 +5,7 @@ mod otel;
 mod pubsub;
 mod rss;
 mod streams;
+pub mod telegram;
 mod thumbnail;
 mod upload;
 

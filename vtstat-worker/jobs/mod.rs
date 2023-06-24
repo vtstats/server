@@ -1,7 +1,9 @@
 mod collect_youtube_stream_live_chat;
 mod collect_youtube_stream_metadata;
 mod health_check;
+mod install_discord_command;
 mod refresh_youtube_rss;
+mod send_notification;
 mod subscribe_youtube_pubsub;
 mod update_bilibili_channel_view_and_subscriber;
 mod update_currency_exchange_rate;
@@ -43,10 +45,12 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
         UpdateBilibiliChannelViewAndSubscriber => "update_bilibili_channel_view_and_subscriber",
         UpdateYoutubeChannelDonation => "update_youtube_channel_donation",
         UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
-        UpsertYoutubeStream { .. } => "upsert_youtube_stream",
-        CollectYoutubeStreamMetadata { .. } => "collect_youtube_stream_metadata",
-        CollectYoutubeStreamLiveChat { .. } => "collect_youtube_stream_live_chat",
+        UpsertYoutubeStream(_) => "upsert_youtube_stream",
+        CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
+        CollectYoutubeStreamLiveChat(_) => "collect_youtube_stream_live_chat",
         UpdateUpcomingStream => "update_upcoming_stream",
+        SendNotification(_) => "send_notification",
+        InstallDiscordCommands => "install_discord_commands",
     };
 
     let span = match &payload {
@@ -90,7 +94,9 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
             CollectYoutubeStreamLiveChat(payload) => {
                 collect_youtube_stream_live_chat::execute(&pool, hub, continuation, payload).await
             }
+            SendNotification(payload) => send_notification::execute(&pool, hub, payload).await,
             UpdateUpcomingStream => update_upcoming_stream::execute(&pool).await,
+            InstallDiscordCommands => install_discord_command::execute(&hub.client).await,
         };
 
         let query = match result {

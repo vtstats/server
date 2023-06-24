@@ -7,6 +7,7 @@ pub mod donations;
 pub mod jobs;
 pub mod stream_stats;
 pub mod streams;
+pub mod subscriptions;
 pub mod vtubers;
 
 pub use sqlx::PgPool;

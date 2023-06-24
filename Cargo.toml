@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "integration-discord",
+    "integration-telegram",
     "vtstat-database",
     "vtstat-request",
     "vtstat-utils",
@@ -7,6 +9,26 @@ members = [
     "vtstat-worker"
 ]
 resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["PoiScript <poiscript@gmail.com>"]
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+serde = { version = "1.0.145", features = ["derive"] }
+serde_json = { version = "1.0.96", features = ["raw_value"] }
+base64 = "0.13.0"
+once_cell = "1.18.0"
+warp = { version = "0.3.3", default-features = false }
+reqwest = { version = "0.11.12", default-features = false, features = [
+    "json",
+    "rustls-tls"
+] }
+anyhow = "1.0.65"
+bytes = "1.2.1"
+hex = "0.4.3"
 
 [profile.release]
 lto = true
