@@ -1,0 +1,28 @@
+{
+  "db": "PostgreSQL",
+  "284fbde8828d1239ffa9fab024f6fb8a7a46cbfd292beaf427bfb221e99e2464": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4"
+        ]
+      }
+    },
+    "query": "DELETE FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND subscription_id = $2"
+  },
+  "faa15d2c0d8e70002982fe6383c133fca6e6b90cdad3424ce0940361cbce35d9": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "UPDATE notifications SET updated_at = NOW() WHERE notification_id = $1"
+  }
+}

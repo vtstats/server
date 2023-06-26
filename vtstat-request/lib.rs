@@ -17,7 +17,7 @@ pub use streams::*;
 
 #[derive(Clone)]
 pub struct RequestHub {
-    client: Client,
+    pub client: Client,
 }
 
 impl RequestHub {
