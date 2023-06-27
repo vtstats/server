@@ -21,7 +21,7 @@ static VERIFYING_KEY: Lazy<VerifyingKey> = Lazy::new(|| {
 /// verify if this request is actually came from discord
 ///
 /// https://discord.com/developers/docs/interactions/receiving-and-responding#security-and-authorization
-pub fn verify_request() -> impl Filter<Extract = (Interaction,), Error = Rejection> + Copy {
+pub fn validate() -> impl Filter<Extract = (Interaction,), Error = Rejection> + Copy {
     warp::header::value("X-Signature-Ed25519")
         .and(warp::header::value("X-Signature-Timestamp"))
         .and(warp::body::bytes())

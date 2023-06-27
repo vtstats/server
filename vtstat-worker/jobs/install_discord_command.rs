@@ -5,8 +5,8 @@ use reqwest::Client;
 
 pub async fn execute(client: &Client) -> anyhow::Result<JobResult> {
     let _ = CreateCommand {
-        application_id: std::env::var("DISCOARD_APPLICATION_ID")?,
-        description: "".into(),
+        application_id: std::env::var("DISCORD_APPLICATION_ID")?,
+        description: "Add subscription".into(),
         name: "add".into(),
         ty: 1,
         options: vec![CommandOption::string(
@@ -18,8 +18,8 @@ pub async fn execute(client: &Client) -> anyhow::Result<JobResult> {
     .await?;
 
     let _ = CreateCommand {
-        application_id: std::env::var("DISCOARD_APPLICATION_ID")?,
-        description: "".into(),
+        application_id: std::env::var("DISCORD_APPLICATION_ID")?,
+        description: "List all subscriptions".into(),
         name: "list".into(),
         ty: 1,
         options: vec![],
@@ -28,8 +28,8 @@ pub async fn execute(client: &Client) -> anyhow::Result<JobResult> {
     .await?;
 
     let _ = CreateCommand {
-        application_id: std::env::var("DISCOARD_APPLICATION_ID")?,
-        description: "".into(),
+        application_id: std::env::var("DISCORD_APPLICATION_ID")?,
+        description: "Remove subscription".into(),
         name: "remove".into(),
         ty: 1,
         options: vec![CommandOption::integer(

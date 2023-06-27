@@ -2,6 +2,7 @@
 members = [
     "integration-discord",
     "integration-telegram",
+    "integration-youtube",
     "vtstat-database",
     "vtstat-request",
     "vtstat-utils",

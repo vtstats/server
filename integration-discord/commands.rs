@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use reqwest::{Client, Result};
 use serde::{Deserialize, Serialize};
 
@@ -55,8 +53,8 @@ impl CreateCommand {
         );
 
         let req = client.post(url).json(&self).header(
-            "Authorization",
-            format!("Bot {}", std::env::var("DISCOARD_BOT_TOKEN").unwrap()),
+            warp::http::header::AUTHORIZATION,
+            format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
         let res = req.send().await?;

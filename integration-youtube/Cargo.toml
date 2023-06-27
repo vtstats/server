@@ -1,0 +1,24 @@
+[package]
+name = "integration-youtube"
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+publish = { workspace = true }
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+base64 = { workspace = true }
+bytes = { workspace = true }
+hex = { workspace = true }
+once_cell = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+warp = { workspace = true }
+# pubsubhubbub
+roxmltree = "0.15.0"
+hmac = "0.12.1"
+sha-1 = "0.10.0"

@@ -1,0 +1,7 @@
+<feed xmlns:at="http://purl.org/atompub/tombstones/1.0">
+  <at:deleted-entry ref="yt:video:HJiD8KcZKfs">
+    <at:by>
+      <uri>https://www.youtube.com/channel/UCdyqAaZDKHXg4Ahi7VENThQ</uri>
+    </at:by>
+  </at:deleted-entry>
+</feed>

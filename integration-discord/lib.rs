@@ -1,4 +1,6 @@
 pub mod commands;
 pub mod interaction;
 pub mod message;
-pub mod verify;
+pub mod validate;
+
+pub use validate::validate;

@@ -1,0 +1,15 @@
+<feed
+  xmlns:at="http://purl.org/atompub/tombstones/1.0"
+  xmlns="http://www.w3.org/2005/Atom"
+>
+  <at:deleted-entry
+    ref="yt:video:HJiD8KcZKfs"
+    when="2020-10-23T15:34:56.217123+00:00"
+  >
+    <link href="https://www.youtube.com/watch?v=HJiD8KcZKfs" />
+    <at:by>
+      <name>Noel Ch. 白銀ノエル</name>
+      <uri>https://www.youtube.com/channel/UCdyqAaZDKHXg4Ahi7VENThQ</uri>
+    </at:by>
+  </at:deleted-entry>
+</feed>

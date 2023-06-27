@@ -6,7 +6,7 @@ use warp::Reply;
 use warp::{reply::Response, Filter, Rejection};
 
 use integration_discord::interaction::{Interaction, InteractionCallbackData, InteractionResponse};
-use integration_discord::verify::verify_request;
+use integration_discord::validate;
 
 use crate::filters::with_pool;
 use crate::reject::WarpError;
@@ -17,7 +17,7 @@ pub fn routes(
     warp::path!("discord")
         .and(warp::post())
         .and(with_pool(pool))
-        .and(verify_request())
+        .and(validate())
         .and_then(discord_interactions)
 }
 

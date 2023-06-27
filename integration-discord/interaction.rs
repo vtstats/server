@@ -20,6 +20,7 @@ pub enum Interaction {
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct ApplicationCommandData {
     pub name: String,
+    #[serde(default)]
     pub options: Vec<CommandOption>,
 }
 
@@ -192,6 +193,17 @@ fn test() {
                     name: "arg1".into(),
                     value: "test".into()
                 }]
+            }
+        }
+    );
+
+    assert_eq!(
+        from_str::<Interaction>(include_str!("./testdata/interaction.1.json")).unwrap(),
+        Interaction::ApplicationCommand {
+            channel_id: "channel_id".into(),
+            data: ApplicationCommandData {
+                name: "list".into(),
+                options: vec![]
             }
         }
     );

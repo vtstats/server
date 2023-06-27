@@ -23,11 +23,9 @@ hmac = "0.12.1"
 reqwest = { version = "0.11.12", default-features = false, features = [
     "rustls-tls"
 ] }
-roxmltree = "0.15.0"
 serde = { version = "1.0.145", features = ["derive"] }
 serde_json = "1.0.85"
 serde_with = "2.0.1"
-sha-1 = "0.10.0"
 tokio = { version = "1.21.2", features = ["macros", "signal"] }
 tracing = "0.1.37"
 tracing-futures = "0.2.5"
@@ -35,6 +33,7 @@ warp = { version = "0.3.3", default-features = false }
 vtstat-database = { path = "../vtstat-database" }
 vtstat-utils = { path = "../vtstat-utils" }
 integration-discord = { path = "../integration-discord" }
+integration-youtube = { path = "../integration-youtube" }
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

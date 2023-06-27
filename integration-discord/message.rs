@@ -54,7 +54,7 @@ impl EditMessageRequest {
 
         let req = client.patch(url).json(&self).header(
             "Authorization",
-            format!("Bot {}", std::env::var("DISCOARD_BOT_TOKEN").unwrap()),
+            format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
         let res = req.send().await?;

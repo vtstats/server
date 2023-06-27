@@ -1,5 +1,7 @@
 .env
 .git/
-target/
+**/target
+**/testdata
 .dockerignore
 Dockerfile
+/dev*
