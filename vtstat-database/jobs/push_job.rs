@@ -58,7 +58,7 @@ ON CONFLICT (kind, payload) DO UPDATE
 async fn test(pool: PgPool) -> Result<()> {
     use chrono::NaiveDateTime;
 
-    sqlx::query!("DELETE FROM jobs").execute(&pool).await?;
+    sqlx::query("DELETE FROM jobs").execute(&pool).await?;
 
     // should push a new job
     {
@@ -79,6 +79,7 @@ async fn test(pool: PgPool) -> Result<()> {
             continuation: Some("continuation".into()),
             next_run: None,
             payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
+                vtuber_id: "poi".into(),
                 channel_id: 0,
                 platform_stream_id: "foo".into(),
             }),
@@ -96,6 +97,7 @@ async fn test(pool: PgPool) -> Result<()> {
             continuation: None,
             next_run: Some(time),
             payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
+                vtuber_id: "poi".into(),
                 channel_id: 0,
                 platform_stream_id: "bar".into(),
             }),
@@ -118,7 +120,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     // re-queued jobs without same payload
     {
-        sqlx::query!("UPDATE jobs SET status = 'success'")
+        sqlx::query("UPDATE jobs SET status = 'success'")
             .execute(&pool)
             .await?;
 
@@ -126,6 +128,7 @@ async fn test(pool: PgPool) -> Result<()> {
             continuation: Some("foobar".into()),
             next_run: None,
             payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
+                vtuber_id: "poi".into(),
                 channel_id: 0,
                 platform_stream_id: "foo".into(),
             }),

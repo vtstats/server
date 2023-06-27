@@ -1,3 +1,4 @@
+use chrono::{Duration, DurationRound, Utc};
 use vtstat_database::{
     jobs::{CollectYoutubeStreamMetadataJobPayload, JobPayload, PushJobQuery},
     streams::GetUpcomingStreamsQuery,
@@ -5,10 +6,10 @@ use vtstat_database::{
 };
 
 use super::JobResult;
-use crate::timer::{timer, Calendar};
 
 pub async fn execute(pool: &PgPool) -> anyhow::Result<JobResult> {
-    let (_, next_run) = timer(Calendar::FifteenSeconds);
+    let d = Duration::seconds(15);
+    let next_run = Utc::now().duration_trunc(d).unwrap() + d;
 
     let streams = GetUpcomingStreamsQuery.execute(&pool).await?;
 

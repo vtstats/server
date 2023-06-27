@@ -1,5 +1,6 @@
+use chrono::{Duration, DurationRound, Utc};
 use vtstat_database::{
-    jobs::UpsertYoutubeStreamJobPayload,
+    jobs::{JobPayload, PushJobQuery, SendNotificationJobPayload, UpsertYoutubeStreamJobPayload},
     streams::{StreamStatus as StreamStatus_, UpsertYouTubeStreamQuery},
     PgPool,
 };
@@ -15,6 +16,7 @@ pub async fn execute(
     let UpsertYoutubeStreamJobPayload {
         channel_id,
         platform_stream_id,
+        vtuber_id,
     } = payload;
 
     let mut streams = hub.youtube_streams(&[platform_stream_id.clone()]).await?;
@@ -25,7 +27,7 @@ pub async fn execute(
 
     let thumbnail_url = hub.upload_thumbnail(&stream.id).await;
 
-    UpsertYouTubeStreamQuery {
+    let stream_id = UpsertYouTubeStreamQuery {
         platform_stream_id: &stream.id,
         channel_id,
         title: &stream.title,
@@ -38,6 +40,32 @@ pub async fn execute(
         schedule_time: stream.schedule_time,
         start_time: stream.start_time,
         end_time: stream.end_time,
+    }
+    .execute(pool)
+    .await?;
+
+    let next = Utc::now().duration_trunc(Duration::seconds(5)).unwrap() + Duration::seconds(5);
+
+    PushJobQuery {
+        continuation: None,
+        next_run: Some(next + Duration::seconds(1)),
+        payload: JobPayload::SendNotification(SendNotificationJobPayload {
+            platform: "discord".into(),
+            stream_id,
+            vtuber_id: vtuber_id.clone(),
+        }),
+    }
+    .execute(pool)
+    .await?;
+
+    PushJobQuery {
+        continuation: None,
+        next_run: Some(next + Duration::seconds(3)),
+        payload: JobPayload::SendNotification(SendNotificationJobPayload {
+            platform: "telegram".into(),
+            stream_id,
+            vtuber_id,
+        }),
     }
     .execute(pool)
     .await?;

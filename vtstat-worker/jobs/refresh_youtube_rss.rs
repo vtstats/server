@@ -1,3 +1,4 @@
+use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
 use vtstat_database::{
     channels::ListChannelsQuery,
@@ -7,12 +8,11 @@ use vtstat_database::{
 use vtstat_request::{RequestHub, StreamStatus};
 
 use super::JobResult;
-use crate::timer::{timer, Calendar};
 
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
-    let (current_run, next_run) = timer(Calendar::Hourly);
+    let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
 
-    let now_str = current_run.to_string();
+    let now_str = now.to_string();
 
     let youtube_channels = ListChannelsQuery {
         platform: "youtube",
@@ -48,7 +48,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     if missing.is_empty() {
         return Ok(JobResult::Next {
-            run: next_run,
+            run: now + Duration::hours(1),
             continuation: None,
         });
     }
@@ -60,7 +60,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     if streams.is_empty() {
         tracing::debug!("Stream not found, ids={:?}", missing);
         return Ok(JobResult::Next {
-            run: next_run,
+            run: now + Duration::hours(1),
             continuation: None,
         });
     }
@@ -95,7 +95,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     }
 
     Ok(JobResult::Next {
-        run: next_run,
+        run: now + Duration::hours(1),
         continuation: None,
     })
 }

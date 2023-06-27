@@ -8,9 +8,6 @@ use vtstat_database::{jobs::PullJobQuery, PgPool};
 use vtstat_request::RequestHub;
 
 mod jobs;
-mod timer;
-
-pub use timer::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

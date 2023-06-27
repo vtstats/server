@@ -10,6 +10,7 @@ pub enum ListTelegramSubscriptionQuery {
 
 pub enum ListDiscordSubscriptionQuery {
     ByChannelId(String),
+    ByVtuberId(String),
 }
 
 #[derive(Debug)]
@@ -48,13 +49,13 @@ impl ListTelegramSubscriptionQuery {
         let query = match self {
             ListTelegramSubscriptionQuery::ByVtuberId(id) => sqlx::query_as(
                 "SELECT * FROM subscriptions \
-                WHERE type = 'telegram_stream_update' \
+                WHERE kind = 'telegram_stream_update' \
                 AND payload -> 'vtuber_ids' ? $1",
             )
             .bind(id),
             ListTelegramSubscriptionQuery::ByChatId(id) => sqlx::query_as(
                 "SELECT * FROM subscriptions \
-                WHERE type = 'telegram_stream_update' \
+                WHERE kind = 'telegram_stream_update' \
                 AND (payload ->> 'chat_id')::int = $1",
             )
             .bind(id),
@@ -73,10 +74,16 @@ impl ListDiscordSubscriptionQuery {
         let query = match self {
             ListDiscordSubscriptionQuery::ByChannelId(channel_id) => sqlx::query_as(
                 "SELECT * FROM subscriptions \
-                WHERE type = 'discord_stream_update' \
+                WHERE kind = 'discord_stream_update' \
                 AND (payload ->> 'channel_id') = $1",
             )
             .bind(channel_id),
+            ListDiscordSubscriptionQuery::ByVtuberId(vtuber_id) => sqlx::query_as(
+                "SELECT * FROM subscriptions \
+                WHERE kind = 'discord_stream_update' \
+                AND (payload ->> 'vtuber_id') = $1",
+            )
+            .bind(vtuber_id),
         }
         .fetch_all(pool);
 

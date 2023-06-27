@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+use chrono::{DateTime, Duration, DurationRound, NaiveDateTime, Utc};
 use vtstat_database::{
     currencies::{Currency, ListCurrenciesQuery},
     donations::{
@@ -16,7 +16,6 @@ use vtstat_request::{
 };
 
 use super::JobResult;
-use crate::timer::trunc_secs;
 
 pub async fn execute(
     pool: &PgPool,
@@ -47,7 +46,7 @@ pub async fn execute(
                     continue;
                 };
 
-                let time = trunc_secs(time, 15);
+                let time = time.duration_trunc(Duration::seconds(15)).unwrap();
 
                 let from_member = badges
                     .iter()

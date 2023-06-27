@@ -1,3 +1,4 @@
+use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
 
 use vtstat_database::channels::ListChannelsQuery;
@@ -5,10 +6,9 @@ use vtstat_database::PgPool;
 use vtstat_request::RequestHub;
 
 use super::JobResult;
-use crate::timer::{timer, Calendar};
 
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
-    let (_, next_run) = timer(Calendar::Daily);
+    let next_run = Utc::now().duration_trunc(Duration::days(1)).unwrap() + Duration::days(1);
 
     let channels = ListChannelsQuery {
         platform: "youtube",

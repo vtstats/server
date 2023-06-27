@@ -1,3 +1,4 @@
+use chrono::{Duration, DurationRound, Utc};
 use futures::try_join;
 use vtstat_database::{
     channel_stats::{
@@ -10,10 +11,9 @@ use vtstat_database::{
 use vtstat_request::RequestHub;
 
 use super::JobResult;
-use crate::timer::{timer, Calendar};
 
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
-    let (current_run, next_run) = timer(Calendar::Hourly);
+    let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
 
     let bilibili_channels = ListChannelsQuery {
         platform: "bilibili",
@@ -43,7 +43,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     if !channel_view_stats.is_empty() {
         AddChannelViewStatsQuery {
-            time: current_run,
+            time: now,
             rows: channel_view_stats,
         }
         .execute(pool)
@@ -52,7 +52,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     if !channel_subscribe_stats.is_empty() {
         AddChannelSubscriberStatsQuery {
-            time: current_run,
+            time: now,
             rows: channel_subscribe_stats,
         }
         .execute(pool)
@@ -60,7 +60,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     }
 
     Ok(JobResult::Next {
-        run: next_run,
+        run: now + Duration::hours(1),
         continuation: None,
     })
 }
