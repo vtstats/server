@@ -14,7 +14,7 @@ pub struct Notification {
 pub struct NotificationPayload {
     pub vtuber_id: String,
     pub stream_id: i32,
-    pub message_id: i64,
+    pub message_id: String,
 }
 
 impl FromRow<'_, PgRow> for Notification {

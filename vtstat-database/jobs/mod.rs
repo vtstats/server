@@ -41,6 +41,7 @@ pub enum JobKind {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct UpsertYoutubeStreamJobPayload {
+    pub vtuber_id: String,
     pub channel_id: i32,
     pub platform_stream_id: String,
 }
@@ -61,8 +62,13 @@ pub struct CollectYoutubeStreamLiveChatJobPayload {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct SendNotificationJobPayload {
+    /// Either 'discord' or 'telegram'
+    pub platform: String,
+    /// Unique identifier for vtuber, e.g. 'shirakamifubuki'
     pub vtuber_id: String,
-    pub stream_id: i32,
+    /// Always be 'youtube'
+    pub stream_platform: String,
+    pub stream_platform_id: String,
 }
 
 #[derive(Serialize, PartialEq, Eq, Debug)]

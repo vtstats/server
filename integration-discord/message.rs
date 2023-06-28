@@ -11,9 +11,9 @@ pub struct Message {
 #[derive(Serialize)]
 pub struct CreateMessageRequest {
     #[serde(skip)]
-    channel_id: String,
+    pub channel_id: String,
 
-    content: String,
+    pub content: String,
 }
 
 impl CreateMessageRequest {
@@ -23,7 +23,10 @@ impl CreateMessageRequest {
             self.channel_id
         );
 
-        let req = client.post(url).form(&self);
+        let req = client.post(url).form(&self).header(
+            "Authorization",
+            format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
+        );
 
         let res = req.send().await?;
 
@@ -37,12 +40,12 @@ impl CreateMessageRequest {
 #[derive(Serialize)]
 pub struct EditMessageRequest {
     #[serde(skip)]
-    channel_id: String,
+    pub channel_id: String,
 
     #[serde(skip)]
-    message_id: String,
+    pub message_id: String,
 
-    content: String,
+    pub content: String,
 }
 
 impl EditMessageRequest {

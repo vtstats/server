@@ -132,6 +132,10 @@ impl<'de> de::Deserialize<'de> for CommandOption {
                 name: serde_json::from_str(get("name")?).map_err(de::Error::custom)?,
                 value: serde_json::from_str(get("value")?).map_err(de::Error::custom)?,
             }),
+            "4" => Ok(CommandOption::Integer {
+                name: serde_json::from_str(get("name")?).map_err(de::Error::custom)?,
+                value: serde_json::from_str(get("value")?).map_err(de::Error::custom)?,
+            }),
             ty => Err(de::Error::custom(format!("unknown message type {ty}"))),
         }
     }
@@ -204,6 +208,20 @@ fn test() {
             data: ApplicationCommandData {
                 name: "list".into(),
                 options: vec![]
+            }
+        }
+    );
+
+    assert_eq!(
+        from_str::<Interaction>(include_str!("./testdata/interaction.2.json")).unwrap(),
+        Interaction::ApplicationCommand {
+            channel_id: "channel_id".into(),
+            data: ApplicationCommandData {
+                name: "remove".into(),
+                options: vec![CommandOption::Integer {
+                    name: "subscription_id".into(),
+                    value: 3
+                }]
             }
         }
     );

@@ -8,6 +8,7 @@ pub enum ListTelegramSubscriptionQuery {
     ByChatId(i64),
 }
 
+#[derive(Debug)]
 pub enum ListDiscordSubscriptionQuery {
     ByChannelId(String),
     ByVtuberId(String),
@@ -21,7 +22,7 @@ pub struct Subscription<Payload: DeserializeOwned + Debug> {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct TelegramSubscriptionPayload {
-    pub vtuber_ids: Vec<String>,
+    pub vtuber_id: String,
     pub utc_offset: Option<String>,
     pub chat_id: i64,
 }

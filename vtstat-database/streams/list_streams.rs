@@ -196,7 +196,8 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
         }
 
         if let Some(limit) = self.limit {
-            qb.push(format_args!(" LIMIT {}", limit));
+            qb.push(" LIMIT ");
+            qb.push(limit.to_string());
         }
 
         qb
@@ -216,7 +217,7 @@ async fn test(pool: PgPool) -> Result<()> {
         }
         .into_query_builder()
         .sql(),
-        "SELECT s.platform_id, stream_id, title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status \
+        "SELECT s.platform_id, c.platform_id platform_channel_id, stream_id, title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status \
         FROM streams s \
         LEFT JOIN channels c ON s.channel_id = c.channel_id \
         WHERE vtuber_id = ANY($1) \

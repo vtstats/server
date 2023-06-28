@@ -27,7 +27,7 @@ pub async fn execute(
 
     let thumbnail_url = hub.upload_thumbnail(&stream.id).await;
 
-    let stream_id = UpsertYouTubeStreamQuery {
+    UpsertYouTubeStreamQuery {
         platform_stream_id: &stream.id,
         channel_id,
         title: &stream.title,
@@ -51,7 +51,8 @@ pub async fn execute(
         next_run: Some(next + Duration::seconds(1)),
         payload: JobPayload::SendNotification(SendNotificationJobPayload {
             platform: "discord".into(),
-            stream_id,
+            stream_platform: "youtube".into(),
+            stream_platform_id: stream.id.clone(),
             vtuber_id: vtuber_id.clone(),
         }),
     }
@@ -63,7 +64,8 @@ pub async fn execute(
         next_run: Some(next + Duration::seconds(3)),
         payload: JobPayload::SendNotification(SendNotificationJobPayload {
             platform: "telegram".into(),
-            stream_id,
+            stream_platform: "youtube".into(),
+            stream_platform_id: stream.id.clone(),
             vtuber_id,
         }),
     }

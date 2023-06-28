@@ -5,16 +5,15 @@ use vtstat_database::{
     jobs::SendNotificationJobPayload,
     streams::{ListYouTubeStreamsQuery, Stream, StreamStatus},
     subscriptions::{
-        InsertNotificationQuery, ListNotificationsQuery, ListTelegramSubscriptionQuery,
+        InsertNotificationQuery, ListDiscordSubscriptionQuery, ListNotificationsQuery,
         NotificationPayload, UpdateNotificationQuery,
     },
     vtubers::ListVtubersQuery,
     PgPool,
 };
-use vtstat_request::{
-    telegram::{EditMessageRequestBody, MessageParserMode, SendMessageRequestBody},
-    RequestHub,
-};
+use vtstat_request::RequestHub;
+
+use integration_discord::message::{CreateMessageRequest, EditMessageRequest};
 
 use super::JobResult;
 
@@ -23,7 +22,11 @@ pub async fn execute(
     hub: RequestHub,
     payload: SendNotificationJobPayload,
 ) -> anyhow::Result<JobResult> {
-    let subscriptions = ListTelegramSubscriptionQuery::ByVtuberId(payload.vtuber_id.clone())
+    if payload.platform != "discord" {
+        return Ok(JobResult::Completed);
+    }
+
+    let subscriptions = ListDiscordSubscriptionQuery::ByVtuberId(payload.vtuber_id.clone())
         .execute(pool)
         .await?;
 
@@ -32,7 +35,7 @@ pub async fn execute(
     }
 
     let streams = ListYouTubeStreamsQuery {
-        ids: &[payload.stream_id],
+        platform_ids: &[payload.stream_platform_id],
         ..Default::default()
     }
     .execute(pool)
@@ -49,20 +52,14 @@ pub async fn execute(
         .execute(pool)
         .await?;
 
-        let chat_id = subscription.payload.chat_id;
-
-        let Ok(text) = build_telegram_message(&stream, pool).await else {
-            continue;
-        };
-
         match previous_notification {
             Some(notification) => {
-                hub.edit_telegram_message(EditMessageRequestBody {
-                    chat_id,
-                    parse_mode: MessageParserMode::HTML,
-                    text,
+                EditMessageRequest {
+                    channel_id: subscription.payload.channel_id,
+                    content: format!("{:?}", &stream),
                     message_id: notification.payload.message_id,
-                })
+                }
+                .send(&hub.client)
                 .await?;
 
                 UpdateNotificationQuery {
@@ -72,20 +69,19 @@ pub async fn execute(
                 .await?;
             }
             None => {
-                let message = hub
-                    .send_telegram_message(SendMessageRequestBody {
-                        chat_id,
-                        parse_mode: MessageParserMode::HTML,
-                        text,
-                    })
-                    .await?;
+                let msg_id = CreateMessageRequest {
+                    channel_id: subscription.payload.channel_id,
+                    content: format!("{:?}", &stream),
+                }
+                .send(&hub.client)
+                .await?;
 
                 InsertNotificationQuery {
                     subscription_id: subscription.subscription_id,
                     payload: NotificationPayload {
                         vtuber_id: payload.vtuber_id.clone(),
                         stream_id: stream.stream_id,
-                        message_id: message.message_id,
+                        message_id: msg_id,
                     },
                 }
                 .execute(pool)
