@@ -3,6 +3,7 @@ use sqlx::{postgres::PgRow, types::Json, FromRow, PgPool, Result, Row};
 
 pub struct ListNotificationsQuery {
     pub subscription_id: i32,
+    pub stream_id: i32,
 }
 
 pub struct Notification {
@@ -29,9 +30,12 @@ impl FromRow<'_, PgRow> for Notification {
 impl ListNotificationsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Option<Notification>> {
         let query = sqlx::query_as::<_, Notification>(
-            "SELECT * FROM notifications WHERE subscription_id = $1",
+            "SELECT * FROM notifications \
+            WHERE subscription_id = $1 \
+            AND (payload ->> 'stream_id')::int = $2",
         )
         .bind(self.subscription_id)
+        .bind(self.stream_id)
         .fetch_optional(pool);
 
         crate::otel::instrument("SELECT", "notifications", query).await
