@@ -11,25 +11,17 @@ mod reject;
 mod api_discord;
 mod api_pubsub;
 mod api_sitemap;
-mod api_telegram;
+// mod api_telegram;
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    vtstat_utils::dotenv::load();
-    vtstat_utils::tracing::init();
-
+pub async fn main() -> anyhow::Result<()> {
     let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
-
-    if !env::var("SKIP_SQLX_MIGRATE").is_ok() {
-        vtstat_database::MIGRATOR.run(&pool).await?;
-    }
 
     let whoami = warp::path!("whoami").and(warp::get()).map(|| "OK");
 
     let routes = warp::path("api").and(
         whoami
             .or(api_sitemap::sitemap(pool.clone()))
-            .or(api_telegram::routes(pool.clone()))
+            // .or(api_telegram::routes(pool.clone()))
             .or(api_discord::routes(pool.clone()))
             .or(api_pubsub::verify())
             .or(api_pubsub::publish(pool)),

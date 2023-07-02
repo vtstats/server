@@ -14,6 +14,12 @@ pub use sqlx::PgPool;
 
 pub use sqlx::Error as DatabaseError;
 
-use sqlx::migrate::Migrator;
+pub async fn migrate() -> anyhow::Result<()> {
+    let migrator = sqlx::migrate!();
 
-pub static MIGRATOR: Migrator = sqlx::migrate!();
+    let pool = PgPool::connect(&std::env::var("DATABASE_URL")?).await?;
+
+    migrator.run(&pool).await?;
+
+    Ok(())
+}

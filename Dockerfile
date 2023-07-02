@@ -1,4 +1,5 @@
-FROM lukemathwalker/cargo-chef:0.1.61-rust-1.70-slim-bullseye AS chef
+# NOTE: use the same version of debian in both builder and runtime
+FROM lukemathwalker/cargo-chef:0.1.60-rust-1.69.0-slim-bullseye AS chef
 WORKDIR app
 RUN apt update && apt install lld clang -y
 
@@ -13,14 +14,7 @@ COPY . .
 ENV SQLX_OFFLINE true
 RUN cargo build --release
 
-# web
-FROM gcr.io/distroless/cc-debian11 AS web
+FROM gcr.io/distroless/cc-debian11
 WORKDIR app
-COPY --from=builder /app/target/release/vtstat-web vtstat-web
-CMD ["./vtstat-web"]
-
-# worker
-FROM gcr.io/distroless/cc-debian11 AS worker
-WORKDIR app
-COPY --from=builder /app/target/release/vtstat-worker vtstat-worker
-CMD ["./vtstat-worker"]
+COPY --from=builder /app/target/release/vtstat vtstat
+ENTRYPOINT ["./vtstat"]

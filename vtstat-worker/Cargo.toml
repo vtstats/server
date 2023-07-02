@@ -4,18 +4,12 @@ version = "0.1.0"
 authors = ["PoiScript <poiscript@gmail.com>"]
 edition = "2021"
 publish = false
-default-run = "vtstat-worker"
 
-[[bin]]
-name = "vtstat-worker"
-path = "main.rs"
-
-[[bin]]
-name = "vtstat-worker-healthcheck"
-path = "healthcheck.rs"
+[lib]
+path = "lib.rs"
 
 [dependencies]
-anyhow = "1.0.65"
+anyhow = { workspace = true }
 chrono = { version = "0.4.22", features = ["serde"] }
 dotenvy = "0.15.5"
 futures = "0.3.24"

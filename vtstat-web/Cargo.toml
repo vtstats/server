@@ -4,18 +4,12 @@ version = "0.1.0"
 authors = ["PoiScript <poiscript@gmail.com>"]
 edition = "2021"
 publish = false
-default-run = "vtstat-web"
 
-[[bin]]
-name = "vtstat-web"
-path = "main.rs"
-
-[[bin]]
-name = "vtstat-web-healthcheck"
-path = "healthcheck.rs"
+[lib]
+path = "lib.rs"
 
 [dependencies]
-anyhow = "1.0.65"
+anyhow = { workspace = true }
 bytes = "1.2.1"
 chrono = { version = "0.4.22", features = ["serde"] }
 hex = "0.4.3"

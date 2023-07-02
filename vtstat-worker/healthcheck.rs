@@ -5,8 +5,7 @@ use vtstat_database::{
     PgPool,
 };
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+pub async fn healthcheck() -> anyhow::Result<()> {
     vtstat_utils::dotenv::load();
 
     let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;

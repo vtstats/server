@@ -9,11 +9,7 @@ use vtstat_request::RequestHub;
 
 mod jobs;
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    vtstat_utils::dotenv::load();
-    vtstat_utils::tracing::init();
-
+pub async fn main() -> anyhow::Result<()> {
     let (shutdown_complete_tx, mut shutdown_complete_rx) = channel(1);
 
     tokio::select! {
