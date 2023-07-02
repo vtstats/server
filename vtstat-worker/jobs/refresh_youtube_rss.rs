@@ -7,6 +7,8 @@ use vtstat_database::{
 };
 use vtstat_request::{RequestHub, StreamStatus};
 
+use integration_youtube::rss_feed::FetchYouTubeVideosRSS;
+
 use super::JobResult;
 
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
@@ -22,7 +24,12 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     let feeds = stream::unfold(youtube_channels.iter(), |mut iter| async {
         let channel = iter.next()?;
-        let res = hub.fetch_rss_feed(&channel.platform_id, &now_str).await;
+        let res = FetchYouTubeVideosRSS {
+            channel_id: channel.platform_id.to_string(),
+            ts: now_str.clone(),
+        }
+        .execute(&hub.client)
+        .await;
         Some((res, iter))
     })
     .try_collect::<Vec<String>>()

@@ -5,6 +5,8 @@ use vtstat_database::channels::ListChannelsQuery;
 use vtstat_database::PgPool;
 use vtstat_request::RequestHub;
 
+use integration_youtube::pubsub::SubscribeYouTubePubsubQuery;
+
 use super::JobResult;
 
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
@@ -18,7 +20,11 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     let _ = stream::unfold(channels.iter(), |mut iter| async {
         let channel = iter.next()?;
-        let result = hub.subscribe_youtube_pubsub(&channel.platform_id).await;
+        let result = SubscribeYouTubePubsubQuery {
+            channel_id: channel.platform_id.to_string(),
+        }
+        .send(&hub.client)
+        .await;
         Some((result, iter))
     })
     .try_collect::<Vec<()>>()

@@ -21,6 +21,7 @@ vtstat-database = { path = "../vtstat-database" }
 vtstat-request = { path = "../vtstat-request" }
 vtstat-utils = { path = "../vtstat-utils" }
 integration-discord = { path = "../integration-discord" }
+integration-youtube = { path = "../integration-youtube" }
 reqwest = { workspace = true }
 
 [dev-dependencies]

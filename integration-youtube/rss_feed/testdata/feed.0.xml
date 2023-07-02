@@ -1,0 +1,58 @@
+<feed
+  xmlns:yt="http://www.youtube.com/xml/schemas/2015"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns="http://www.w3.org/2005/Atom"
+>
+  <link
+    rel="self"
+    href="http://www.youtube.com/feeds/videos.xml?channel_id=UCIBY1ollUsauvVi4hW4cumw"
+  />
+  <id>yt:channel:</id>
+  <yt:channelId />
+  <title>Chloe ch. 沙花叉クロヱ - holoX -</title>
+  <link
+    rel="alternate"
+    href="https://www.youtube.com/channel/UCIBY1ollUsauvVi4hW4cumw"
+  />
+  <author>
+    <name>Chloe ch. 沙花叉クロヱ - holoX -</name>
+    <uri>https://www.youtube.com/channel/UCIBY1ollUsauvVi4hW4cumw</uri>
+  </author>
+  <published>2021-09-12T06:13:43+00:00</published>
+  <entry>
+    <id>yt:video:HxK06JNLqAk</id>
+    <yt:videoId>HxK06JNLqAk</yt:videoId>
+    <yt:channelId>UCIBY1ollUsauvVi4hW4cumw</yt:channelId>
+    <title>
+      【開封】コラボBOX開封！豪運シャチ自引きなるか…！？#シャドバエボルヴ【ホロライブ/沙花叉クロヱ】
+    </title>
+    <link rel="alternate" href="https://www.youtube.com/watch?v=HxK06JNLqAk" />
+    <author>
+      <name>Chloe ch. 沙花叉クロヱ - holoX -</name>
+      <uri>https://www.youtube.com/channel/UCIBY1ollUsauvVi4hW4cumw</uri>
+    </author>
+    <published>2023-06-24T13:31:37+00:00</published>
+    <updated>2023-06-26T07:03:42+00:00</updated>
+    <media:group>
+      <media:title
+        >【開封】コラボBOX開封！豪運シャチ自引きなるか…！？#シャドバエボルヴ【ホロライブ/沙花叉クロヱ】</media:title
+      >
+      <media:content
+        url="https://www.youtube.com/v/HxK06JNLqAk?version=3"
+        type="application/x-shockwave-flash"
+        width="640"
+        height="390"
+      />
+      <media:thumbnail
+        url="https://i1.ytimg.com/vi/HxK06JNLqAk/hqdefault.jpg"
+        width="480"
+        height="360"
+      />
+      <media:description>....</media:description>
+      <media:community>
+        <media:starRating count="5832" average="5.00" min="1" max="5" />
+        <media:statistics views="85059" />
+      </media:community>
+    </media:group>
+  </entry>
+</feed>
