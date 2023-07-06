@@ -25,10 +25,6 @@ pub async fn execute(
     hub: RequestHub,
     payload: SendNotificationJobPayload,
 ) -> anyhow::Result<JobResult> {
-    if payload.platform != "discord" {
-        return Ok(JobResult::Completed);
-    }
-
     let subscriptions = ListDiscordSubscriptionQuery::ByVtuberId(payload.vtuber_id.clone())
         .execute(pool)
         .await?;

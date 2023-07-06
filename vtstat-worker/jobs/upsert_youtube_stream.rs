@@ -48,25 +48,11 @@ pub async fn execute(
 
     PushJobQuery {
         continuation: None,
-        next_run: Some(next + Duration::seconds(1)),
+        next_run: Some(next),
         payload: JobPayload::SendNotification(SendNotificationJobPayload {
-            platform: "discord".into(),
             stream_platform: "youtube".into(),
             stream_platform_id: stream.id.clone(),
             vtuber_id: vtuber_id.clone(),
-        }),
-    }
-    .execute(pool)
-    .await?;
-
-    PushJobQuery {
-        continuation: None,
-        next_run: Some(next + Duration::seconds(3)),
-        payload: JobPayload::SendNotification(SendNotificationJobPayload {
-            platform: "telegram".into(),
-            stream_platform: "youtube".into(),
-            stream_platform_id: stream.id.clone(),
-            vtuber_id,
         }),
     }
     .execute(pool)

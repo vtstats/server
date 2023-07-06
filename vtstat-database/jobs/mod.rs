@@ -64,8 +64,6 @@ pub struct CollectYoutubeStreamLiveChatJobPayload {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct SendNotificationJobPayload {
-    /// Either 'discord' or 'telegram'
-    pub platform: String,
     /// Unique identifier for vtuber, e.g. 'shirakamifubuki'
     pub vtuber_id: String,
     /// Always be 'youtube'
