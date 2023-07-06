@@ -1,5 +1,17 @@
 {
   "db": "PostgreSQL",
+  "13ded2ff037b83e476a8786ec24adf4cc9324fb12feac8b866efd3d3c5fc2b30": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "UPDATE jobs SET status = 'queued' WHERE job_id = $1"
+  },
   "284fbde8828d1239ffa9fab024f6fb8a7a46cbfd292beaf427bfb221e99e2464": {
     "describe": {
       "columns": [],
@@ -12,6 +24,26 @@
       }
     },
     "query": "DELETE FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND subscription_id = $2"
+  },
+  "a776980e570e14df4951d06bb67971cda011091236bb9449bf16db5f70288391": {
+    "describe": {
+      "columns": [
+        {
+          "name": "count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT COUNT(*) FROM vtubers WHERE vtuber_id = $1"
   },
   "faa15d2c0d8e70002982fe6383c133fca6e6b90cdad3424ce0940361cbce35d9": {
     "describe": {

@@ -51,6 +51,7 @@ pub enum Column {
     StartTime,
     EndTime,
     ScheduleTime,
+    UpdatedAt,
 }
 
 impl Column {
@@ -60,6 +61,7 @@ impl Column {
             Column::ScheduleTime => "schedule_time",
             Column::EndTime => "end_time",
             Column::StartTime => "start_time",
+            Column::UpdatedAt => "updated_at",
         }
     }
 }

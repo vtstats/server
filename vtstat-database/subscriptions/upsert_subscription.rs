@@ -27,7 +27,7 @@ impl UpsertSubscriptionQuery {
                     "INSERT INTO subscriptions (kind, payload) \
                     VALUES ('telegram_stream_update', $1)",
                 )
-                .bind(Json(self.payload)) 
+                .bind(Json(self.payload))
                 .execute(pool);
 
                 crate::otel::instrument("INSERT INTO", "subscriptions", query).await

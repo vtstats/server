@@ -1,0 +1,19 @@
+[package]
+name = "integration-admin"
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+publish = { workspace = true }
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+chrono = { workspace = true }
+warp = { workspace = true }
+reqwest = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+jsonwebtoken = { version = "8", default-features = false }
+tokio = { version = "1.21.2", features = ["macros", "signal", "sync"] }

@@ -1,18 +1,20 @@
 mod list_job;
 mod pull_job;
 mod push_job;
+mod re_run;
 mod update_job;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
 
-pub use self::list_job::ListJobsQuery;
+pub use self::list_job::{list_jobs_order_by_updated_at, ListJobsQuery};
 pub use self::pull_job::PullJobQuery;
 pub use self::push_job::PushJobQuery;
+pub use self::re_run::re_run_job;
 pub use self::update_job::UpdateJobQuery;
 
-#[derive(sqlx::Type, Debug, PartialEq, Eq)]
+#[derive(sqlx::Type, Debug, PartialEq, Eq, Serialize)]
 #[sqlx(type_name = "job_status", rename_all = "snake_case")]
 pub enum JobStatus {
     Queued,
@@ -21,7 +23,7 @@ pub enum JobStatus {
     Failed,
 }
 
-#[derive(sqlx::Type)]
+#[derive(sqlx::Type, Serialize, Clone, Copy)]
 #[sqlx(type_name = "job_kind", rename_all = "snake_case")]
 pub enum JobKind {
     HealthCheck,
@@ -89,6 +91,7 @@ pub enum JobPayload {
     InstallDiscordCommands,
 }
 
+#[derive(Serialize)]
 pub struct Job {
     pub job_id: i32,
     pub continuation: Option<String>,
@@ -97,18 +100,23 @@ pub struct Job {
     pub last_run: Option<DateTime<Utc>>,
     pub next_run: Option<DateTime<Utc>>,
     pub payload: JobPayload,
+    pub kind: JobKind,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl FromRow<'_, PgRow> for Job {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
+        let kind = row.try_get::<JobKind, _>("kind")?;
         Ok(Job {
             job_id: row.try_get("job_id")?,
             continuation: row.try_get("continuation")?,
             status: row.try_get("status")?,
             created_at: row.try_get("created_at")?,
+            updated_at: row.try_get("updated_at")?,
             last_run: row.try_get("last_run")?,
             next_run: row.try_get("next_run")?,
-            payload: match row.try_get::<JobKind, _>("kind")? {
+            kind,
+            payload: match kind {
                 JobKind::HealthCheck => JobPayload::HealthCheck,
                 JobKind::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
                 JobKind::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,

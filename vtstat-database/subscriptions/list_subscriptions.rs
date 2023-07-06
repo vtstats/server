@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, PgPool, Result, Row};
 
@@ -14,10 +15,12 @@ pub enum ListDiscordSubscriptionQuery {
     ByVtuberId(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Subscription<Payload: DeserializeOwned + Debug> {
     pub subscription_id: i32,
     pub payload: Payload,
+    pub updated_at: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -37,7 +40,10 @@ impl<Payload: DeserializeOwned + Debug> FromRow<'_, PgRow> for Subscription<Payl
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         Ok(Subscription {
             subscription_id: row.try_get("subscription_id")?,
+            // kind: row.try_get("kind")?,
             payload: row.try_get::<Json<Payload>, _>("payload")?.0,
+            updated_at: row.try_get("updated_at")?,
+            created_at: row.try_get("created_at")?,
         })
     }
 }
@@ -132,3 +138,11 @@ impl CreateDiscordSubscriptionQuery {
 }
 
 // TODO add unit tests
+
+pub async fn list_subscriptions(
+    pool: &PgPool,
+) -> Result<Vec<Subscription<DiscordSubscriptionPayload>>> {
+    sqlx::query_as::<_, Subscription<DiscordSubscriptionPayload>>("SELECT * FROM subscriptions")
+        .fetch_all(pool)
+        .await
+}

@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, PgPool, Result, Row};
 
@@ -6,9 +7,12 @@ pub struct ListNotificationsQuery {
     pub stream_id: i32,
 }
 
+#[derive(Serialize)]
 pub struct Notification {
     pub notification_id: i32,
     pub payload: NotificationPayload,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -23,6 +27,8 @@ impl FromRow<'_, PgRow> for Notification {
         Ok(Notification {
             notification_id: row.try_get("notification_id")?,
             payload: row.try_get::<Json<NotificationPayload>, _>("payload")?.0,
+            created_at: row.try_get("created_at")?,
+            updated_at: row.try_get("updated_at")?,
         })
     }
 }
@@ -40,4 +46,10 @@ impl ListNotificationsQuery {
 
         crate::otel::instrument("SELECT", "notifications", query).await
     }
+}
+
+pub async fn list(pool: &PgPool) -> Result<Vec<Notification>> {
+    let query = sqlx::query_as::<_, Notification>("SELECT * FROM notifications").fetch_all(pool);
+
+    crate::otel::instrument("SELECT", "notifications", query).await
 }

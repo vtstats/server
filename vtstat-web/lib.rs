@@ -8,6 +8,7 @@ mod filters;
 mod reject;
 
 // routes
+mod api_admin;
 mod api_discord;
 mod api_pubsub;
 mod api_sitemap;
@@ -23,12 +24,25 @@ pub async fn main() -> anyhow::Result<()> {
             .or(api_sitemap::sitemap(pool.clone()))
             // .or(api_telegram::routes(pool.clone()))
             .or(api_discord::routes(pool.clone()))
+            .or(api_admin::routes(pool.clone()))
             .or(api_pubsub::verify())
             .or(api_pubsub::publish(pool)),
     );
 
     let filter = routes
-        .with(warp::cors().allow_any_origin())
+        .with(
+            warp::cors()
+                .allow_any_origin()
+                .allow_methods(&[
+                    reqwest::Method::GET,
+                    reqwest::Method::OPTIONS,
+                    reqwest::Method::PUT,
+                ])
+                .allow_headers(&[
+                    reqwest::header::AUTHORIZATION,
+                    reqwest::header::CONTENT_TYPE,
+                ]),
+        )
         .recover(reject::handle_rejection)
         .with(warp::trace(|info| {
             if info.path() == "/api/whoami" {

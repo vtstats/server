@@ -6,7 +6,10 @@ use tracing::Span;
 use vtstat_database::DatabaseError;
 use warp::http::StatusCode;
 use warp::reject::Reject;
+use warp::reply::Response;
 use warp::{Rejection, Reply};
+
+use integration_admin::validate::NeedLogin;
 
 #[derive(Debug)]
 pub struct WarpError(pub AnyhowError);
@@ -25,7 +28,7 @@ pub struct ErrorMessage {
     pub message: String,
 }
 
-pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
+pub async fn handle_rejection(err: Rejection) -> Result<Response, Infallible> {
     let code;
     let message;
     let description;
@@ -34,6 +37,9 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         code = StatusCode::NOT_FOUND;
         message = "NOT_FOUND";
     } else {
+        if let Some(i) = err.find::<NeedLogin>() {
+            return Ok(i.into_response());
+        }
         if let Some(WarpError(err)) = err.find::<WarpError>() {
             Span::current()
                 .record("error.message", display(err))
@@ -70,5 +76,5 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message: message.into(),
     });
 
-    Ok(warp::reply::with_status(json, code))
+    Ok(warp::reply::with_status(json, code).into_response())
 }

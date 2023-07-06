@@ -1,0 +1,24 @@
+{
+  "header": {
+    "c4TabbedHeaderRenderer": {
+      "channelId": "UCuuuuuuuuuuuuuuuuuuuuuu",
+      "avatar": {
+        "thumbnails": [
+          {
+            "url": "https://yt3.googleusercontent.com/a/default-user=s100-c-k-c0x00ffffff-no-rj",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    }
+  },
+  "alerts": [
+    {
+      "alertRenderer": {
+        "type": "ERROR",
+        "text": { "simpleText": "This channel does not exist." }
+      }
+    }
+  ]
+}

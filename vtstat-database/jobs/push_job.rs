@@ -39,7 +39,8 @@ INSERT INTO jobs (kind, payload, status, next_run, continuation)
 ON CONFLICT (kind, payload) DO UPDATE
         SET status       = 'queued',
             next_run     = $3,
-            continuation = $4
+            continuation = $4,
+            updated_at   = NOW()
   RETURNING *
             "#,
         )

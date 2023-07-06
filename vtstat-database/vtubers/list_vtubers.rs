@@ -1,9 +1,10 @@
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 use sqlx::{PgPool, Result};
 
 pub struct ListVtubersQuery;
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Serialize)]
 pub struct VTuber {
     pub vtuber_id: String,
     pub native_name: String,
