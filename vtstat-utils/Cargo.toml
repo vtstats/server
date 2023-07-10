@@ -20,6 +20,7 @@ tracing-subscriber = { version = "0.3.8", default-features = false, features = [
     "fmt",
     "registry",
 ] }
+tracing-appender = "0.2"
 anyhow = { workspace = true }
 # s3 upload
 chrono = { workspace = true }

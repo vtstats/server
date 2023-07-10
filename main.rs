@@ -1,9 +1,8 @@
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let command = std::env::args().nth(1).unwrap_or_default();
+    let _guard = vtstat_utils::tracing::init();
 
-    vtstat_utils::dotenv::load();
-    vtstat_utils::tracing::init();
+    let command = std::env::args().nth(1).unwrap_or_default();
 
     match command.as_str() {
         "standalone" => tokio::try_join!(vtstat_web::main(), vtstat_worker::main()).map(|_| ()),

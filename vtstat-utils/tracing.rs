@@ -1,71 +1,32 @@
-use log::Log;
-use std::env;
-use tracing::{Metadata, Subscriber};
+use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     filter::{filter_fn, LevelFilter},
     fmt::format::FmtSpan,
-    layer::{Context, SubscriberExt},
-    registry,
-    registry::LookupSpan,
-    Layer,
+    layer::SubscriberExt,
+    registry, Layer,
 };
 
-// logger
-struct TelemetryLogger;
-
-impl Log for TelemetryLogger {
-    fn enabled(&self, metadata: &log::Metadata) -> bool {
-        metadata.target().starts_with("tracing_newrelic")
-    }
-
-    fn log(&self, record: &log::Record) {
-        if self.enabled(record.metadata()) {
-            println!("[NewRelic] {}", record.args());
-        }
-    }
-
-    fn flush(&self) {}
-}
-
-static LOGGER: TelemetryLogger = TelemetryLogger;
-
-// target filter
-struct TargetFilterLayer(&'static str);
-
-impl<S> Layer<S> for TargetFilterLayer
-where
-    S: Subscriber + for<'span> LookupSpan<'span>,
-{
-    fn enabled(&self, metadata: &Metadata<'_>, _: Context<'_, S>) -> bool {
-        let target = metadata.target();
-        target.starts_with(self.0) || target.starts_with("vtstat")
-    }
-}
-
-pub fn init() {
-    // initialize logger
-    log::set_max_level(log::LevelFilter::Info);
-    log::set_logger(&LOGGER).expect("failed to initialize telemetry logger");
-
+pub fn init() -> WorkerGuard {
     let filter_layer = filter_fn(|metadata| {
         metadata.target().starts_with("vtstat") && metadata.name() != "Ignored"
     });
 
-    let newrelic_layer = match env::var("NEWRELIC_API_KEY") {
-        Ok(api_key) => Some(tracing_newrelic::layer(api_key.as_str())),
-        Err(_) => None,
-    };
+    let log_dir = std::env::var("LOG_DIR").unwrap_or("/var/log/vtstat".into());
+
+    let file_appender = tracing_appender::rolling::daily(&log_dir, "log");
+
+    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_target(false)
         .with_span_events(FmtSpan::CLOSE)
+        .with_writer(non_blocking)
         .with_filter(LevelFilter::INFO);
 
-    let subscriber = registry()
-        .with(fmt_layer)
-        .with(newrelic_layer)
-        .with(filter_layer);
+    let subscriber = registry().with(filter_layer).with(fmt_layer);
 
     tracing::subscriber::set_global_default(subscriber)
         .expect("failed to initialize tracing subscriber");
+
+    guard
 }
