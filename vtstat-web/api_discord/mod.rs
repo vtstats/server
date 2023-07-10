@@ -9,7 +9,6 @@ use integration_discord::interaction::{Interaction, InteractionCallbackData, Int
 use integration_discord::validate;
 
 use crate::filters::with_pool;
-use crate::reject::WarpError;
 
 pub fn routes(
     pool: PgPool,
@@ -28,87 +27,88 @@ pub async fn discord_interactions(
     match update {
         Interaction::Ping => Ok(warp::reply::json(&InteractionResponse::pong()).into_response()),
         Interaction::ApplicationCommand { channel_id, data } => match data.name.as_str() {
-            "list" => list_subscriptions(&pool, channel_id).await,
-            "add" => {
-                create_subscription(
-                    &pool,
-                    channel_id,
-                    data.option_string("vtuber_id")
-                        .ok_or_else(|| warp::reject())?,
-                )
-                .await
-            }
-            "remove" => {
-                remove_subscription(
-                    &pool,
-                    channel_id,
-                    data.option_integer("subscription_id")
-                        .ok_or_else(|| warp::reject())?,
-                )
-                .await
-            }
-            _ => Err(warp::reject()),
+            "list" => Ok(list_subscriptions(&pool, channel_id).await),
+            "add" => Ok(create_subscription(
+                &pool,
+                channel_id,
+                data.option_string("vtuber_id")
+                    .ok_or_else(|| warp::reject())?,
+            )
+            .await),
+            "remove" => Ok(remove_subscription(
+                &pool,
+                channel_id,
+                data.option_integer("subscription_id")
+                    .ok_or_else(|| warp::reject())?,
+            )
+            .await),
+            command => Ok(warp::reply::json(&InteractionResponse::channel_message(
+                InteractionCallbackData {
+                    tts: None,
+                    content: format!("Unknown command {command:?}"),
+                },
+            ))
+            .into_response()),
         },
     }
 }
 
-pub async fn list_subscriptions(pool: &PgPool, channel_id: String) -> Result<Response, Rejection> {
-    let subscriptions = ListDiscordSubscriptionQuery::ByChannelId(channel_id)
+pub async fn list_subscriptions(pool: &PgPool, channel_id: String) -> Response {
+    let result = ListDiscordSubscriptionQuery::ByChannelId(channel_id)
         .execute(&pool)
-        .await
-        .map_err(Into::<WarpError>::into)?;
+        .await;
 
-    Ok(warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData {
-            tts: None,
-            content: format!("{:?}", subscriptions),
-        },
+    let content = match result {
+        Ok(subscriptions) => format!("{:?}", subscriptions),
+        Err(err) => format!("Error: {}", err),
+    };
+
+    warp::reply::json(&InteractionResponse::channel_message(
+        InteractionCallbackData { tts: None, content },
     ))
-    .into_response())
+    .into_response()
 }
 
-pub async fn create_subscription(
-    pool: &PgPool,
-    channel_id: String,
-    vtuber_id: String,
-) -> Result<Response, Rejection> {
-    let id = CreateDiscordSubscriptionQuery {
+pub async fn create_subscription(pool: &PgPool, channel_id: String, vtuber_id: String) -> Response {
+    let result = CreateDiscordSubscriptionQuery {
         payload: DiscordSubscriptionPayload {
             channel_id,
             vtuber_id,
         },
     }
     .execute(pool)
-    .await
-    .map_err(Into::<WarpError>::into)?;
+    .await;
 
-    Ok(warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData {
-            tts: None,
-            content: format!("Subscription created w/ id {id}"),
-        },
+    let content = match result {
+        Ok(id) => format!("Success: subscription created w/ id {id}"),
+        Err(err) => format!("Error: {}", err),
+    };
+
+    warp::reply::json(&InteractionResponse::channel_message(
+        InteractionCallbackData { tts: None, content },
     ))
-    .into_response())
+    .into_response()
 }
 
 pub async fn remove_subscription(
     pool: &PgPool,
     channel_id: String,
     subscription_id: i32,
-) -> Result<Response, Rejection> {
-    let _ = RemoveDiscordSubscriptionQuery {
+) -> Response {
+    let result = RemoveDiscordSubscriptionQuery {
         channel_id,
         subscription_id,
     }
     .execute(pool)
-    .await
-    .map_err(Into::<WarpError>::into)?;
+    .await;
 
-    Ok(warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData {
-            tts: None,
-            content: format!("Subscription removed"),
-        },
+    let content = match result {
+        Ok(_) => format!("Success: subscription removed"),
+        Err(err) => format!("Error: {}", err),
+    };
+
+    warp::reply::json(&InteractionResponse::channel_message(
+        InteractionCallbackData { tts: None, content },
     ))
-    .into_response())
+    .into_response()
 }

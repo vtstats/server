@@ -124,16 +124,30 @@ pub struct CreateDiscordSubscriptionQuery {
 }
 
 impl CreateDiscordSubscriptionQuery {
-    pub async fn execute(self, pool: &PgPool) -> Result<i32> {
-        sqlx::query(
+    pub async fn execute(self, pool: &PgPool) -> anyhow::Result<i32> {
+        let x = sqlx::query!(
+            "SELECT COUNT(*) FROM vtubers WHERE vtuber_id = $1",
+            self.payload.vtuber_id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        anyhow::ensure!(
+            matches!(x.count, Some(c) if c > 0),
+            "VTuber id {:?} didn't existed",
+            &self.payload.vtuber_id
+        );
+
+        let row = sqlx::query(
             "INSERT INTO subscriptions (kind, payload) \
             VALUES ('discord_stream_update', $1) \
             RETURNING subscription_id",
         )
         .bind(&Json(&self.payload))
         .fetch_one(pool)
-        .await
-        .and_then(|r| r.try_get::<i32, _>("subscription_id"))
+        .await?;
+
+        Ok(row.try_get::<i32, _>("subscription_id")?)
     }
 }
 
