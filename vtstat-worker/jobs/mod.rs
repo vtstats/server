@@ -104,12 +104,14 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
                 job_id,
                 status: JobStatus::Queued,
                 next_run: Some(run),
+                last_run: Utc::now(),
                 continuation,
             },
             Ok(JobResult::Completed) => UpdateJobQuery {
                 job_id,
                 status: JobStatus::Success,
                 next_run: None,
+                last_run: Utc::now(),
                 continuation: None,
             },
             Err(ref err) => {
@@ -124,6 +126,7 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
                     job_id,
                     status: JobStatus::Failed,
                     next_run: None,
+                    last_run: Utc::now(),
                     continuation: None,
                 }
             }
