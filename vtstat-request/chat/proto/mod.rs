@@ -1,5 +1,6 @@
 mod continuation;
 
+use base64::{engine::general_purpose::STANDARD, Engine};
 use continuation::{Continuation, Video, A, B, C, D, E, F};
 use quick_protobuf::{MessageWrite, Result, Writer};
 
@@ -27,7 +28,7 @@ pub fn get_continuation(channel_id: &str, stream_id: &str) -> Result<String> {
                 }
                 .write_message(&mut Writer::new(&mut out))?;
 
-                base64::encode(&out).into()
+                STANDARD.encode(&out).into()
             },
             f6: 1,
             a: Some(A { f1: 1 }),
@@ -35,7 +36,7 @@ pub fn get_continuation(channel_id: &str, stream_id: &str) -> Result<String> {
     }
     .write_message(&mut Writer::new(&mut out))?;
 
-    Ok(base64::encode(&out))
+    Ok(STANDARD.encode(&out))
 }
 
 #[test]

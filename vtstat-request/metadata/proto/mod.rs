@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose::URL_SAFE, Engine};
 use continuation::{Continuation, A};
 use quick_protobuf::{MessageWrite, Result, Writer};
 
@@ -14,7 +15,7 @@ pub fn get_continuation(video_id: &str, timestamp: i64) -> Result<String> {
     }
     .write_message(&mut Writer::new(&mut out))?;
 
-    Ok(base64::encode_config(&out, base64::URL_SAFE))
+    Ok(URL_SAFE.encode(&out))
 }
 
 #[test]

@@ -9,21 +9,22 @@ publish = false
 path = "lib.rs"
 
 [dependencies]
-anyhow = { workspace = true }
-bytes = "1.2.1"
-chrono = { workspace = true }
+anyhow = { version = "1.0.71", features = ["backtrace"] }
+bytes = "1.4.0"
+chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 hex = "0.4.3"
 hmac = "0.12.1"
-reqwest = { version = "0.11.12", default-features = false, features = [
+reqwest = { version = "0.11.18", default-features = false, features = [
+    "json",
     "rustls-tls"
 ] }
-serde = { version = "1.0.145", features = ["derive"] }
-serde_json = "1.0.85"
-serde_with = "2.0.1"
-tokio = { version = "1.21.2", features = ["macros", "signal"] }
+serde = { version = "1.0.164", features = ["derive"] }
+serde_json = "1.0.97"
+serde_with = "3.0.0"
+tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"
 tracing-futures = "0.2.5"
-warp = { version = "0.3.3", default-features = false }
+warp = { version = "0.3.5", default-features = false }
 vtstat-database = { path = "../vtstat-database" }
 vtstat-utils = { path = "../vtstat-utils" }
 integration-admin = { path = "../integration-admin" }

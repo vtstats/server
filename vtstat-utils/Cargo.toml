@@ -9,24 +9,24 @@ publish = false
 path = "lib.rs"
 
 [dependencies]
-log = "0.4.14"
-tracing = "0.1.30"
-tokio = { version = "1.21.2", features = ["signal"] }
+log = "0.4.19"
+tracing = "0.1.37"
+tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing-newrelic = { version = "0.1.2", default-features = false, features = [
     "rustls-tls"
 ] }
-tracing-subscriber = { version = "0.3.8", default-features = false, features = [
+tracing-subscriber = { version = "0.3.17", default-features = false, features = [
     "fmt",
     "registry",
 ] }
-tracing-appender = "0.2"
-anyhow = { workspace = true }
+tracing-appender = "0.2.2"
+anyhow = { version = "1.0.71", features = ["backtrace"] }
 # s3 upload
-chrono = { workspace = true }
+chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 hmac = "0.12.1"
-sha2 = "0.10.6"
+sha2 = "0.10.7"
 hex = "0.4.3"
-reqwest = { version = "0.11.12", default-features = false, features = [
+reqwest = { version = "0.11.18", default-features = false, features = [
     "json",
     "rustls-tls"
 ] }

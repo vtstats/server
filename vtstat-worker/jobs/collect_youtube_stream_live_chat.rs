@@ -214,14 +214,14 @@ fn test_parse_timestamp() {
     assert_eq!(
         parse_timestamp("1620129525000000"),
         Some(DateTime::from_utc(
-            NaiveDateTime::from_timestamp(1620129525, 0),
+            NaiveDateTime::from_timestamp_opt(1620129525, 0).unwrap(),
             Utc,
         ))
     );
     assert_eq!(
         parse_timestamp("1620129525606474"),
         Some(DateTime::from_utc(
-            NaiveDateTime::from_timestamp(1620129525, 606474),
+            NaiveDateTime::from_timestamp_opt(1620129525, 606474).unwrap(),
             Utc,
         ))
     );
