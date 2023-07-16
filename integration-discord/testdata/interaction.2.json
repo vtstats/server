@@ -3,7 +3,7 @@
   "application_id": "",
   "channel": {
     "flags": 0,
-    "guild_id": "",
+    "guild_id": "guild_id",
     "id": "",
     "last_message_id": "",
     "name": "general",
@@ -35,7 +35,7 @@
     "id": "",
     "locale": "en-US"
   },
-  "guild_id": "",
+  "guild_id": "guild_id",
   "guild_locale": "en-US",
   "id": "",
   "locale": "en-US",

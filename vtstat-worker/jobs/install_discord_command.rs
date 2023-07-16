@@ -19,8 +19,18 @@ pub async fn execute(client: &Client) -> anyhow::Result<JobResult> {
 
     let _ = CreateCommand {
         application_id: std::env::var("DISCORD_APPLICATION_ID")?,
-        description: "List all subscriptions".into(),
+        description: "List subscriptions of this channel".into(),
         name: "list".into(),
+        ty: 1,
+        options: vec![],
+    }
+    .execute(client)
+    .await?;
+
+    let _ = CreateCommand {
+        application_id: std::env::var("DISCORD_APPLICATION_ID")?,
+        description: "List all subscriptions of this servers".into(),
+        name: "list_all".into(),
         ty: 1,
         options: vec![],
     }

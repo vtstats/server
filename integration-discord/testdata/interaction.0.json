@@ -3,7 +3,7 @@
   "application_id": "application_id",
   "channel": {
     "flags": 0,
-    "guild_id": "channel.guild_id",
+    "guild_id": "guild_id",
     "id": "channel.id",
     "last_message_id": "channel.last_message_id",
     "name": "general",

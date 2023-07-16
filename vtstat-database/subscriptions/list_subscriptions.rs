@@ -11,7 +11,13 @@ pub enum ListTelegramSubscriptionQuery {
 
 #[derive(Debug)]
 pub enum ListDiscordSubscriptionQuery {
-    ByChannelId(String),
+    ByGuildId {
+        guild_id: String,
+    },
+    ByChannelId {
+        guild_id: String,
+        channel_id: String,
+    },
     ByVtuberId(String),
 }
 
@@ -32,6 +38,7 @@ pub struct TelegramSubscriptionPayload {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct DiscordSubscriptionPayload {
+    pub guild_id: String,
     pub vtuber_id: String,
     pub channel_id: String,
 }
@@ -79,11 +86,22 @@ impl ListDiscordSubscriptionQuery {
         pool: &PgPool,
     ) -> Result<Vec<Subscription<DiscordSubscriptionPayload>>> {
         let query = match self {
-            ListDiscordSubscriptionQuery::ByChannelId(channel_id) => sqlx::query_as(
+            ListDiscordSubscriptionQuery::ByGuildId { guild_id } => sqlx::query_as(
                 "SELECT * FROM subscriptions \
                 WHERE kind = 'discord_stream_update' \
-                AND (payload ->> 'channel_id') = $1",
+                AND (payload ->> 'guild_id') = $1",
             )
+            .bind(guild_id),
+            ListDiscordSubscriptionQuery::ByChannelId {
+                guild_id,
+                channel_id,
+            } => sqlx::query_as(
+                "SELECT * FROM subscriptions \
+                WHERE kind = 'discord_stream_update' \
+                AND (payload ->> 'guild_id') = $1 \
+                AND (payload ->> 'channel_id') = $2",
+            )
+            .bind(guild_id)
             .bind(channel_id),
             ListDiscordSubscriptionQuery::ByVtuberId(vtuber_id) => sqlx::query_as(
                 "SELECT * FROM subscriptions \

@@ -12,6 +12,7 @@ pub enum Interaction {
 
     /// https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-structure
     ApplicationCommand {
+        guild_id: String,
         channel_id: String,
         data: ApplicationCommandData,
     },
@@ -103,6 +104,7 @@ impl<'de> de::Deserialize<'de> for Interaction {
         match get("type")?.trim() {
             "1" => Ok(Interaction::Ping),
             "2" => Ok(Interaction::ApplicationCommand {
+                guild_id: serde_json::from_str(get("guild_id")?).map_err(de::Error::custom)?,
                 channel_id: serde_json::from_str(get("channel_id")?).map_err(de::Error::custom)?,
                 data: serde_json::from_str(get("data")?).map_err(de::Error::custom)?,
             }),
@@ -191,6 +193,7 @@ fn test() {
         from_str::<Interaction>(include_str!("./testdata/interaction.0.json")).unwrap(),
         Interaction::ApplicationCommand {
             channel_id: "channel_id".into(),
+            guild_id: "guild_id".into(),
             data: ApplicationCommandData {
                 name: "command".into(),
                 options: vec![CommandOption::String {
@@ -205,6 +208,7 @@ fn test() {
         from_str::<Interaction>(include_str!("./testdata/interaction.1.json")).unwrap(),
         Interaction::ApplicationCommand {
             channel_id: "channel_id".into(),
+            guild_id: "guild_id".into(),
             data: ApplicationCommandData {
                 name: "list".into(),
                 options: vec![]
@@ -216,6 +220,7 @@ fn test() {
         from_str::<Interaction>(include_str!("./testdata/interaction.2.json")).unwrap(),
         Interaction::ApplicationCommand {
             channel_id: "channel_id".into(),
+            guild_id: "guild_id".into(),
             data: ApplicationCommandData {
                 name: "remove".into(),
                 options: vec![CommandOption::Integer {
