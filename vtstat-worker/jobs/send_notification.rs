@@ -115,15 +115,13 @@ pub async fn build_discord_embed(
         StreamStatus::Ended => 0x3F51B5,
     });
     embed.url = Some(format!("https://youtu.be/{}", stream.platform_id));
-    embed.thumbnail = Some(EmbedThumbnail {
-        url: format!("https://holo.poi.cat/assets/thumbnail/{vtuber_id}.jpg"),
+    embed.thumbnail = vtuber
+        .and_then(|v| v.thumbnail_url.as_ref())
+        .map(|url| EmbedThumbnail { url: url.clone() });
+    embed.author = vtuber.map(|v| EmbedAuthor {
+        name: v.native_name.clone(),
+        url: format!("https://holo.poi.cat/vtuber/{vtuber_id}"),
     });
-    if let Some(vtuber) = vtuber {
-        embed.author = Some(EmbedAuthor {
-            name: vtuber.native_name.clone(),
-            url: format!("https://holo.poi.cat/vtuber/{vtuber_id}"),
-        })
-    }
 
     match (stream.schedule_time, stream.start_time, stream.end_time) {
         (Some(schedule), None, None) => embed.fields.push(EmbedField {

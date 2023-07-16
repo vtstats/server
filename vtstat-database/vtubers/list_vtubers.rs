@@ -10,6 +10,7 @@ pub struct VTuber {
     pub native_name: String,
     pub english_name: Option<String>,
     pub japanese_name: Option<String>,
+    pub thumbnail_url: Option<String>,
     pub twitter_username: Option<String>,
     pub debuted_at: Option<DateTime<Utc>>,
     pub retired_at: Option<DateTime<Utc>>,
