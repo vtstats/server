@@ -16,9 +16,9 @@ impl RequestHub {
             }
         };
 
-        let filename = format!("{}.jpg", stream_id);
+        let filename = format!("{}.webp", stream_id);
 
-        match self.upload_file(&filename, data, "image/jpg").await {
+        match self.upload_file(&filename, data, "image/webp").await {
             Ok(url) => Some(url),
             Err(err) => {
                 tracing::error!("Failed to upload thumbnail: {:?}", err);
@@ -36,7 +36,7 @@ impl RequestHub {
     }
 
     async fn youtube_thumbnail_by_res(&self, id: &str, res: &str) -> Result<Bytes> {
-        let url = format!("https://img.youtube.com/vi/{}/{}.jpg", id, res);
+        let url = format!("https://i.ytimg.com/vi_webp/{}/{}.webp", id, res);
 
         let req = (&self.client).get(url);
 
