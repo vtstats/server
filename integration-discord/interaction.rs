@@ -15,7 +15,22 @@ pub enum Interaction {
         guild_id: String,
         channel_id: String,
         data: ApplicationCommandData,
+        app_permissions: Permissions,
     },
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Permissions(u64);
+
+/// https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags
+impl Permissions {
+    pub fn can_send_message(&self) -> bool {
+        (self.0 & (1 << 11)) != 0
+    }
+
+    pub fn can_view_channel(&self) -> bool {
+        (self.0 & (1 << 10)) != 0
+    }
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -104,9 +119,14 @@ impl<'de> de::Deserialize<'de> for Interaction {
         match get("type")?.trim() {
             "1" => Ok(Interaction::Ping),
             "2" => Ok(Interaction::ApplicationCommand {
-                guild_id: serde_json::from_str(get("guild_id")?).map_err(de::Error::custom)?,
-                channel_id: serde_json::from_str(get("channel_id")?).map_err(de::Error::custom)?,
                 data: serde_json::from_str(get("data")?).map_err(de::Error::custom)?,
+                guild_id: get("guild_id")?.trim_matches('"').into(),
+                channel_id: get("channel_id")?.trim_matches('"').into(),
+                app_permissions: get("app_permissions")?
+                    .trim_matches('"')
+                    .parse::<u64>()
+                    .map(Permissions)
+                    .map_err(de::Error::custom)?,
             }),
             // 3 => MESSAGE_COMPONENT
             // 4 => APPLICATION_COMMAND_AUTOCOMPLETE
@@ -194,6 +214,7 @@ fn test() {
         Interaction::ApplicationCommand {
             channel_id: "channel_id".into(),
             guild_id: "guild_id".into(),
+            app_permissions: Permissions(0),
             data: ApplicationCommandData {
                 name: "command".into(),
                 options: vec![CommandOption::String {
@@ -209,6 +230,7 @@ fn test() {
         Interaction::ApplicationCommand {
             channel_id: "channel_id".into(),
             guild_id: "guild_id".into(),
+            app_permissions: Permissions(0),
             data: ApplicationCommandData {
                 name: "list".into(),
                 options: vec![]
@@ -221,6 +243,7 @@ fn test() {
         Interaction::ApplicationCommand {
             channel_id: "channel_id".into(),
             guild_id: "guild_id".into(),
+            app_permissions: Permissions(0),
             data: ApplicationCommandData {
                 name: "remove".into(),
                 options: vec![CommandOption::Integer {
@@ -247,4 +270,14 @@ fn test() {
         .unwrap(),
         r#"{"type":4,"data":{"content":"Congrats on sending your command!"}}"#
     );
+
+    // permission
+    assert!(Permissions(137419730439745).can_send_message());
+    assert!(Permissions(137419730439745).can_view_channel());
+
+    assert!(Permissions(137419730438721).can_send_message());
+    assert!(!Permissions(137419730438721).can_view_channel());
+
+    assert!(!Permissions(137419730437697).can_send_message());
+    assert!(Permissions(137419730437697).can_view_channel());
 }

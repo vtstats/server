@@ -30,37 +30,55 @@ pub async fn discord_interactions(
             channel_id,
             data,
             guild_id,
-        } => match data.name.as_str() {
-            "list" => Ok(list_subscriptions(&pool, guild_id, channel_id).await),
-            "list_all" => Ok(list_all_subscriptions(&pool, guild_id).await),
-            "add" => Ok(create_subscription(
-                &pool,
-                guild_id,
-                channel_id,
-                data.option_string("vtuber_id")
-                    .ok_or_else(|| warp::reject())?,
-            )
-            .await),
-            "remove" => Ok(remove_subscription(
-                &pool,
-                guild_id,
-                channel_id,
-                data.option_integer("subscription_id")
-                    .ok_or_else(|| warp::reject())?,
-            )
-            .await),
-            command => Ok(warp::reply::json(&InteractionResponse::channel_message(
-                InteractionCallbackData {
-                    tts: None,
-                    content: format!("Unknown command {command:?}"),
-                },
+            app_permissions,
+        } => {
+            let command = data.name.as_str();
+            let content = match command {
+                "list" => list_subscriptions(&pool, guild_id, channel_id).await,
+                "list_all" => list_all_subscriptions(&pool, guild_id).await,
+                "add" | "remove" => {
+                    if !app_permissions.can_view_channel() {
+                        format!(
+                            "Sorry, I don't have permission to send messages \
+                            in this channel. Please check your settings."
+                        )
+                    } else if !app_permissions.can_view_channel() {
+                        format!(
+                            "Sorry, I don't have permission to view this channel. \
+                            Please check your settings."
+                        )
+                    } else if command == "add" {
+                        create_subscription(
+                            &pool,
+                            guild_id,
+                            channel_id,
+                            data.option_string("vtuber_id")
+                                .ok_or_else(|| warp::reject())?,
+                        )
+                        .await
+                    } else {
+                        remove_subscription(
+                            &pool,
+                            guild_id,
+                            channel_id,
+                            data.option_integer("subscription_id")
+                                .ok_or_else(|| warp::reject())?,
+                        )
+                        .await
+                    }
+                }
+                _ => format!("Error: unknown command {command:?}"),
+            };
+
+            Ok(warp::reply::json(&InteractionResponse::channel_message(
+                InteractionCallbackData { tts: None, content },
             ))
-            .into_response()),
-        },
+            .into_response())
+        }
     }
 }
 
-pub async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> Response {
+pub async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> String {
     let result = ListDiscordSubscriptionQuery::ByGuildId { guild_id }
         .execute(&pool)
         .await;
@@ -90,13 +108,10 @@ pub async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> Response
         Err(err) => format!("Error: {}", err),
     };
 
-    warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData { tts: None, content },
-    ))
-    .into_response()
+    content
 }
 
-pub async fn list_subscriptions(pool: &PgPool, guild_id: String, channel_id: String) -> Response {
+pub async fn list_subscriptions(pool: &PgPool, guild_id: String, channel_id: String) -> String {
     let result = ListDiscordSubscriptionQuery::ByChannelId {
         channel_id,
         guild_id,
@@ -129,10 +144,7 @@ pub async fn list_subscriptions(pool: &PgPool, guild_id: String, channel_id: Str
         Err(err) => format!("Error: {}", err),
     };
 
-    warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData { tts: None, content },
-    ))
-    .into_response()
+    content
 }
 
 pub async fn create_subscription(
@@ -140,7 +152,7 @@ pub async fn create_subscription(
     guild_id: String,
     channel_id: String,
     vtuber_id: String,
-) -> Response {
+) -> String {
     let result = CreateDiscordSubscriptionQuery {
         payload: DiscordSubscriptionPayload {
             guild_id,
@@ -156,18 +168,15 @@ pub async fn create_subscription(
         Err(err) => format!("Error: {}", err),
     };
 
-    warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData { tts: None, content },
-    ))
-    .into_response()
+    content
 }
 
 pub async fn remove_subscription(
     pool: &PgPool,
-    guild_id: String,
+    _guild_id: String,
     channel_id: String,
     subscription_id: i32,
-) -> Response {
+) -> String {
     let result = RemoveDiscordSubscriptionQuery {
         channel_id,
         subscription_id,
@@ -180,8 +189,5 @@ pub async fn remove_subscription(
         Err(err) => format!("Error: {}", err),
     };
 
-    warp::reply::json(&InteractionResponse::channel_message(
-        InteractionCallbackData { tts: None, content },
-    ))
-    .into_response()
+    content
 }
