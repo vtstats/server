@@ -37,6 +37,7 @@ pub async fn main() -> anyhow::Result<()> {
                     reqwest::Method::GET,
                     reqwest::Method::OPTIONS,
                     reqwest::Method::PUT,
+                    reqwest::Method::POST,
                 ])
                 .allow_headers(&[
                     reqwest::header::AUTHORIZATION,

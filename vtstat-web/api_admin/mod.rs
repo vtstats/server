@@ -56,8 +56,8 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
         .and(with_pool(pool.clone()))
         .and_then(list_channels);
 
-    let re_run_job_api = warp::path!("admin" / "re_run_job" / i32)
-        .and(warp::get())
+    let re_run_job_api = warp::path!("admin" / "jobs" / i32 / "re_run")
+        .and(warp::post())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and_then(re_run_job);
