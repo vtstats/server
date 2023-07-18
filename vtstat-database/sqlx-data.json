@@ -1,17 +1,50 @@
 {
   "db": "PostgreSQL",
-  "284fbde8828d1239ffa9fab024f6fb8a7a46cbfd292beaf427bfb221e99e2464": {
+  "53897a2f6b8cd287de531598432e37b07d1f4dd9b8c28365619bb2887da8b20d": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
       "parameters": {
         "Left": [
+          "Text",
           "Text",
           "Int4"
         ]
       }
     },
-    "query": "DELETE FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND subscription_id = $2"
+    "query": "SELECT COUNT(*) FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND (payload ->> 'guild_id') = $2 AND subscription_id = $3"
+  },
+  "6295b23270900cba32ec653e47d2bb36eb2e21a8480842c7adca896093817445": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "DELETE FROM notifications WHERE subscription_id = $1"
+  },
+  "69e811bb6b79d1ff397a044a2b5d4c1035b1482a5a24198a56107ac36b273bb8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "DELETE FROM subscriptions WHERE subscription_id = $1"
   },
   "74bab5728e6602040e7d103ed51f0da94315a0bd15de9545471f8c40e5665d6b": {
     "describe": {

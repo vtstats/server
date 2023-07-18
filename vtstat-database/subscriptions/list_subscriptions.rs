@@ -117,23 +117,52 @@ impl ListDiscordSubscriptionQuery {
 }
 
 pub struct RemoveDiscordSubscriptionQuery {
+    pub guild_id: String,
     pub channel_id: String,
     pub subscription_id: i32,
 }
 
 impl RemoveDiscordSubscriptionQuery {
-    pub async fn execute(self, pool: &PgPool) -> Result<()> {
-        sqlx::query!(
-            "DELETE FROM subscriptions \
+    pub async fn execute(self, pool: &PgPool) -> anyhow::Result<()> {
+        let row = sqlx::query!(
+            "SELECT COUNT(*) FROM subscriptions \
             WHERE kind = 'discord_stream_update' \
             AND (payload ->> 'channel_id') = $1 \
-            AND subscription_id = $2",
+            AND (payload ->> 'guild_id') = $2 \
+            AND subscription_id = $3",
             self.channel_id,
+            self.guild_id,
             self.subscription_id
         )
-        .execute(pool)
-        .await
-        .map(|_| ())
+        .fetch_one(pool)
+        .await?;
+
+        anyhow::ensure!(
+            matches!(row.count, Some(c) if c > 0),
+            "Cannot found subscription in this channel."
+        );
+
+        let mut tx = pool.begin().await?;
+
+        // notifications table contains reference to subscriptions table
+        // so we need to remove these first
+        sqlx::query!(
+            "DELETE FROM notifications WHERE subscription_id = $1",
+            self.subscription_id
+        )
+        .execute(&mut tx)
+        .await?;
+
+        sqlx::query!(
+            "DELETE FROM subscriptions WHERE subscription_id = $1",
+            self.subscription_id
+        )
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(())
     }
 }
 

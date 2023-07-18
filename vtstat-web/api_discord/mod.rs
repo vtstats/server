@@ -173,11 +173,12 @@ pub async fn create_subscription(
 
 pub async fn remove_subscription(
     pool: &PgPool,
-    _guild_id: String,
+    guild_id: String,
     channel_id: String,
     subscription_id: i32,
 ) -> String {
     let result = RemoveDiscordSubscriptionQuery {
+        guild_id,
         channel_id,
         subscription_id,
     }
