@@ -159,11 +159,16 @@ impl CreateDiscordSubscriptionQuery {
         let row = sqlx::query(
             "INSERT INTO subscriptions (kind, payload) \
             VALUES ('discord_stream_update', $1) \
+            ON CONFLICT DO NOTHING \
             RETURNING subscription_id",
         )
         .bind(&Json(&self.payload))
-        .fetch_one(pool)
+        .fetch_optional(pool)
         .await?;
+
+        let Some(row) = row else {
+            anyhow::bail!("subscription already exists.")
+        };
 
         Ok(row.try_get::<i32, _>("subscription_id")?)
     }
