@@ -125,33 +125,48 @@ pub async fn build_discord_embed(
 
     match (stream.schedule_time, stream.start_time, stream.end_time) {
         (Some(schedule), None, None) => embed.fields.push(EmbedField {
-            name: "Time".into(),
+            name: "Schedule".into(),
             value: format!("<t:{ts}>, <t:{ts}:R>", ts = schedule.timestamp()),
             inline: true,
         }),
         (_, Some(start), None) => embed.fields.push(EmbedField {
-            name: "Time".into(),
-            value: format!("<t:{ts}>, <t:{ts}:R> ⇨", ts = start.timestamp()),
+            name: "Start".into(),
+            value: format!("<t:{ts}>, <t:{ts}:R>", ts = start.timestamp()),
             inline: true,
         }),
         (_, None, Some(end)) => embed.fields.push(EmbedField {
-            name: "Time".into(),
-            value: format!("⇨ <t:{ts}>", ts = end.timestamp()),
+            name: "End".into(),
+            value: format!("<t:{}>", end.timestamp()),
             inline: true,
         }),
         (_, Some(start), Some(end)) => {
             embed.fields.push(EmbedField {
-                name: "Time".into(),
-                value: format!("<t:{}> ⇨ <t:{}>", start.timestamp(), end.timestamp()),
+                name: "Start".into(),
+                value: format!("<t:{}>", start.timestamp()),
+                inline: true,
+            });
+            embed.fields.push(EmbedField {
+                name: "End".into(),
+                value: format!("<t:{}>", end.timestamp()),
                 inline: true,
             });
 
-            let minutes = (end - start).num_minutes();
+            let total_minutes = (end - start).num_minutes();
+            let hours = (total_minutes / 60) | 0;
+            let minutes = total_minutes % 60;
+
             let mut value = String::new();
-            if minutes > 60 {
-                value.push_str(&format!("{} hours ", (minutes / 60) | 0));
+            if hours > 0 {
+                value.push_str(&hours.to_string());
+                value.push_str(if hours > 1 { " hours" } else { " hour" });
             }
-            value.push_str(&format!("{} minutes", minutes % 60));
+            if minutes > 0 {
+                if hours > 0 {
+                    value.push_str(" ");
+                }
+                value.push_str(&minutes.to_string());
+                value.push_str(if minutes > 1 { " minutes" } else { " minute" });
+            }
             embed.fields.push(EmbedField {
                 name: "Duration".into(),
                 value,
