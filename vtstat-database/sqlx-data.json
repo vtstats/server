@@ -1,26 +1,26 @@
 {
   "db": "PostgreSQL",
-  "53897a2f6b8cd287de531598432e37b07d1f4dd9b8c28365619bb2887da8b20d": {
+  "396f5c537d776c251d45fe435188ccd68a8567497693eacae40fa73fc1efa844": {
     "describe": {
       "columns": [
         {
-          "name": "count",
+          "name": "subscription_id",
           "ordinal": 0,
-          "type_info": "Int8"
+          "type_info": "Int4"
         }
       ],
       "nullable": [
-        null
+        false
       ],
       "parameters": {
         "Left": [
           "Text",
           "Text",
-          "Int4"
+          "Text"
         ]
       }
     },
-    "query": "SELECT COUNT(*) FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND (payload ->> 'guild_id') = $2 AND subscription_id = $3"
+    "query": "SELECT subscription_id FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND (payload ->> 'guild_id') = $2 AND (payload ->> 'vtuber_id') = $3"
   },
   "6295b23270900cba32ec653e47d2bb36eb2e21a8480842c7adca896093817445": {
     "describe": {

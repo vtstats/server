@@ -119,28 +119,30 @@ impl ListDiscordSubscriptionQuery {
 pub struct RemoveDiscordSubscriptionQuery {
     pub guild_id: String,
     pub channel_id: String,
-    pub subscription_id: i32,
+    pub vtuber_id: String,
 }
 
 impl RemoveDiscordSubscriptionQuery {
     pub async fn execute(self, pool: &PgPool) -> anyhow::Result<()> {
         let row = sqlx::query!(
-            "SELECT COUNT(*) FROM subscriptions \
+            "SELECT subscription_id FROM subscriptions \
             WHERE kind = 'discord_stream_update' \
             AND (payload ->> 'channel_id') = $1 \
             AND (payload ->> 'guild_id') = $2 \
-            AND subscription_id = $3",
+            AND (payload ->> 'vtuber_id') = $3",
             self.channel_id,
             self.guild_id,
-            self.subscription_id
+            self.vtuber_id
         )
-        .fetch_one(pool)
+        .fetch_optional(pool)
         .await?;
 
-        anyhow::ensure!(
-            matches!(row.count, Some(c) if c > 0),
-            "Cannot found subscription in this channel."
-        );
+        let Some(subscription_id) = row.map(|r| r.subscription_id) else {
+            anyhow::bail!(
+                "cannot found subscription `{}` in this channel.",
+                self.vtuber_id
+            )
+        };
 
         let mut tx = pool.begin().await?;
 
@@ -148,14 +150,14 @@ impl RemoveDiscordSubscriptionQuery {
         // so we need to remove these first
         sqlx::query!(
             "DELETE FROM notifications WHERE subscription_id = $1",
-            self.subscription_id
+            subscription_id
         )
         .execute(&mut tx)
         .await?;
 
         sqlx::query!(
             "DELETE FROM subscriptions WHERE subscription_id = $1",
-            self.subscription_id
+            subscription_id
         )
         .execute(&mut tx)
         .await?;
@@ -181,8 +183,8 @@ impl CreateDiscordSubscriptionQuery {
 
         anyhow::ensure!(
             matches!(x.count, Some(c) if c > 0),
-            "VTuber id {:?} didn't existed",
-            &self.payload.vtuber_id
+            "VTuber id `{}` does not exist.",
+            self.payload.vtuber_id
         );
 
         let row = sqlx::query(
@@ -196,7 +198,7 @@ impl CreateDiscordSubscriptionQuery {
         .await?;
 
         let Some(row) = row else {
-            anyhow::bail!("subscription already exists.")
+            anyhow::bail!("subscription `{}` already exists.", self.payload.vtuber_id)
         };
 
         Ok(row.try_get::<i32, _>("subscription_id")?)

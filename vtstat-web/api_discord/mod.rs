@@ -39,32 +39,24 @@ pub async fn discord_interactions(
                 "add" | "remove" => {
                     if !app_permissions.can_view_channel() {
                         format!(
-                            "Sorry, I don't have permission to send messages \
+                            "Error: sorry, I don't have permission to send messages \
                             in this channel. Please check your settings."
                         )
                     } else if !app_permissions.can_view_channel() {
                         format!(
-                            "Sorry, I don't have permission to view this channel. \
-                            Please check your settings."
+                            "Error: sorry, I don't have permission to view \
+                            this channel. Please check your settings."
                         )
-                    } else if command == "add" {
-                        create_subscription(
-                            &pool,
-                            guild_id,
-                            channel_id,
-                            data.option_string("vtuber_id")
-                                .ok_or_else(|| warp::reject())?,
-                        )
-                        .await
                     } else {
-                        remove_subscription(
-                            &pool,
-                            guild_id,
-                            channel_id,
-                            data.option_integer("subscription_id")
-                                .ok_or_else(|| warp::reject())?,
-                        )
-                        .await
+                        let vtuber_id = data
+                            .option_string("vtuber_id")
+                            .ok_or_else(|| warp::reject())?;
+
+                        if command == "add" {
+                            create_subscription(&pool, guild_id, channel_id, vtuber_id).await
+                        } else {
+                            remove_subscription(&pool, guild_id, channel_id, vtuber_id).await
+                        }
                     }
                 }
                 _ => format!("Error: unknown command {command:?}"),
@@ -85,7 +77,7 @@ pub async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> String {
 
     let content = match result {
         Ok(subscriptions) if subscriptions.is_empty() => {
-            format!("No subscriptions found in this server, use /add to create one.")
+            format!("No subscription found in this server, use /add to create one.")
         }
         Ok(mut subscriptions) => {
             subscriptions.sort_by(|a, b| a.created_at.cmp(&b.created_at));
@@ -96,8 +88,7 @@ pub async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> String {
             );
             for sub in subscriptions {
                 s += &format!(
-                    "- *id*: `{id}` *vtuber:* `{vtuber}` *channel:* <#{channel}> *created:* <t:{ts}>\n",
-                    id = sub.subscription_id,
+                    "- *vtuber:* `{vtuber}` *channel:* <#{channel}> *created:* <t:{ts}>\n",
                     vtuber = sub.payload.vtuber_id,
                     channel = sub.payload.channel_id,
                     ts = sub.created_at.timestamp()
@@ -121,7 +112,7 @@ pub async fn list_subscriptions(pool: &PgPool, guild_id: String, channel_id: Str
 
     let content = match result {
         Ok(subscriptions) if subscriptions.is_empty() => {
-            format!("No subscriptions found in this channel, use /add to create one.")
+            format!("No subscription found in this channel, use /add to create one.")
         }
         Ok(mut subscriptions) => {
             subscriptions.sort_by(|a, b| a.created_at.cmp(&b.created_at));
@@ -133,8 +124,7 @@ pub async fn list_subscriptions(pool: &PgPool, guild_id: String, channel_id: Str
             );
             for sub in subscriptions {
                 s += &format!(
-                    "- *id*: `{id}` *vtuber:* `{vtuber}` *created:* <t:{ts}>\n",
-                    id = sub.subscription_id,
+                    "- *vtuber:* `{vtuber}` *created:* <t:{ts}>\n",
                     vtuber = sub.payload.vtuber_id,
                     ts = sub.created_at.timestamp()
                 );
@@ -157,14 +147,14 @@ pub async fn create_subscription(
         payload: DiscordSubscriptionPayload {
             guild_id,
             channel_id,
-            vtuber_id,
+            vtuber_id: vtuber_id.clone(),
         },
     }
     .execute(pool)
     .await;
 
     let content = match result {
-        Ok(id) => format!("Success: subscription created w/ id {id}"),
+        Ok(_) => format!("Success: subscription `{}` created.", vtuber_id),
         Err(err) => format!("Error: {}", err),
     };
 
@@ -175,18 +165,18 @@ pub async fn remove_subscription(
     pool: &PgPool,
     guild_id: String,
     channel_id: String,
-    subscription_id: i32,
+    vtuber_id: String,
 ) -> String {
     let result = RemoveDiscordSubscriptionQuery {
         guild_id,
         channel_id,
-        subscription_id,
+        vtuber_id: vtuber_id.clone(),
     }
     .execute(pool)
     .await;
 
     let content = match result {
-        Ok(_) => format!("Success: subscription removed"),
+        Ok(_) => format!("Success: subscription `{}` removed.", vtuber_id),
         Err(err) => format!("Error: {}", err),
     };
 

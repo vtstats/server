@@ -42,9 +42,9 @@ pub async fn execute(client: &Client) -> anyhow::Result<JobResult> {
         description: "Remove subscription".into(),
         name: "remove".into(),
         ty: 1,
-        options: vec![CommandOption::integer(
-            "subscription_id".into(),
-            "ID of subscription".into(),
+        options: vec![CommandOption::string(
+            "vtuber_id".into(),
+            "ID of vtuber".into(),
         )],
     }
     .execute(client)
