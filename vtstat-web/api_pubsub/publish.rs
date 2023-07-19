@@ -13,7 +13,7 @@ use vtstat_database::{
 use crate::reject::WarpError;
 
 pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, Rejection> {
-    Span::current().record("name", &"POST /api/pubsub");
+    Span::current().record("name", "POST /api/pubsub");
 
     match event {
         Event::Modification {
@@ -41,7 +41,7 @@ pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, R
                 payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
                     channel_id: channel.channel_id,
                     vtuber_id: channel.vtuber_id,
-                    platform_stream_id: platform_stream_id.into(),
+                    platform_stream_id,
                 }),
             }
             .execute(&pool)

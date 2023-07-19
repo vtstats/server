@@ -69,7 +69,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
         assert_eq!(rows.len(), 0);
 
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp(3000, 0), Utc);
+        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         UpsertYouTubeStreamQuery {
             channel_id: 1,
@@ -120,14 +120,14 @@ async fn test(pool: PgPool) -> Result<()> {
         assert_eq!(
             rows[0].start_time,
             Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp(3000, 0),
+                NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(),
                 Utc
             ))
         );
     }
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp(3000, 0), Utc);
+        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         UpsertYouTubeStreamQuery {
             channel_id: 1,

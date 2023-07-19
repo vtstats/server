@@ -51,7 +51,7 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
     .await?;
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp(3000, 0), Utc);
+        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         let res = StartStreamQuery {
             stream_id: 1,
@@ -72,13 +72,13 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
     }
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp(3000, 0), Utc);
+        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         let res = StartStreamQuery {
             stream_id: 2,
             start_time: time,
             likes: Some(100),
-            title: Some("title_alt".into()),
+            title: Some("title_alt"),
         }
         .execute(&pool)
         .await?;
@@ -95,7 +95,7 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
         assert_eq!(
             row.start_time,
             Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp(10000, 0),
+                NaiveDateTime::from_timestamp_opt(10000, 0).unwrap(),
                 Utc
             ))
         );

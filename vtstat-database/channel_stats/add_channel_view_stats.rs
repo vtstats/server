@@ -39,7 +39,7 @@ async fn test(pool: PgPool) -> Result<()> {
     use super::ChannelsViewStats;
     use chrono::NaiveDateTime;
 
-    let time = DateTime::from_utc(NaiveDateTime::from_timestamp(9000, 0), Utc);
+    let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
     let result = AddChannelViewStatsQuery {
         time,

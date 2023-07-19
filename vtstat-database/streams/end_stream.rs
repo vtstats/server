@@ -85,7 +85,7 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp(9000, 0), Utc);
+        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
         EndStreamQuery {
             stream_id: 1,

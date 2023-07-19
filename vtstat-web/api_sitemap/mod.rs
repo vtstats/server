@@ -18,7 +18,7 @@ const PAGES: &[&str] = &[
 
 // Returns a sitemap for crawler like google search
 async fn sitemap_get(pool: PgPool) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/sitemap");
+    Span::current().record("name", "GET /api/sitemap");
 
     let mut res = String::new();
 

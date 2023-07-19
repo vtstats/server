@@ -11,7 +11,7 @@ pub async fn execute(pool: &PgPool) -> anyhow::Result<JobResult> {
     let d = Duration::seconds(15);
     let next_run = Utc::now().duration_trunc(d).unwrap() + d;
 
-    let streams = GetUpcomingStreamsQuery.execute(&pool).await?;
+    let streams = GetUpcomingStreamsQuery.execute(pool).await?;
 
     for stream in streams {
         PushJobQuery {

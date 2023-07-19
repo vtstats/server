@@ -80,7 +80,7 @@ INSERT INTO streams (platform, platform_id, title, channel_id, schedule_time, st
     .execute(&pool)
     .await?;
 
-    let big_bang = DateTime::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc);
+    let big_bang = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc);
 
     {
         let times = StreamTimesQuery {

@@ -26,7 +26,7 @@ pub async fn execute(
     } = payload;
 
     let response = match continuation {
-        Some(ref cont) => hub.updated_metadata_with_continuation(&cont).await,
+        Some(ref cont) => hub.updated_metadata_with_continuation(cont).await,
         None => hub.updated_metadata(&platform_stream_id).await,
     }?;
 

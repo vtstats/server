@@ -18,7 +18,7 @@ impl FromStr for Event {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let doc = match Document::parse(&s) {
+        let doc = match Document::parse(s) {
             Ok(doc) => doc,
             Err(err) => anyhow::bail!("XML Syntax Error: {}", err),
         };

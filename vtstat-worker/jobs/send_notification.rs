@@ -44,7 +44,7 @@ pub async fn execute(
         return Ok(JobResult::Completed);
     };
 
-    let embeds = vec![build_discord_embed(stream, &payload.vtuber_id, &pool).await?];
+    let embeds = vec![build_discord_embed(stream, &payload.vtuber_id, pool).await?];
 
     for subscription in subscriptions {
         let previous_notification = ListNotificationsQuery {
@@ -152,7 +152,7 @@ pub async fn build_discord_embed(
             });
 
             let total_minutes = (end - start).num_minutes();
-            let hours = (total_minutes / 60) | 0;
+            let hours = total_minutes / 60;
             let minutes = total_minutes % 60;
 
             let mut value = String::new();
@@ -162,7 +162,7 @@ pub async fn build_discord_embed(
             }
             if minutes > 0 {
                 if hours > 0 {
-                    value.push_str(" ");
+                    value.push(' ');
                 }
                 value.push_str(&minutes.to_string());
                 value.push_str(if minutes > 1 { " minutes" } else { " minute" });

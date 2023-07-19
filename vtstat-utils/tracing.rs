@@ -13,7 +13,7 @@ pub fn init() -> WorkerGuard {
 
     let log_dir = std::env::var("LOG_DIR").unwrap_or("/var/log/vtstat".into());
 
-    let file_appender = tracing_appender::rolling::daily(&log_dir, "log");
+    let file_appender = tracing_appender::rolling::daily(log_dir, "log");
 
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 

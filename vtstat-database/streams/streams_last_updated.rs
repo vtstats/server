@@ -36,7 +36,7 @@ INSERT INTO streams (platform, platform_id, title, channel_id, schedule_time, st
     assert_eq!(
         YouTubeStreamsLastUpdated {}.execute(&pool).await?,
         Some(UtcTime::from_utc(
-            NaiveDateTime::from_timestamp(3000, 0),
+            NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(),
             Utc
         ))
     );

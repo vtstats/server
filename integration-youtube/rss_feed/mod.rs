@@ -14,7 +14,7 @@ impl FetchYouTubeVideosRSS {
             &[("channel_id", &self.channel_id), ("ts", &self.ts)],
         )?;
 
-        let req = (&client)
+        let req = client
             .get(url)
             .header(reqwest::header::CACHE_CONTROL, "no-cache");
 
@@ -30,7 +30,7 @@ impl FetchYouTubeVideosRSS {
 }
 
 fn find_first_video_id(feed: &str) -> anyhow::Result<String> {
-    let doc = Document::parse(&feed)?;
+    let doc = Document::parse(feed)?;
 
     let id = doc
         .descendants()

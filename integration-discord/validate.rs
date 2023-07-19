@@ -32,8 +32,9 @@ pub fn validate() -> impl Filter<Extract = (Interaction,), Error = Rejection> + 
 
                 let sign = hex::decode(sign).unwrap();
 
-                if let Err(_) = Signature::from_slice(sign.as_slice())
+                if Signature::from_slice(sign.as_slice())
                     .and_then(|sign| VERIFYING_KEY.verify(&message, &sign))
+                    .is_err()
                 {
                     print!("invalid request signature");
                     return Err(warp::reject());

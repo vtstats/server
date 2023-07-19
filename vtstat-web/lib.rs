@@ -66,7 +66,7 @@ pub async fn main() -> anyhow::Result<()> {
             );
 
             if let Some(referer) = info.referer() {
-                span.record("req.referer", &referer);
+                span.record("req.referer", referer);
             }
 
             span

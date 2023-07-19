@@ -15,7 +15,7 @@ impl CreateChannel {
             VALUES($1, $2, $3, '') \
             RETURNING channel_id",
         )
-        .bind(&self.platform)
+        .bind(self.platform)
         .bind(&self.platform_id)
         .bind(&self.vtuber_id)
         .fetch_one(pool);

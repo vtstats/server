@@ -27,7 +27,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     for chunk in channels.chunks(50) {
         let channel_ids = chunk.iter().fold(String::new(), |mut acc, channel| {
             if !acc.is_empty() {
-                acc.push_str(",")
+                acc.push(',')
             }
             acc.push_str(&channel.platform_id);
             acc

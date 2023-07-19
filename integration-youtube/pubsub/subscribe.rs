@@ -18,7 +18,7 @@ impl SubscribeYouTubePubsubQuery {
             env::var("YOUTUBE_PUBSUB_SECRET")?
         );
 
-        let req = (&client)
+        let req = client
             .post("https://pubsubhubbub.appspot.com/subscribe")
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(body);

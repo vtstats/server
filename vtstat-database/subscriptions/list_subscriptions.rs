@@ -193,7 +193,7 @@ impl CreateDiscordSubscriptionQuery {
             ON CONFLICT DO NOTHING \
             RETURNING subscription_id",
         )
-        .bind(&Json(&self.payload))
+        .bind(Json(&self.payload))
         .fetch_optional(pool)
         .await?;
 

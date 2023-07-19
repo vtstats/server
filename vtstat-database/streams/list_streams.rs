@@ -34,16 +34,12 @@ pub struct Stream {
 #[derive(Debug, sqlx::Type, Serialize, PartialEq, Eq)]
 #[sqlx(type_name = "stream_status", rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum StreamStatus {
+    #[default]
     Scheduled,
     Live,
     Ended,
-}
-
-impl Default for StreamStatus {
-    fn default() -> Self {
-        StreamStatus::Scheduled
-    }
 }
 
 #[derive(Debug)]
@@ -360,7 +356,7 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
         ListYouTubeStreamsQuery {
             start_at: Some((
                 Column::StartTime,
-                &UtcTime::from_utc(NaiveDateTime::from_timestamp(9000, 0), Utc)
+                &UtcTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc)
             )),
             ..Default::default()
         }
@@ -374,7 +370,7 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
         ListYouTubeStreamsQuery {
             end_at: Some((
                 Column::EndTime,
-                &UtcTime::from_utc(NaiveDateTime::from_timestamp(15000, 0), Utc)
+                &UtcTime::from_utc(NaiveDateTime::from_timestamp_opt(15000, 0).unwrap(), Utc)
             )),
             ..Default::default()
         }

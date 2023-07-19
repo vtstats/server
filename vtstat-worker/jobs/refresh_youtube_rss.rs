@@ -19,7 +19,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     let youtube_channels = ListChannelsQuery {
         platform: "youtube",
     }
-    .execute(&pool)
+    .execute(pool)
     .await?;
 
     let feeds = stream::unfold(youtube_channels.iter(), |mut iter| async {
@@ -45,7 +45,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         limit: None,
         ..Default::default()
     }
-    .execute(&pool)
+    .execute(pool)
     .await?;
 
     let missing = video_ids
@@ -97,7 +97,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
             start_time: stream.start_time,
             end_time: stream.end_time,
         }
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 

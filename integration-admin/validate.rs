@@ -62,7 +62,7 @@ impl GoogleCerts {
     }
 
     fn validate(&mut self, token: &str) -> anyhow::Result<Claims> {
-        let header = decode_header(&token)?;
+        let header = decode_header(token)?;
 
         let Some(kid) = header.kid else {
             anyhow::bail!("`kid` not found in token header")
@@ -78,7 +78,7 @@ impl GoogleCerts {
         validation.set_audience(&[&std::env::var("GOOGLE_CLIENT_ID").unwrap()]);
 
         let token = decode::<Claims>(
-            &token,
+            token,
             &DecodingKey::from_rsa_components(&jwk.n, &jwk.e)?,
             &validation,
         )?;

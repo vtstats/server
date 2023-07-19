@@ -92,7 +92,7 @@ async fn test(pool: PgPool) -> Result<()> {
         assert_eq!(job.next_run, None);
         assert_eq!(job.continuation, Some("continuation".into()));
 
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp(3000, 0), Utc);
+        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         let job = PushJobQuery {
             continuation: None,

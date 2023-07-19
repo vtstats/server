@@ -180,7 +180,7 @@ fn parse_timestamp(string: &str) -> Option<DateTime<Utc>> {
     let (secs, nsecs) = string.split_at(string.len() - 6);
 
     Some(DateTime::from_utc(
-        NaiveDateTime::from_timestamp(secs.parse().ok()?, nsecs.parse().ok()?),
+        NaiveDateTime::from_timestamp_opt(secs.parse().ok()?, nsecs.parse().ok()?)?,
         Utc,
     ))
 }

@@ -7,7 +7,7 @@ pub struct VerifyIntentRequestQuery {
 }
 
 pub fn verify_intent(query: VerifyIntentRequestQuery) -> String {
-    Span::current().record("name", &"GET /api/pubsub");
+    Span::current().record("name", "GET /api/pubsub");
 
     tracing::debug!("challenge={}", query.challenge);
 

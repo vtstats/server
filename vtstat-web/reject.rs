@@ -67,8 +67,8 @@ pub async fn handle_rejection(err: Rejection) -> Result<Response, Infallible> {
         }
 
         Span::current()
-            .record("otel.status_code", &"ERROR")
-            .record("otel.status_description", &description);
+            .record("otel.status_code", "ERROR")
+            .record("otel.status_description", description);
     }
 
     let json = warp::reply::json(&ErrorMessage {
