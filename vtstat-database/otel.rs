@@ -1,5 +1,6 @@
+use metrics::{histogram, increment_counter};
 use sqlx::Result;
-use std::future::Future;
+use std::{future::Future, time::Instant};
 use tracing::{
     field::{debug, display, Empty},
     Instrument, Span,
@@ -28,7 +29,21 @@ pub async fn instrument<T>(
     );
 
     async move {
+        let start = Instant::now();
+
         let result = query.await;
+
+        histogram!(
+            "postgres_queries_elapsed_seconds",
+            start.elapsed(),
+            "operation" => operation,
+            "table" => table,
+        );
+        increment_counter!(
+            "postgres_queries_count",
+            "operation" => operation,
+            "table" => table,
+        );
 
         // TODO: use `inspect_err` once stable
         if let Err(err) = &result {

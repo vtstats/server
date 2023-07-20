@@ -1,5 +1,6 @@
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    vtstat_utils::metrics::install();
     let _guard = vtstat_utils::tracing::init();
 
     let command = std::env::args().nth(1).unwrap_or_default();

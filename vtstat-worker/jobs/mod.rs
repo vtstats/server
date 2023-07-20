@@ -12,7 +12,10 @@ mod update_youtube_channel_donation;
 mod update_youtube_channel_view_and_subscriber;
 mod upsert_youtube_stream;
 
+use std::time::Instant;
+
 use chrono::{DateTime, Utc};
+use metrics::{histogram, increment_counter};
 use tokio::sync::mpsc::Sender;
 use tracing::{
     field::{debug, display, Empty},
@@ -71,6 +74,8 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
     };
 
     async move {
+        let start = Instant::now();
+
         let result = match payload {
             HealthCheck => health_check::execute().await,
             RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, hub).await,
@@ -98,6 +103,19 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
             UpdateUpcomingStream => update_upcoming_stream::execute(&pool).await,
             InstallDiscordCommands => install_discord_command::execute(&hub.client).await,
         };
+
+        let status = if result.is_ok() { "ok" } else { "err" };
+        histogram!(
+            "worker_jobs_elapsed_seconds",
+            start.elapsed(),
+            "kind" => job_type,
+            "status" => status
+        );
+        increment_counter!(
+            "worker_jobs_count",
+            "kind" => job_type,
+            "status" => status
+        );
 
         let query = match result {
             Ok(JobResult::Next { run, continuation }) => UpdateJobQuery {

@@ -10,17 +10,12 @@ path = "lib.rs"
 
 [dependencies]
 log = "0.4.19"
-tracing = "0.1.37"
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
-tracing-newrelic = { version = "0.1.2", default-features = false, features = [
-    "rustls-tls"
-] }
-tracing-subscriber = { version = "0.3.17", default-features = false, features = [
-    "fmt",
-    "registry",
-] }
-tracing-appender = "0.2.2"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
+# metrics
+metrics = "0.21.1"
+metrics-exporter-prometheus = "0.12.1"
+metrics-util = "0.15.1"
 # s3 upload
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 hmac = "0.12.1"
@@ -30,3 +25,13 @@ reqwest = { version = "0.11.18", default-features = false, features = [
     "json",
     "rustls-tls"
 ] }
+# tracing
+tracing = "0.1.37"
+tracing-newrelic = { version = "0.1.2", default-features = false, features = [
+    "rustls-tls"
+] }
+tracing-subscriber = { version = "0.3.17", default-features = false, features = [
+    "fmt",
+    "registry",
+] }
+tracing-appender = "0.2.2"

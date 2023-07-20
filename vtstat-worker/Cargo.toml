@@ -9,6 +9,7 @@ publish = false
 path = "lib.rs"
 
 [dependencies]
+metrics = "0.21.1"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 futures = "0.3.28"

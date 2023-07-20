@@ -1,3 +1,4 @@
+use metrics::{histogram, increment_counter};
 use std::{env, net::SocketAddr};
 use tracing::field::Empty;
 use vtstat_database::PgPool;
@@ -70,6 +71,24 @@ pub async fn main() -> anyhow::Result<()> {
             }
 
             span
+        }))
+        .with(warp::log::custom(|info| {
+            let method = info.method().as_str().to_string();
+            let status_code = info.status().as_str().to_string();
+            let path = info.path().to_string();
+            histogram!(
+                "http_server_requests_elapsed_seconds",
+                info.elapsed(),
+                "method" => method.clone(),
+                "status_code" => status_code.clone(),
+                "path" => path.clone()
+            );
+            increment_counter!(
+                "http_server_requests_count",
+                "method" => method,
+                "status_code" => status_code,
+                "path" => path
+            );
         }));
 
     let address = env::var("SERVER_ADDRESS")?.parse::<SocketAddr>()?;
