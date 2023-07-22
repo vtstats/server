@@ -1,5 +1,6 @@
 use metrics::{histogram, increment_counter};
 use std::{env, net::SocketAddr};
+use tokio::sync::oneshot::Receiver;
 use tracing::field::Empty;
 use vtstat_database::PgPool;
 use warp::Filter;
@@ -15,7 +16,7 @@ mod api_pubsub;
 mod api_sitemap;
 // mod api_telegram;
 
-pub async fn main() -> anyhow::Result<()> {
+pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
     let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
 
     let whoami = warp::path!("whoami").and(warp::get()).map(|| "OK");
@@ -95,10 +96,13 @@ pub async fn main() -> anyhow::Result<()> {
 
     println!("Server started at {address}");
 
-    let (_, server) =
-        warp::serve(filter).bind_with_graceful_shutdown(address, vtstat_utils::shutdown::signal());
+    let (_, server) = warp::serve(filter).bind_with_graceful_shutdown(address, async {
+        shutdown_rx.await.ok();
+    });
 
     server.await;
+
+    eprintln!("Shutting down server...");
 
     Ok(())
 }

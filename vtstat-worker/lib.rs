@@ -2,6 +2,7 @@ use std::env;
 use std::time::Duration;
 use tokio::{
     sync::mpsc::{channel, Sender},
+    sync::oneshot::Receiver,
     time::sleep,
 };
 use vtstat_database::{jobs::PullJobQuery, PgPool};
@@ -9,7 +10,7 @@ use vtstat_request::RequestHub;
 
 mod jobs;
 
-pub async fn main() -> anyhow::Result<()> {
+pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
     let (shutdown_complete_tx, mut shutdown_complete_rx) = channel(1);
 
     tokio::select! {
@@ -18,10 +19,10 @@ pub async fn main() -> anyhow::Result<()> {
                 eprintln!("[Polling Error] {err:?}");
             }
         },
-        _ = vtstat_utils::shutdown::signal() => {},
+        _ = async { shutdown_rx.await.ok() } => {},
     };
 
-    println!("Shuting down...");
+    eprintln!("Shutting down worker...");
 
     // wait for all spawned tasks to complete
     let _ = shutdown_complete_rx.recv().await;

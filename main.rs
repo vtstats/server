@@ -1,3 +1,5 @@
+use tokio::sync::oneshot;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let command = std::env::args().nth(1).unwrap_or_default();
@@ -12,9 +14,25 @@ async fn main() -> anyhow::Result<()> {
     vtstat_utils::tracing::init();
 
     match command.as_str() {
-        "standalone" => tokio::try_join!(vtstat_web::main(), vtstat_worker::main()).map(|_| ()),
-        "web" => vtstat_web::main().await,
-        "worker" => vtstat_worker::main().await,
+        "standalone" => {
+            let (tx1, rx1) = oneshot::channel::<()>();
+            let (tx2, rx2) = oneshot::channel::<()>();
+            tokio::try_join!(
+                vtstat_web::main(rx1),
+                vtstat_worker::main(rx2),
+                vtstat_utils::shutdown([tx1, tx2])
+            )?;
+        }
+        "web" => {
+            let (tx, rx) = oneshot::channel::<()>();
+            tokio::try_join!(vtstat_web::main(rx), vtstat_utils::shutdown([tx]))?;
+        }
+        "worker" => {
+            let (tx, rx) = oneshot::channel::<()>();
+            tokio::try_join!(vtstat_worker::main(rx), vtstat_utils::shutdown([tx]))?;
+        }
         c => anyhow::bail!("Unknown command {:?}", c),
-    }
+    };
+
+    Ok(())
 }
