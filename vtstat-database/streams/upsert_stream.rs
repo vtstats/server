@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{postgres::PgQueryResult, PgPool, Result};
+use sqlx::{PgPool, Result, Row};
 
 use super::StreamStatus;
 
@@ -19,7 +19,7 @@ pub struct UpsertYouTubeStreamQuery<'q> {
 }
 
 impl<'q> UpsertYouTubeStreamQuery<'q> {
-    pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
+    pub async fn execute(self, pool: &PgPool) -> Result<i32> {
         let query = sqlx::query(
             r#"
 INSERT INTO streams AS t (
@@ -41,6 +41,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
             schedule_time  = COALESCE($6, t.schedule_time),
             start_time     = COALESCE($7, t.start_time),
             end_time       = COALESCE($8, t.end_time)
+  RETURNING *
             "#,
         )
         .bind(self.platform_stream_id) // $1
@@ -51,9 +52,11 @@ ON CONFLICT (platform, platform_id) DO UPDATE
         .bind(self.schedule_time) // $6
         .bind(self.start_time) // $7
         .bind(self.end_time) // $8
-        .execute(pool);
+        .fetch_one(pool);
 
-        crate::otel::instrument("INSERT", "streams", query).await
+        let row = crate::otel::instrument("INSERT", "streams", query).await?;
+
+        row.try_get("stream_id")
     }
 }
 
@@ -71,7 +74,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        UpsertYouTubeStreamQuery {
+        let stream_id = UpsertYouTubeStreamQuery {
             channel_id: 1,
             platform_stream_id: "id1",
             title: "title1",
@@ -89,6 +92,7 @@ async fn test(pool: PgPool) -> Result<()> {
         .fetch_all(&pool)
         .await?;
 
+        assert_eq!(stream_id, 1);
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].title, "title1");
         assert_eq!(rows[0].status, Some("live".into()));
@@ -96,7 +100,7 @@ async fn test(pool: PgPool) -> Result<()> {
     }
 
     {
-        UpsertYouTubeStreamQuery {
+        let stream_id = UpsertYouTubeStreamQuery {
             channel_id: 1,
             platform_stream_id: "id1",
             status: StreamStatus::Ended,
@@ -113,6 +117,7 @@ async fn test(pool: PgPool) -> Result<()> {
         .fetch_all(&pool)
         .await?;
 
+        assert_eq!(stream_id, 1);
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].thumbnail_url, Some("https://google.com".into()));
         assert_eq!(rows[0].status, Some("ended".to_string()));
@@ -129,7 +134,7 @@ async fn test(pool: PgPool) -> Result<()> {
     {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        UpsertYouTubeStreamQuery {
+        let stream_id = UpsertYouTubeStreamQuery {
             channel_id: 1,
             platform_stream_id: "id1",
             start_time: Some(time),
@@ -142,6 +147,7 @@ async fn test(pool: PgPool) -> Result<()> {
             .fetch_all(&pool)
             .await?;
 
+        assert_eq!(stream_id, 1);
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].start_time, Some(time));
     }
