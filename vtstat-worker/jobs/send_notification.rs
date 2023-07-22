@@ -118,9 +118,29 @@ pub async fn build_discord_embed(
     embed.thumbnail = vtuber
         .and_then(|v| v.thumbnail_url.as_ref())
         .map(|url| EmbedThumbnail { url: url.clone() });
-    embed.author = vtuber.map(|v| EmbedAuthor {
-        name: v.native_name.clone(),
-        url: format!("https://holo.poi.cat/vtuber/{vtuber_id}"),
+    embed.author = vtuber.map(|v| {
+        let mut name = v.native_name.to_string();
+        match (&v.english_name, &v.japanese_name) {
+            (None, Some(n)) | (Some(n), None) => {
+                if n != &v.native_name {
+                    let _ = write!(&mut name, " / {n}");
+                }
+            }
+            (Some(n1), Some(n2)) => {
+                if n1 != &v.native_name {
+                    let _ = write!(&mut name, " / {n1}");
+                }
+                if n1 != n2 && n2 != &v.native_name {
+                    let _ = write!(&mut name, " / {n2}");
+                }
+            }
+            _ => {}
+        }
+
+        EmbedAuthor {
+            name,
+            url: format!("https://holo.poi.cat/vtuber/{vtuber_id}"),
+        }
     });
 
     match (stream.schedule_time, stream.start_time, stream.end_time) {
