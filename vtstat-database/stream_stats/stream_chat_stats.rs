@@ -15,7 +15,7 @@ pub struct StreamChatStats {
 
 impl StreamChatStatsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<StreamChatStats>> {
-        sqlx::query_as::<_, StreamChatStats>(
+        let query = sqlx::query_as::<_, StreamChatStats>(
             r#"
      SELECT time, count, from_member_count
        FROM stream_chat_stats
@@ -30,8 +30,9 @@ impl StreamChatStatsQuery {
         )
         .bind(self.platform)
         .bind(self.platform_stream_id)
-        .fetch_all(pool)
-        .await
+        .fetch_all(pool);
+
+        crate::otel::instrument("SELECT", "stream_chat_stats", query).await
     }
 }
 

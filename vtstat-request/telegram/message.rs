@@ -3,6 +3,7 @@ use std::env;
 use serde::{Deserialize, Serialize};
 
 use crate::RequestHub;
+use vtstat_utils::instrument_send;
 
 #[derive(Serialize)]
 pub struct SendMessageRequestBody {
@@ -61,9 +62,9 @@ impl RequestHub {
             &env::var("TELEGRAM_BOT_TOKEN")?
         );
 
-        let req = (&self.client).post(url).form(&message);
+        let req = self.client.post(url).form(&message);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: MessageResponse = res.json().await?;
 
@@ -79,16 +80,12 @@ impl RequestHub {
             &env::var("TELEGRAM_BOT_TOKEN")?
         );
 
-        let req = (&self.client).post(url).form(&message);
+        let req = self.client.post(url).form(&message);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
-        let text = res.text().await?;
+        let json: MessageResponse = res.json().await?;
 
-        dbg!(text);
-
-        // let json: MessageResponse = res.json().await?;
-
-        todo!()
+        Ok(json.result)
     }
 }

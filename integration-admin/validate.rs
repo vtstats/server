@@ -7,6 +7,8 @@ use serde::Deserialize;
 use tokio::sync::Mutex;
 use warp::{Filter, Rejection};
 
+use vtstat_utils::instrument_send;
+
 #[derive(Deserialize)]
 struct GoogleCertsKey {
     keys: Vec<Cert>,
@@ -44,10 +46,11 @@ impl GoogleCerts {
     }
 
     async fn refresh(&mut self) -> anyhow::Result<()> {
-        let res = Client::new()
-            .get("https://www.googleapis.com/oauth2/v3/certs")
-            .send()
-            .await?;
+        let client = Client::new();
+
+        let req = client.get("https://www.googleapis.com/oauth2/v3/certs");
+
+        let res = instrument_send(&client, req).await?;
 
         let max_age = res
             .headers()

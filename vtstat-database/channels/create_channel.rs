@@ -20,8 +20,8 @@ impl CreateChannel {
         .bind(&self.vtuber_id)
         .fetch_one(pool);
 
-        crate::otel::instrument("INSERT", "channels", query)
-            .await
-            .and_then(|row| row.try_get("channel_id"))
+        let row = crate::otel::instrument("INSERT", "channels", query).await?;
+
+        row.try_get("channel_id")
     }
 }

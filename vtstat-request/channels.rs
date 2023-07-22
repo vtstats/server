@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 use super::RequestHub;
+use vtstat_utils::instrument_send;
 
 #[derive(Debug)]
 pub struct Channel {
@@ -76,9 +77,9 @@ impl RequestHub {
             ],
         )?;
 
-        let req = (&self.client).get(url);
+        let req = self.client.get(url);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: YouTubeChannelsListResponse = res.json().await?;
 
@@ -89,9 +90,9 @@ impl RequestHub {
         let url =
             Url::parse_with_params("http://api.bilibili.com/x/relation/stat", &[("vmid", id)])?;
 
-        let req = (&self.client).get(url);
+        let req = self.client.get(url);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: BilibiliStatResponse = res.json().await?;
 
@@ -101,11 +102,12 @@ impl RequestHub {
     pub async fn bilibili_upstat(&self, id: &str) -> Result<BilibiliUpstatData> {
         let url = Url::parse_with_params("http://api.bilibili.com/x/space/upstat", &[("mid", id)])?;
 
-        let req = (&self.client)
+        let req = self
+            .client
             .get(url)
             .header(COOKIE, env::var("BILIBILI_COOKIE")?);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: BilibiliUpstatResponse = res.json().await?;
 

@@ -8,7 +8,7 @@ pub struct PullJobQuery {
 
 impl PullJobQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<Job>> {
-        sqlx::query_as::<_, Job>(
+        let query = sqlx::query_as::<_, Job>(
             r#"
      UPDATE jobs
         SET status = 'running'
@@ -26,8 +26,9 @@ impl PullJobQuery {
             "#,
         )
         .bind(self.limit)
-        .fetch_all(pool)
-        .await
+        .fetch_all(pool);
+
+        crate::otel::instrument("UPDATE", "jobs", query).await
     }
 }
 

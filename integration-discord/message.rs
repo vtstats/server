@@ -2,6 +2,8 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
+use vtstat_utils::instrument_send;
+
 /// https://discord.com/developers/docs/resources/channel#message-object
 #[derive(Deserialize)]
 pub struct Message {
@@ -82,7 +84,7 @@ impl CreateMessageRequest {
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
-        let res = req.send().await?;
+        let res = instrument_send(client, req).await?;
 
         let json: Message = res.json().await?;
 
@@ -115,7 +117,7 @@ impl EditMessageRequest {
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
-        let res = req.send().await?;
+        let res = instrument_send(client, req).await?;
 
         let json: Message = res.json().await?;
 

@@ -1,3 +1,4 @@
-mod browse_channel;
+pub mod browse_channel;
+pub mod context;
 
-pub use browse_channel::browse_channel;
+pub use browse_channel::*;

@@ -1,5 +1,6 @@
 use reqwest::{Client, Url};
 use roxmltree::Document;
+use vtstat_utils::instrument_send;
 
 pub struct FetchYouTubeVideosRSS {
     pub channel_id: String,
@@ -18,10 +19,7 @@ impl FetchYouTubeVideosRSS {
             .get(url)
             .header(reqwest::header::CACHE_CONTROL, "no-cache");
 
-        // TODO:
-        // let res = crate::otel::send(&self.client, req).await?;
-
-        let res = req.send().await?;
+        let res = instrument_send(client, req).await?;
 
         let text = res.text().await?;
 

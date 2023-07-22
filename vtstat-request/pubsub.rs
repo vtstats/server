@@ -4,6 +4,7 @@ use std::env;
 use tracing::instrument;
 
 use super::RequestHub;
+use vtstat_utils::instrument_send;
 
 impl RequestHub {
     #[instrument(name = "Subscribe YouTube PubSub", skip(self), fields(channel_id))]
@@ -18,12 +19,13 @@ impl RequestHub {
             env::var("YOUTUBE_PUBSUB_SECRET")?
         );
 
-        let req = (&self.client)
+        let req = self
+            .client
             .post("https://pubsubhubbub.appspot.com/subscribe")
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(body);
 
-        let _res = crate::otel::send(&self.client, req).await?;
+        let _res = instrument_send(&self.client, req).await?;
 
         Ok(())
     }

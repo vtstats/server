@@ -8,6 +8,7 @@ use std::str::FromStr;
 use tracing::instrument;
 
 use super::RequestHub;
+use vtstat_utils::instrument_send;
 
 #[derive(Debug)]
 pub struct Stream {
@@ -123,9 +124,9 @@ impl RequestHub {
             ],
         )?;
 
-        let req = (&self.client).get(url);
+        let req = self.client.get(url);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: VideosListResponse = res.json().await?;
 

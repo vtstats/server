@@ -8,6 +8,8 @@ use reqwest::{
 use sha2::{Digest, Sha256};
 use std::env;
 
+use crate::instrument_send;
+
 pub async fn upload_file<T>(
     filename: &str,
     data: T,
@@ -88,16 +90,15 @@ host;x-amz-content-sha256;x-amz-date
 
     let s3_url = format!("https://{s3_host}/{s3_bucket}/{filename}");
 
-    client
+    let req = client
         .put(s3_url)
         .header(CONTENT_TYPE, content_type)
         .header("x-amz-date", date.to_string())
         .header("x-amz-content-sha256", content_sha256)
         .header(AUTHORIZATION, authorization)
-        .body(data)
-        .send()
-        .await?
-        .error_for_status()?;
+        .body(data);
+
+    let _res = instrument_send(client, req).await?.error_for_status()?;
 
     Ok(format!("{s3_public_url}/{filename}"))
 }

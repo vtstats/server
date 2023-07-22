@@ -1,7 +1,7 @@
 use chrono::serde::ts_seconds_option;
 use chrono::{DateTime, Utc};
 use reqwest::{Client, StatusCode};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use warp::{reply::Response, Filter, Rejection, Reply};
 
 use integration_admin::{validate, GoogleCerts};
@@ -12,6 +12,7 @@ use vtstat_database::{
     vtubers::CreateVTuber,
     PgPool,
 };
+use vtstat_utils::instrument_send;
 
 use crate::{filters::with_pool, reject::WarpError};
 
@@ -64,7 +65,7 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
 
     let create_vtuber_api = warp::path!("admin" / "vtuber")
         .and(warp::put())
-        .and(validate(certs.clone()))
+        .and(validate(certs))
         .and(with_pool(pool))
         .and(warp::body::json())
         .and_then(create_vtuber);
@@ -147,12 +148,20 @@ async fn list_vtubers(pool: PgPool) -> Result<Response, Rejection> {
     Ok(warp::reply::json(&vtubers).into_response())
 }
 
+#[derive(Serialize)]
+pub struct ActionResponse {
+    msg: String,
+}
+
 async fn re_run_job(job_id: i32, pool: PgPool) -> Result<Response, Rejection> {
     vtstat_database::jobs::re_run_job(job_id, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 
-    Ok(warp::reply::json(&()).into_response())
+    Ok(warp::reply::json(&ActionResponse {
+        msg: format!("Job {job_id} was re-run."),
+    })
+    .into_response())
 }
 
 #[derive(Deserialize)]
@@ -182,13 +191,11 @@ async fn create_vtuber(pool: PgPool, payload: CreateVTuberPayload) -> Result<Res
         async fn upload_thumbnail(url: &str, id: &str) -> anyhow::Result<String> {
             let client = Client::new();
 
-            let file = client
-                .get(url)
-                .send()
-                .await?
-                .error_for_status()?
-                .bytes()
-                .await?;
+            let req = client.get(url);
+
+            let res = instrument_send(&client, req).await?.error_for_status()?;
+
+            let file = res.bytes().await?;
 
             vtstat_utils::upload_file(&format!("thumbnail/{}.jpg", id), file, "image/jpg", &client)
                 .await
@@ -214,11 +221,17 @@ async fn create_vtuber(pool: PgPool, payload: CreateVTuberPayload) -> Result<Res
     CreateChannel {
         platform: Platform::Youtube,
         platform_id: payload.youtube_channel_id,
-        vtuber_id: payload.vtuber_id,
+        vtuber_id: payload.vtuber_id.clone(),
     }
     .execute(&pool)
     .await
     .map_err(Into::<WarpError>::into)?;
 
-    Ok(warp::reply::with_status(warp::reply::json(&()), StatusCode::CREATED).into_response())
+    Ok(warp::reply::with_status(
+        warp::reply::json(&ActionResponse {
+            msg: format!("VTuber {:?} was created.", payload.vtuber_id),
+        }),
+        StatusCode::CREATED,
+    )
+    .into_response())
 }

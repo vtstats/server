@@ -4,6 +4,7 @@ pub mod response;
 
 use anyhow::Result;
 use reqwest::Url;
+use vtstat_utils::instrument_send;
 
 use self::proto::get_continuation;
 use self::request::{Client, Context, Request};
@@ -35,7 +36,7 @@ impl RequestHub {
             ],
         )?;
 
-        let req = (&self.client).post(url).json(&Request {
+        let req = self.client.post(url).json(&Request {
             context: Context {
                 client: Client {
                     language: "en",
@@ -46,7 +47,7 @@ impl RequestHub {
             continuation: &continuation,
         });
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: Response = res.json().await?;
 

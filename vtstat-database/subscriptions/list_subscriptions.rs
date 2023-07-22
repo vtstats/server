@@ -124,7 +124,7 @@ pub struct RemoveDiscordSubscriptionQuery {
 
 impl RemoveDiscordSubscriptionQuery {
     pub async fn execute(self, pool: &PgPool) -> anyhow::Result<()> {
-        let row = sqlx::query!(
+        let query = sqlx::query!(
             "SELECT subscription_id FROM subscriptions \
             WHERE kind = 'discord_stream_update' \
             AND (payload ->> 'channel_id') = $1 \
@@ -134,8 +134,9 @@ impl RemoveDiscordSubscriptionQuery {
             self.guild_id,
             self.vtuber_id
         )
-        .fetch_optional(pool)
-        .await?;
+        .fetch_optional(pool);
+
+        let row = crate::otel::instrument("SELECT", "subscriptions", query).await?;
 
         let Some(subscription_id) = row.map(|r| r.subscription_id) else {
             anyhow::bail!(
@@ -174,28 +175,30 @@ pub struct CreateDiscordSubscriptionQuery {
 
 impl CreateDiscordSubscriptionQuery {
     pub async fn execute(self, pool: &PgPool) -> anyhow::Result<i32> {
-        let x = sqlx::query!(
+        let query = sqlx::query!(
             "SELECT COUNT(*) FROM vtubers WHERE vtuber_id = $1",
             self.payload.vtuber_id
         )
-        .fetch_one(pool)
-        .await?;
+        .fetch_one(pool);
+
+        let row = crate::otel::instrument("SELECT", "vtubers", query).await?;
 
         anyhow::ensure!(
-            matches!(x.count, Some(c) if c > 0),
+            matches!(row.count, Some(c) if c > 0),
             "VTuber id `{}` does not exist.",
             self.payload.vtuber_id
         );
 
-        let row = sqlx::query(
+        let query = sqlx::query(
             "INSERT INTO subscriptions (kind, payload) \
             VALUES ('discord_stream_update', $1) \
             ON CONFLICT DO NOTHING \
             RETURNING subscription_id",
         )
         .bind(Json(&self.payload))
-        .fetch_optional(pool)
-        .await?;
+        .fetch_optional(pool);
+
+        let row = crate::otel::instrument("INSERT", "subscriptions", query).await?;
 
         let Some(row) = row else {
             anyhow::bail!("subscription `{}` already exists.", self.payload.vtuber_id)
@@ -210,7 +213,10 @@ impl CreateDiscordSubscriptionQuery {
 pub async fn list_subscriptions(
     pool: &PgPool,
 ) -> Result<Vec<Subscription<DiscordSubscriptionPayload>>> {
-    sqlx::query_as::<_, Subscription<DiscordSubscriptionPayload>>("SELECT * FROM subscriptions")
-        .fetch_all(pool)
-        .await
+    let query = sqlx::query_as::<_, Subscription<DiscordSubscriptionPayload>>(
+        "SELECT * FROM subscriptions",
+    )
+    .fetch_all(pool);
+
+    crate::otel::instrument("SELECT", "subscriptions", query).await
 }

@@ -43,7 +43,7 @@ impl Response {
                     .view_count
                     .simple_text
                     .strip_suffix("watching now")
-                    .and_then(|v| v.replace(",", "").trim().parse().ok())
+                    .and_then(|v| v.replace(',', "").trim().parse().ok())
             })
         })
     }
@@ -55,11 +55,11 @@ impl Response {
                 Some(action) if action.button_id == "TOGGLE_BUTTON_ID_TYPE_LIKE" => {
                     let text = &action.default_text.simple_text;
 
-                    text.strip_suffix("K")
+                    text.strip_suffix('K')
                         .and_then(|c| c.parse::<f32>().ok())
                         .map(|c| (c * 1_000f32) as i32)
                         .or_else(|| {
-                            text.strip_suffix("M")
+                            text.strip_suffix('M')
                                 .and_then(|c| c.parse::<f32>().ok())
                                 .map(|c| (c * 1_000_000f32) as i32)
                         })
@@ -91,7 +91,7 @@ impl Response {
         self.actions
             .iter()
             .filter_map(|action| action.unknown.keys().next())
-            .map(|key| key.clone())
+            .cloned()
             .collect()
     }
 }

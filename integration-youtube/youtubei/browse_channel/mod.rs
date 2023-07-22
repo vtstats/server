@@ -5,8 +5,11 @@ use std::env;
 
 use reqwest::{Client, Url};
 
-use self::request::{Client as Client_, Context, Request};
+use self::request::Request;
 use self::response::Response;
+use super::context::Context;
+
+use vtstat_utils::instrument_send;
 
 pub async fn browse_channel(channel_id: &str) -> anyhow::Result<Response> {
     let url = Url::parse_with_params(
@@ -19,22 +22,14 @@ pub async fn browse_channel(channel_id: &str) -> anyhow::Result<Response> {
 
     let client = Client::new();
 
-    let response = client
-        .post(url)
-        .json(&Request {
-            context: Context {
-                client: Client_ {
-                    language: "en",
-                    client_name: &env::var("INNERTUBE_CLIENT_NAME")?,
-                    client_version: &env::var("INNERTUBE_CLIENT_VERSION")?,
-                },
-            },
-            browse_id: channel_id,
-        })
-        .send()
-        .await?;
+    let req = client.post(url).json(&Request {
+        context: Context::new()?,
+        browse_id: channel_id,
+    });
 
-    let json = response.json::<Response>().await?;
+    let res = instrument_send(&client, req).await?;
+
+    let json = res.json::<Response>().await?;
 
     Ok(json)
 }

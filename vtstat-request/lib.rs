@@ -1,7 +1,6 @@
 mod channels;
 pub mod chat;
 mod metadata;
-mod otel;
 mod pubsub;
 mod rss;
 mod streams;

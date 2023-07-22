@@ -2,7 +2,6 @@ mod proto;
 mod request;
 mod response;
 
-use anyhow;
 use chrono::Utc;
 use reqwest::Url;
 use std::env;
@@ -10,6 +9,7 @@ use std::env;
 use self::proto::get_continuation;
 use self::request::{Client, Context, Request};
 use self::response::Response;
+use vtstat_utils::instrument_send;
 
 use super::RequestHub;
 
@@ -34,7 +34,7 @@ impl RequestHub {
             ],
         )?;
 
-        let req = (&self.client).post(url).json(&Request {
+        let req = self.client.post(url).json(&Request {
             context: Context {
                 client: Client {
                     language: "en",
@@ -42,10 +42,10 @@ impl RequestHub {
                     client_version: &env::var("INNERTUBE_CLIENT_VERSION")?,
                 },
             },
-            continuation: &continuation,
+            continuation,
         });
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let json: Response = res.json().await?;
 

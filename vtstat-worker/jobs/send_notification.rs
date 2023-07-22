@@ -106,19 +106,15 @@ pub async fn build_discord_embed(
 
     let vtuber = vtubers.iter().find(|vtb| vtb.vtuber_id == vtuber_id);
 
-    let mut embed = Embed::default();
-
-    embed.title = Some(stream.title.clone());
-    embed.color = Some(match stream.status {
+    let color = match stream.status {
         StreamStatus::Scheduled => 0x009688,
         StreamStatus::Live => 0xD81B60,
         StreamStatus::Ended => 0x3F51B5,
-    });
-    embed.url = Some(format!("https://youtu.be/{}", stream.platform_id));
-    embed.thumbnail = vtuber
+    };
+    let thumbnail = vtuber
         .and_then(|v| v.thumbnail_url.as_ref())
         .map(|url| EmbedThumbnail { url: url.clone() });
-    embed.author = vtuber.map(|v| {
+    let author = vtuber.map(|v| {
         let mut name = v.native_name.to_string();
         match (&v.english_name, &v.japanese_name) {
             (None, Some(n)) | (Some(n), None) => {
@@ -143,34 +139,23 @@ pub async fn build_discord_embed(
         }
     });
 
-    match (stream.schedule_time, stream.start_time, stream.end_time) {
-        (Some(schedule), None, None) => embed.fields.push(EmbedField {
+    let fields = match (stream.schedule_time, stream.start_time, stream.end_time) {
+        (Some(schedule), None, None) => vec![EmbedField {
             name: "Schedule".into(),
             value: format!("<t:{ts}>, <t:{ts}:R>", ts = schedule.timestamp()),
             inline: true,
-        }),
-        (_, Some(start), None) => embed.fields.push(EmbedField {
+        }],
+        (_, Some(start), None) => vec![EmbedField {
             name: "Start".into(),
             value: format!("<t:{ts}>, <t:{ts}:R>", ts = start.timestamp()),
             inline: true,
-        }),
-        (_, None, Some(end)) => embed.fields.push(EmbedField {
+        }],
+        (_, None, Some(end)) => vec![EmbedField {
             name: "End".into(),
             value: format!("<t:{}>", end.timestamp()),
             inline: true,
-        }),
+        }],
         (_, Some(start), Some(end)) => {
-            embed.fields.push(EmbedField {
-                name: "Start".into(),
-                value: format!("<t:{}>", start.timestamp()),
-                inline: true,
-            });
-            embed.fields.push(EmbedField {
-                name: "End".into(),
-                value: format!("<t:{}>", end.timestamp()),
-                inline: true,
-            });
-
             let total_minutes = (end - start).num_minutes();
             let hours = total_minutes / 60;
             let minutes = total_minutes % 60;
@@ -187,30 +172,52 @@ pub async fn build_discord_embed(
                 value.push_str(&minutes.to_string());
                 value.push_str(if minutes > 1 { " minutes" } else { " minute" });
             }
-            embed.fields.push(EmbedField {
-                name: "Duration".into(),
-                value,
-                inline: true,
-            });
+            vec![
+                EmbedField {
+                    name: "Start".into(),
+                    value: format!("<t:{}>", start.timestamp()),
+                    inline: true,
+                },
+                EmbedField {
+                    name: "End".into(),
+                    value: format!("<t:{}>", end.timestamp()),
+                    inline: true,
+                },
+                EmbedField {
+                    name: "Duration".into(),
+                    value,
+                    inline: true,
+                },
+            ]
         }
-        (None, None, None) => {}
-    }
-    if let Some(thumbnail_url) = &stream.thumbnail_url {
-        embed.image = Some(EmbedImage {
-            url: thumbnail_url.clone(),
-            height: Some(720),
-            width: Some(1280),
-        })
-    }
-    embed.timestamp = Some(stream.updated_at.to_rfc3339());
-    embed.footer = Some(EmbedFooter {
-        text: (concat!("vtstat ", env!("CARGO_PKG_VERSION"))).into(),
+        (None, None, None) => vec![],
+    };
+
+    let image = stream.thumbnail_url.as_ref().map(|t| EmbedImage {
+        url: t.clone(),
+        height: Some(720),
+        width: Some(1280),
     });
 
-    Ok(embed)
+    let footer = EmbedFooter {
+        text: (concat!("vtstat ", env!("CARGO_PKG_VERSION"))).into(),
+    };
+
+    Ok(Embed {
+        timestamp: Some(stream.updated_at.to_rfc3339()),
+        title: Some(stream.title.clone()),
+        url: Some(format!("https://youtu.be/{}", stream.platform_id)),
+        color: Some(color),
+        description: None,
+        footer: Some(footer),
+        author,
+        image,
+        thumbnail,
+        fields,
+    })
 }
 
-pub async fn build_telegram_message(stream: &Stream, pool: &PgPool) -> anyhow::Result<String> {
+pub async fn _build_telegram_message(stream: &Stream, pool: &PgPool) -> anyhow::Result<String> {
     let channels = ListChannelsQuery {
         platform: "youtube",
     }

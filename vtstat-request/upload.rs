@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 use std::env;
 
 use super::RequestHub;
+use vtstat_utils::instrument_send;
 
 impl RequestHub {
     pub async fn upload_file<T>(
@@ -92,7 +93,8 @@ host;x-amz-content-sha256;x-amz-date
 
         let s3_url = format!("https://{s3_host}/{s3_bucket}/{filename}");
 
-        let req = (&self.client)
+        let req = self
+            .client
             .put(s3_url)
             .header(CONTENT_TYPE, content_type)
             .header("x-amz-date", date.to_string())
@@ -100,7 +102,7 @@ host;x-amz-content-sha256;x-amz-date
             .header(AUTHORIZATION, authorization)
             .body(data);
 
-        let _res = crate::otel::send(&self.client, req).await?;
+        let _res = instrument_send(&self.client, req).await?;
 
         Ok(format!("{s3_public_url}/{filename}"))
     }

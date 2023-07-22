@@ -9,11 +9,12 @@ pub struct ListDonationsQuery {
 
 impl ListDonationsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<Donation>> {
-        sqlx::query_as::<_, Donation>(
+        let query = sqlx::query_as::<_, Donation>(
             r#"SELECT kind, time, value FROM donations WHERE stream_id = $1"#,
         )
         .bind(self.stream_id)
-        .fetch_all(pool)
-        .await
+        .fetch_all(pool);
+
+        crate::otel::instrument("SELECT", "donations", query).await
     }
 }

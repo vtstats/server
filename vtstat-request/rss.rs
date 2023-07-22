@@ -3,6 +3,7 @@ use reqwest::Url;
 use tracing::instrument;
 
 use super::RequestHub;
+use vtstat_utils::instrument_send;
 
 impl RequestHub {
     #[instrument(name = "Fetch YouTube RSS Feed", skip(self, channel_id, now_str))]
@@ -12,9 +13,9 @@ impl RequestHub {
             &[("channel_id", channel_id), ("_", now_str)],
         )?;
 
-        let req = (&self.client).get(url).header("cache-control", "no-cache");
+        let req = self.client.get(url).header("cache-control", "no-cache");
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let text = res.text().await?;
 

@@ -52,10 +52,10 @@ impl Continuation {
 
         if let Some(data) = timed_continuation_data {
             Some(Duration::from_millis(data.timeout_ms))
-        } else if let Some(data) = invalidation_continuation_data {
-            Some(Duration::from_millis(data.timeout_ms))
         } else {
-            None
+            invalidation_continuation_data
+                .as_ref()
+                .map(|data| Duration::from_millis(data.timeout_ms))
         }
     }
 

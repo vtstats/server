@@ -4,6 +4,7 @@ use futures::TryFutureExt;
 use tracing::instrument;
 
 use super::RequestHub;
+use vtstat_utils::instrument_send;
 
 impl RequestHub {
     #[instrument(name = "Upload thumbnail", skip(self))]
@@ -38,9 +39,9 @@ impl RequestHub {
     async fn youtube_thumbnail_by_res(&self, id: &str, res: &str) -> Result<Bytes> {
         let url = format!("https://i.ytimg.com/vi_webp/{}/{}.webp", id, res);
 
-        let req = (&self.client).get(url);
+        let req = self.client.get(url);
 
-        let res = crate::otel::send(&self.client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let bytes = res.bytes().await?;
 
