@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde::Serialize;
 use sqlx::{PgPool, Result};
 
@@ -12,7 +12,9 @@ pub struct VTuber {
     pub japanese_name: Option<String>,
     pub thumbnail_url: Option<String>,
     pub twitter_username: Option<String>,
+    #[serde(with = "ts_milliseconds_option")]
     pub debuted_at: Option<DateTime<Utc>>,
+    #[serde(with = "ts_milliseconds_option")]
     pub retired_at: Option<DateTime<Utc>>,
 }
 

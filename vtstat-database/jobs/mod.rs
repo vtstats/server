@@ -4,6 +4,7 @@ mod push_job;
 mod re_run;
 mod update_job;
 
+use chrono::serde::{ts_milliseconds, ts_milliseconds_option};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
@@ -85,11 +86,15 @@ pub struct Job {
     pub job_id: i32,
     pub continuation: Option<String>,
     pub status: JobStatus,
+    #[serde(with = "ts_milliseconds")]
     pub created_at: DateTime<Utc>,
+    #[serde(with = "ts_milliseconds_option")]
     pub last_run: Option<DateTime<Utc>>,
+    #[serde(with = "ts_milliseconds_option")]
     pub next_run: Option<DateTime<Utc>>,
     pub payload: JobPayload,
     pub kind: JobKind,
+    #[serde(with = "ts_milliseconds")]
     pub updated_at: DateTime<Utc>,
 }
 

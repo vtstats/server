@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, PgPool, Result, Row};
 
@@ -11,7 +11,9 @@ pub struct ListNotificationsQuery {
 pub struct Notification {
     pub notification_id: i32,
     pub payload: NotificationPayload,
+    #[serde(with = "ts_milliseconds_option")]
     pub created_at: Option<DateTime<Utc>>,
+    #[serde(with = "ts_milliseconds_option")]
     pub updated_at: Option<DateTime<Utc>>,
 }
 

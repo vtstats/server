@@ -1,5 +1,4 @@
-use chrono::serde::ts_seconds_option;
-use chrono::{DateTime, Utc};
+use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use warp::{reply::Response, Filter, Rejection, Reply};
@@ -83,7 +82,7 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
 
 #[derive(Deserialize)]
 pub struct ListParameter {
-    #[serde(default, with = "ts_seconds_option")]
+    #[serde(default, with = "ts_milliseconds_option")]
     end_at: Option<DateTime<Utc>>,
 
     status: Option<String>,

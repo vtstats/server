@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use chrono::{DateTime, Utc};
+use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, PgPool, Result, Row};
 
@@ -25,7 +25,9 @@ pub enum ListDiscordSubscriptionQuery {
 pub struct Subscription<Payload: DeserializeOwned + Debug> {
     pub subscription_id: i32,
     pub payload: Payload,
+    #[serde(with = "ts_milliseconds")]
     pub updated_at: DateTime<Utc>,
+    #[serde(with = "ts_milliseconds")]
     pub created_at: DateTime<Utc>,
 }
 
