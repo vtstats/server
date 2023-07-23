@@ -35,7 +35,6 @@ pub enum JobKind {
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream,
     CollectYoutubeStreamMetadata,
-    CollectYoutubeStreamLiveChat,
     UpdateUpcomingStream,
     SendNotification,
     InstallDiscordCommands,
@@ -53,13 +52,6 @@ pub struct CollectYoutubeStreamMetadataJobPayload {
     pub stream_id: i32,
     pub platform_stream_id: String,
     pub platform_channel_id: String,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
-pub struct CollectYoutubeStreamLiveChatJobPayload {
-    pub stream_id: i32,
-    pub platform_channel_id: String,
-    pub platform_stream_id: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
@@ -83,7 +75,6 @@ pub enum JobPayload {
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream(UpsertYoutubeStreamJobPayload),
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
-    CollectYoutubeStreamLiveChat(CollectYoutubeStreamLiveChatJobPayload),
     UpdateUpcomingStream,
     SendNotification(SendNotificationJobPayload),
     InstallDiscordCommands,
@@ -127,22 +118,15 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::UpdateUpcomingStream => JobPayload::UpdateUpcomingStream,
                 JobKind::UpdateYoutubeChannelDonation => JobPayload::UpdateYoutubeChannelDonation,
                 JobKind::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
-                JobKind::UpsertYoutubeStream => JobPayload::UpsertYoutubeStream(
-                    row.try_get::<Json<UpsertYoutubeStreamJobPayload>, _>("payload")?
-                        .0,
-                ),
+                JobKind::UpsertYoutubeStream => {
+                    JobPayload::UpsertYoutubeStream(row.try_get::<Json<_>, _>("payload")?.0)
+                }
                 JobKind::CollectYoutubeStreamMetadata => JobPayload::CollectYoutubeStreamMetadata(
-                    row.try_get::<Json<CollectYoutubeStreamMetadataJobPayload>, _>("payload")?
-                        .0,
+                    row.try_get::<Json<_>, _>("payload")?.0,
                 ),
-                JobKind::CollectYoutubeStreamLiveChat => JobPayload::CollectYoutubeStreamLiveChat(
-                    row.try_get::<Json<CollectYoutubeStreamLiveChatJobPayload>, _>("payload")?
-                        .0,
-                ),
-                JobKind::SendNotification => JobPayload::SendNotification(
-                    row.try_get::<Json<SendNotificationJobPayload>, _>("payload")?
-                        .0,
-                ),
+                JobKind::SendNotification => {
+                    JobPayload::SendNotification(row.try_get::<Json<_>, _>("payload")?.0)
+                }
                 JobKind::InstallDiscordCommands => JobPayload::InstallDiscordCommands,
             },
         })

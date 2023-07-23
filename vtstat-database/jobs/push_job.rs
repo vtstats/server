@@ -26,7 +26,6 @@ impl PushJobQuery {
             JobPayload::UpdateCurrencyExchangeRate => JobKind::UpdateCurrencyExchangeRate,
             JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
-            JobPayload::CollectYoutubeStreamLiveChat(_) => JobKind::CollectYoutubeStreamLiveChat,
             JobPayload::UpdateUpcomingStream => JobKind::UpdateUpcomingStream,
             JobPayload::SendNotification(_) => JobKind::SendNotification,
             JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,

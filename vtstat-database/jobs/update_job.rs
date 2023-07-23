@@ -19,7 +19,8 @@ impl UpdateJobQuery {
         SET status       = $1,
             next_run     = $2,
             last_run     = $5,
-            continuation = $3
+            continuation = $3,
+            updated_at   = NOW()
       WHERE job_id       = $4
   RETURNING *
             "#,

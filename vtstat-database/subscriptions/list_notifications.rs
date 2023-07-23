@@ -26,7 +26,7 @@ impl FromRow<'_, PgRow> for Notification {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         Ok(Notification {
             notification_id: row.try_get("notification_id")?,
-            payload: row.try_get::<Json<NotificationPayload>, _>("payload")?.0,
+            payload: row.try_get::<Json<_>, _>("payload")?.0,
             created_at: row.try_get("created_at")?,
             updated_at: row.try_get("updated_at")?,
         })

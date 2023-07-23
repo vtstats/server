@@ -22,6 +22,20 @@
     },
     "query": "SELECT subscription_id FROM subscriptions WHERE kind = 'discord_stream_update' AND (payload ->> 'channel_id') = $1 AND (payload ->> 'guild_id') = $2 AND (payload ->> 'vtuber_id') = $3"
   },
+  "3e2c42646bfc82c0ab3033100569ee0ed5d01461f773c3a50a164e152ea0fec4": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Timestamptz",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\nINSERT INTO stream_viewer_stats AS s (stream_id, time, count)\n     VALUES ($1, $2, $3)\nON CONFLICT (stream_id, time) DO UPDATE\n        SET count = GREATEST(excluded.count, s.count)\n            "
+  },
   "6295b23270900cba32ec653e47d2bb36eb2e21a8480842c7adca896093817445": {
     "describe": {
       "columns": [],
@@ -46,6 +60,20 @@
     },
     "query": "DELETE FROM subscriptions WHERE subscription_id = $1"
   },
+  "725e5036f434538e9413a7aad06ae6601ec557fb84e66f0614626c1ff3b4dee2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int4",
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "\n     UPDATE streams\n        SET viewer_max = GREATEST(viewer_max, $1),\n            viewer_avg = (SELECT AVG(count) FROM stream_viewer_stats WHERE stream_id = $2),\n            updated_at = $3\n      WHERE stream_id = $2\n            "
+  },
   "74bab5728e6602040e7d103ed51f0da94315a0bd15de9545471f8c40e5665d6b": {
     "describe": {
       "columns": [],
@@ -62,18 +90,6 @@
       }
     },
     "query": "INSERT INTO vtubers (vtuber_id, native_name, english_name, japanese_name, twitter_username, thumbnail_url)\n            VALUES ($1, $2, $3, $4, $5, $6)"
-  },
-  "7fc6578137837a3ea8d73eac4bbe4223330079b847b451d84a7ead2921ff6d37": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int4"
-        ]
-      }
-    },
-    "query": "UPDATE jobs SET status = 'queued', updated_at = NOW() WHERE job_id = $1"
   },
   "a776980e570e14df4951d06bb67971cda011091236bb9449bf16db5f70288391": {
     "describe": {
@@ -94,6 +110,18 @@
       }
     },
     "query": "SELECT COUNT(*) FROM vtubers WHERE vtuber_id = $1"
+  },
+  "ad7b071f04921216253c2c5e41a6fabf96a654df4fb1a54c18815ee483ca603e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "UPDATE jobs SET status = 'queued', last_run = NOW(), updated_at = NOW() WHERE job_id = $1"
   },
   "faa15d2c0d8e70002982fe6383c133fca6e6b90cdad3424ce0940361cbce35d9": {
     "describe": {

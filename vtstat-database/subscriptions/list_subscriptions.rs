@@ -48,7 +48,7 @@ impl<Payload: DeserializeOwned + Debug> FromRow<'_, PgRow> for Subscription<Payl
         Ok(Subscription {
             subscription_id: row.try_get("subscription_id")?,
             // kind: row.try_get("kind")?,
-            payload: row.try_get::<Json<Payload>, _>("payload")?.0,
+            payload: row.try_get::<Json<_>, _>("payload")?.0,
             updated_at: row.try_get("updated_at")?,
             created_at: row.try_get("created_at")?,
         })

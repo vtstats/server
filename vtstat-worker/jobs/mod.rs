@@ -1,4 +1,3 @@
-mod collect_youtube_stream_live_chat;
 mod collect_youtube_stream_metadata;
 mod health_check;
 mod install_discord_command;
@@ -50,7 +49,6 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
         UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
         UpsertYoutubeStream(_) => "upsert_youtube_stream",
         CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
-        CollectYoutubeStreamLiveChat(_) => "collect_youtube_stream_live_chat",
         UpdateUpcomingStream => "update_upcoming_stream",
         SendNotification(_) => "send_notification",
         InstallDiscordCommands => "install_discord_commands",
@@ -95,9 +93,6 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
             }
             CollectYoutubeStreamMetadata(payload) => {
                 collect_youtube_stream_metadata::execute(&pool, hub, continuation, payload).await
-            }
-            CollectYoutubeStreamLiveChat(payload) => {
-                collect_youtube_stream_live_chat::execute(&pool, hub, continuation, payload).await
             }
             SendNotification(payload) => send_notification::execute(&pool, hub, payload).await,
             UpdateUpcomingStream => update_upcoming_stream::execute(&pool).await,
