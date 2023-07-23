@@ -8,10 +8,10 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
 
-pub use self::list_job::{list_jobs_order_by_updated_at, ListJobsQuery};
+pub use self::list_job::*;
 pub use self::pull_job::PullJobQuery;
 pub use self::push_job::PushJobQuery;
-pub use self::re_run::re_run_job;
+pub use self::re_run::*;
 pub use self::update_job::UpdateJobQuery;
 
 #[derive(sqlx::Type, Debug, PartialEq, Eq, Serialize)]

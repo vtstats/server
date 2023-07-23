@@ -80,28 +80,38 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
         .or(create_vtuber_api)
 }
 
-async fn list_jobs(pool: PgPool, parameter: ListStreamsParameter) -> Result<Response, Rejection> {
-    let jobs = vtstat_database::jobs::list_jobs_order_by_updated_at(parameter.end_at, &pool)
-        .await
-        .map_err(Into::<WarpError>::into)?;
+#[derive(Deserialize)]
+pub struct ListParameter {
+    #[serde(default, with = "ts_seconds_option")]
+    end_at: Option<DateTime<Utc>>,
+
+    status: Option<String>,
+}
+
+async fn list_jobs(pool: PgPool, parameter: ListParameter) -> Result<Response, Rejection> {
+    let jobs = vtstat_database::jobs::list_jobs_order_by_updated_at(
+        parameter.status.unwrap_or_else(|| "queued".into()),
+        parameter.end_at,
+        &pool,
+    )
+    .await
+    .map_err(Into::<WarpError>::into)?;
 
     Ok(warp::reply::json(&jobs).into_response())
 }
 
-#[derive(Deserialize)]
-pub struct ListStreamsParameter {
-    #[serde(default, with = "ts_seconds_option")]
-    end_at: Option<DateTime<Utc>>,
-}
+async fn list_streams(pool: PgPool, parameter: ListParameter) -> Result<Response, Rejection> {
+    let status = match parameter.status.as_deref() {
+        Some("scheduled") => "scheduled",
+        Some("live") => "live",
+        _ => "ended",
+    };
 
-async fn list_streams(
-    pool: PgPool,
-    parameter: ListStreamsParameter,
-) -> Result<Response, Rejection> {
     let streams = ListYouTubeStreamsQuery {
         limit: Some(24),
         order_by: Some((Column::UpdatedAt, Ordering::Desc)),
         end_at: parameter.end_at.as_ref().map(|dt| (Column::UpdatedAt, dt)),
+        status: &[status.into()],
         ..Default::default()
     }
     .execute(&pool)
