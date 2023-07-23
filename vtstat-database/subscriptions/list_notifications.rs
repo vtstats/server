@@ -10,6 +10,7 @@ pub struct ListNotificationsQuery {
 #[derive(Serialize)]
 pub struct Notification {
     pub notification_id: i32,
+    pub subscription_id: i32,
     pub payload: NotificationPayload,
     #[serde(with = "ts_milliseconds_option")]
     pub created_at: Option<DateTime<Utc>>,
@@ -22,12 +23,17 @@ pub struct NotificationPayload {
     pub vtuber_id: String,
     pub stream_id: i32,
     pub message_id: String,
+    #[serde(default)]
+    pub start_message_id: Option<String>,
+    #[serde(default)]
+    pub end_message_id: Option<String>,
 }
 
 impl FromRow<'_, PgRow> for Notification {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
         Ok(Notification {
             notification_id: row.try_get("notification_id")?,
+            subscription_id: row.try_get("subscription_id")?,
             payload: row.try_get::<Json<_>, _>("payload")?.0,
             created_at: row.try_get("created_at")?,
             updated_at: row.try_get("updated_at")?,

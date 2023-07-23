@@ -26,7 +26,6 @@ impl PushJobQuery {
             JobPayload::UpdateCurrencyExchangeRate => JobKind::UpdateCurrencyExchangeRate,
             JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
-            JobPayload::UpdateUpcomingStream => JobKind::UpdateUpcomingStream,
             JobPayload::SendNotification(_) => JobKind::SendNotification,
             JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,
         };
@@ -51,6 +50,48 @@ ON CONFLICT (kind, payload) DO UPDATE
 
         crate::otel::instrument("INSERT", "jobs", query).await
     }
+}
+
+pub async fn queue_send_notification(
+    time: DateTime<Utc>,
+    stream_platform: String,
+    stream_platform_id: String,
+    vtuber_id: String,
+    pool: &PgPool,
+) -> Result<()> {
+    PushJobQuery {
+        continuation: None,
+        next_run: Some(time),
+        payload: JobPayload::SendNotification(SendNotificationJobPayload {
+            stream_platform,
+            stream_platform_id,
+            vtuber_id,
+        }),
+    }
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+pub async fn queue_collect_youtube_stream_metadata(
+    time: DateTime<Utc>,
+    stream_id: i32,
+    platform_stream_id: String,
+    platform_channel_id: String,
+    pool: &PgPool,
+) -> Result<()> {
+    PushJobQuery {
+        continuation: None,
+        next_run: Some(time),
+        payload: JobPayload::CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload {
+            stream_id,
+            platform_stream_id,
+            platform_channel_id,
+        }),
+    }
+    .execute(pool)
+    .await?;
+    Ok(())
 }
 
 #[cfg(test)]

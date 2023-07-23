@@ -6,7 +6,7 @@ use warp::{http::StatusCode, Rejection};
 use vtstat_database::{
     channels::ListChannelsQuery,
     jobs::{JobPayload, PushJobQuery, UpsertYoutubeStreamJobPayload},
-    streams::{EndStreamQuery, ListYouTubeStreamsQuery},
+    streams::{delete_stream, end_stream, ListYouTubeStreamsQuery, StreamStatus},
     PgPool,
 };
 
@@ -67,12 +67,11 @@ pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, R
                 return Ok(StatusCode::NOT_FOUND);
             };
 
-            EndStreamQuery {
-                stream_id: stream.stream_id,
-                ..Default::default()
+            if stream.status == StreamStatus::Scheduled {
+                delete_stream(stream.stream_id, &pool).await
+            } else {
+                end_stream(stream.stream_id, &pool).await
             }
-            .execute(&pool)
-            .await
             .map_err(Into::<WarpError>::into)?;
         }
     }

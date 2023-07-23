@@ -1,8 +1,8 @@
 use chrono::{Duration, DurationRound, Utc};
 use vtstat_database::{
     jobs::{
-        CollectYoutubeStreamMetadataJobPayload, JobPayload, PushJobQuery,
-        SendNotificationJobPayload, UpsertYoutubeStreamJobPayload,
+        queue_collect_youtube_stream_metadata, queue_send_notification,
+        UpsertYoutubeStreamJobPayload,
     },
     streams::{StreamStatus as StreamStatus_, UpsertYouTubeStreamQuery},
     PgPool,
@@ -57,20 +57,13 @@ pub async fn execute(
         youtube_stream.end_time,
     ) {
         (Some(time), None, None) | (_, Some(time), None) => {
-            let next = std::cmp::max(now, time);
-
-            PushJobQuery {
-                continuation: None,
-                next_run: Some(next),
-                payload: JobPayload::CollectYoutubeStreamMetadata(
-                    CollectYoutubeStreamMetadataJobPayload {
-                        stream_id,
-                        platform_stream_id,
-                        platform_channel_id: youtube_stream.channel_id.to_owned(),
-                    },
-                ),
-            }
-            .execute(pool)
+            queue_collect_youtube_stream_metadata(
+                std::cmp::max(now, time),
+                stream_id,
+                platform_stream_id,
+                youtube_stream.channel_id.to_owned(),
+                pool,
+            )
             .await?;
         }
         _ => {}
@@ -78,16 +71,13 @@ pub async fn execute(
 
     let next = now.duration_trunc(Duration::seconds(5)).unwrap() + Duration::seconds(5);
 
-    PushJobQuery {
-        continuation: None,
-        next_run: Some(next),
-        payload: JobPayload::SendNotification(SendNotificationJobPayload {
-            stream_platform: "youtube".into(),
-            stream_platform_id: youtube_stream.id.clone(),
-            vtuber_id: vtuber_id.clone(),
-        }),
-    }
-    .execute(pool)
+    queue_send_notification(
+        next,
+        "youtube".into(),
+        youtube_stream.id.clone(),
+        vtuber_id.clone(),
+        pool,
+    )
     .await?;
 
     Ok(JobResult::Completed)

@@ -6,9 +6,11 @@ use vtstat_database::{
         YoutubeNewMemberDonationValue, YoutubeSuperChatDonationValue,
         YoutubeSuperStickerDonationValue,
     },
-    jobs::CollectYoutubeStreamMetadataJobPayload,
+    jobs::{queue_send_notification, CollectYoutubeStreamMetadataJobPayload},
     stream_stats::{AddStreamChatStatsQuery, AddStreamChatStatsRow, AddStreamViewerStatsQuery},
-    streams::{EndStreamQuery, StartStreamQuery},
+    streams::{
+        delete_stream, end_stream, end_stream_with_values, find_stream, start_stream, StreamStatus,
+    },
     PgPool,
 };
 use vtstat_request::{
@@ -30,6 +32,10 @@ pub async fn execute(
         platform_channel_id,
     } = payload;
 
+    let Some(find) = find_stream(stream_id, pool).await? else {
+        return Ok(JobResult::Completed);
+    };
+
     let (metadata_continuation, chat_continuation) = continuation
         .and_then(|c| serde_json::from_str::<(String, String)>(&c).ok())
         .unwrap_or_default();
@@ -41,108 +47,116 @@ pub async fn execute(
         hub.updated_metadata(&platform_stream_id).await
     }?;
 
-    match (
-        metadata.timeout(),
-        metadata.continuation(),
-        metadata.is_waiting(),
-    ) {
-        // stream not found
-        (None, _, _) | (_, None, _) => {
-            EndStreamQuery {
-                stream_id,
-                end_time: Some(Utc::now()),
-                ..Default::default()
-            }
-            .execute(pool)
-            .await?;
-
-            Ok(JobResult::Completed {})
-        }
-
-        // stream is still waiting
-        (Some(timeout), Some(continuation), true) => Ok(JobResult::Next {
-            run: Utc::now() + Duration::from_std(timeout)?,
-            continuation: Some(continuation.to_string()),
-        }),
-
-        // stream is still going or it has ended
-        (Some(mut timeout), Some(next_metadata_continuation), false) => {
-            let (messages, next_chat_timeout, next_chat_continuation) =
-                if !chat_continuation.is_empty() {
-                    hub.youtube_live_chat_with_continuation(chat_continuation)
-                        .await
+    let (mut timeout, next_metadata_continuation) =
+        match (metadata.timeout(), metadata.continuation()) {
+            (Some(a), Some(b)) => (a, b),
+            _ => {
+                // stream not found
+                if find.status == StreamStatus::Scheduled {
+                    delete_stream(stream_id, pool).await?;
                 } else {
-                    hub.youtube_live_chat(&platform_channel_id, &platform_stream_id)
-                        .await
+                    end_stream(stream_id, pool).await?;
                 }
-                .map(|(messages, continuation)| {
-                    match continuation.and_then(|c| c.get_continuation_and_timeout()) {
-                        Some((t, c)) => (messages, Some(t), Some(c)),
-                        _ => (messages, None, None),
-                    }
-                })?;
-
-            let _ = collect_donation_and_chat(stream_id, messages, pool).await;
-
-            let now = Utc::now();
-
-            if let Some(viewer) = metadata.view_count() {
-                AddStreamViewerStatsQuery {
-                    time: now.duration_trunc(Duration::seconds(15)).unwrap(),
-                    count: viewer,
-                    stream_id,
-                }
-                .execute(pool)
-                .await?;
-            }
-
-            // stream has ended
-            if timeout.as_secs() > 5 {
-                let stream = hub
-                    .youtube_streams(&[platform_stream_id.to_string()])
-                    .await?
-                    .pop();
-
-                EndStreamQuery {
-                    stream_id,
-                    updated_at: Some(now),
-                    title: stream.as_ref().map(|s| s.title.as_str()),
-                    end_time: stream.as_ref().and_then(|s| s.end_time),
-                    start_time: stream.as_ref().and_then(|s| s.start_time),
-                    schedule_time: stream.as_ref().and_then(|s| s.schedule_time),
-                    likes: stream.as_ref().and_then(|s| s.likes),
-                }
-                .execute(pool)
-                .await?;
-
                 return Ok(JobResult::Completed);
             }
+        };
 
-            StartStreamQuery {
-                stream_id,
-                title: metadata.title().as_deref(),
-                start_time: now,
-                likes: metadata.like_count(),
-            }
-            .execute(pool)
-            .await?;
+    // stream is still waiting
+    if metadata.is_waiting() {
+        let continuation = serde_json::to_string(&(next_metadata_continuation, "")).ok();
 
-            let continuation = serde_json::to_string(&(
-                next_metadata_continuation,
-                next_chat_continuation.unwrap_or_default(),
-            ))
-            .ok();
-
-            if let Some(chat_timeout) = next_chat_timeout {
-                timeout = std::cmp::max(timeout, chat_timeout);
-            }
-
-            Ok(JobResult::Next {
-                run: now + Duration::from_std(timeout)?,
-                continuation,
-            })
-        }
+        return Ok(JobResult::Next {
+            run: Utc::now() + Duration::from_std(timeout)?,
+            continuation,
+        });
     }
+
+    let (messages, next_chat_timeout, next_chat_continuation) = if !chat_continuation.is_empty() {
+        hub.youtube_live_chat_with_continuation(chat_continuation)
+            .await
+    } else {
+        hub.youtube_live_chat(&platform_channel_id, &platform_stream_id)
+            .await
+    }
+    .map(|(messages, continuation)| {
+        match continuation.and_then(|c| c.get_continuation_and_timeout()) {
+            Some((t, c)) => (messages, Some(t), Some(c)),
+            _ => (messages, None, None),
+        }
+    })?;
+
+    let _ = collect_donation_and_chat(stream_id, messages, pool).await;
+
+    let now = Utc::now();
+
+    if let Some(viewer) = metadata.view_count() {
+        AddStreamViewerStatsQuery {
+            time: now.duration_trunc(Duration::seconds(15)).unwrap(),
+            count: viewer,
+            stream_id,
+        }
+        .execute(pool)
+        .await?;
+    }
+
+    // stream has ended
+    if timeout.as_secs() > 5 {
+        if find.status == StreamStatus::Scheduled {
+            delete_stream(stream_id, pool).await?;
+            return Ok(JobResult::Completed);
+        }
+
+        let stream = hub
+            .youtube_streams(&[platform_stream_id.clone()])
+            .await?
+            .pop();
+
+        end_stream_with_values(
+            stream_id,
+            stream.as_ref().map(|s| s.title.as_str()),
+            stream.as_ref().and_then(|s| s.schedule_time),
+            stream.as_ref().and_then(|s| s.start_time),
+            stream.as_ref().and_then(|s| s.end_time),
+            stream.as_ref().and_then(|s| s.likes),
+            pool,
+        )
+        .await?;
+
+        queue_send_notification(
+            now,
+            "youtube".into(),
+            platform_stream_id,
+            find.vtuber_id,
+            pool,
+        )
+        .await?;
+
+        return Ok(JobResult::Completed);
+    }
+
+    start_stream(
+        stream_id,
+        metadata.title().as_deref(),
+        now,
+        metadata.like_count(),
+        pool,
+    )
+    .await?;
+
+    let continuation = serde_json::to_string(&(
+        next_metadata_continuation,
+        next_chat_continuation.unwrap_or_default(),
+    ))
+    .ok();
+
+    if let Some(chat_timeout) = next_chat_timeout {
+        timeout = std::cmp::max(timeout, chat_timeout);
+    }
+
+    Ok(JobResult::Next {
+        run: now + Duration::from_std(timeout)?,
+        continuation,
+    })
 }
 
 async fn collect_donation_and_chat(

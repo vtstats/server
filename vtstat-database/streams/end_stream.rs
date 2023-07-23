@@ -1,71 +1,51 @@
 use chrono::{DateTime, Utc};
-use sqlx::{postgres::PgRow, PgPool, Result, Row};
+use sqlx::{PgPool, Result};
 
-use super::StreamStatus;
+pub async fn end_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
+    let query = sqlx::query!(
+        "UPDATE streams SET status = 'ended', end_time = NOW() WHERE stream_id = $1",
+        stream_id
+    )
+    .execute(pool);
 
-/// if `stream_status = "scheduled"`, then delete it, otherwise:
-/// change `stream_status` to `ended` and update `end_time`,
-/// `title`, `start_time`, `schedule_time`, `like_max` if provided
-#[derive(Default)]
-pub struct EndStreamQuery<'q> {
-    pub stream_id: i32,
-    pub title: Option<&'q str>,
-    pub end_time: Option<DateTime<Utc>>,
-    pub start_time: Option<DateTime<Utc>>,
-    pub schedule_time: Option<DateTime<Utc>>,
-    pub likes: Option<i32>,
-    pub updated_at: Option<DateTime<Utc>>,
+    crate::otel::instrument("UPDATE", "streams", query).await?;
+
+    Ok(())
 }
 
-impl<'q> EndStreamQuery<'q> {
-    pub async fn execute(&self, pool: &PgPool) -> Result<()> {
-        let query = sqlx::query("SELECT status as status FROM streams WHERE stream_id = $1")
-            .bind(self.stream_id)
-            .try_map(|row: PgRow| row.try_get::<StreamStatus, _>("status"))
-            .fetch_optional(pool);
+pub async fn end_stream_with_values<'q>(
+    stream_id: i32,
+    title: Option<&'q str>,
+    schedule_time: Option<DateTime<Utc>>,
+    start_time: Option<DateTime<Utc>>,
+    end_time: Option<DateTime<Utc>>,
+    likes: Option<i32>,
+    pool: &PgPool,
+) -> Result<()> {
+    let query = sqlx::query!(
+        r#"
+ UPDATE streams
+    SET status        = 'ended',
+        title         = COALESCE($1, title),
+        end_time      = COALESCE($2, end_time),
+        start_time    = COALESCE($3, start_time),
+        schedule_time = COALESCE($4, schedule_time),
+        like_max      = GREATEST($5, like_max),
+        updated_at    = NOW()
+  WHERE stream_id     = $6
+        "#,
+        title,         // $1
+        end_time,      // $2
+        start_time,    // $3
+        schedule_time, // $4
+        likes,         // $5
+        stream_id,     // $6
+    )
+    .execute(pool);
 
-        let status = crate::otel::instrument("SELECT", "youtube_streams", query).await?;
+    crate::otel::instrument("UPDATE", "streams", query).await?;
 
-        match status {
-            Some(StreamStatus::Scheduled) => {
-                let query = sqlx::query("DELETE FROM streams WHERE stream_id = $1")
-                    .bind(self.stream_id)
-                    .execute(pool);
-
-                crate::otel::instrument("DELETE", "streams", query).await?;
-            }
-            Some(_) => {
-                let query = sqlx::query(
-                    r#"
-                 UPDATE streams
-                    SET status        = 'ended',
-                        title         = COALESCE($1, title),
-                        end_time      = COALESCE($2, end_time),
-                        start_time    = COALESCE($3, start_time),
-                        schedule_time = COALESCE($4, schedule_time),
-                        like_max      = GREATEST($5, like_max),
-                        updated_at    = COALESCE($6, updated_at)
-                  WHERE stream_id     = $7
-                        "#,
-                )
-                .bind(self.title) // $1
-                .bind(self.end_time) // $2
-                .bind(self.start_time) // $3
-                .bind(self.schedule_time) // $4
-                .bind(self.likes) // $5
-                .bind(self.updated_at) // $6
-                .bind(self.stream_id) // $7
-                .execute(pool);
-
-                crate::otel::instrument("UPDATE", "streams", query).await?;
-            }
-            None => {
-                tracing::debug!("Stream not found");
-            }
-        }
-
-        Ok(())
-    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -87,14 +67,7 @@ async fn test(pool: PgPool) -> Result<()> {
     {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
-        EndStreamQuery {
-            stream_id: 1,
-            end_time: Some(time),
-            likes: Some(0),
-            ..Default::default()
-        }
-        .execute(&pool)
-        .await?;
+        end_stream_with_values(1, None, None, None, Some(time), Some(0), &pool).await?;
 
         let row = sqlx::query!(
             r#"SELECT status::TEXT, like_max, end_time FROM streams WHERE stream_id = 1"#
@@ -108,28 +81,7 @@ async fn test(pool: PgPool) -> Result<()> {
     }
 
     {
-        EndStreamQuery {
-            stream_id: 2,
-            ..Default::default()
-        }
-        .execute(&pool)
-        .await?;
-
-        let row = sqlx::query!(r#"SELECT title FROM streams WHERE stream_id = 2"#)
-            .fetch_optional(&pool)
-            .await?;
-
-        assert!(row.is_none());
-    }
-
-    {
-        EndStreamQuery {
-            stream_id: 3,
-            likes: Some(200),
-            ..Default::default()
-        }
-        .execute(&pool)
-        .await?;
+        end_stream_with_values(3, None, None, None, None, Some(200), &pool).await?;
 
         let row = sqlx::query!(
             r#"SELECT status::TEXT, like_max, end_time FROM streams WHERE stream_id = 3"#

@@ -10,10 +10,10 @@ use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
 
 pub use self::list_job::*;
-pub use self::pull_job::PullJobQuery;
-pub use self::push_job::PushJobQuery;
+pub use self::pull_job::*;
+pub use self::push_job::*;
 pub use self::re_run::*;
-pub use self::update_job::UpdateJobQuery;
+pub use self::update_job::*;
 
 #[derive(sqlx::Type, Debug, PartialEq, Eq, Serialize)]
 #[sqlx(type_name = "job_status", rename_all = "snake_case")]
@@ -36,7 +36,6 @@ pub enum JobKind {
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream,
     CollectYoutubeStreamMetadata,
-    UpdateUpcomingStream,
     SendNotification,
     InstallDiscordCommands,
 }
@@ -76,7 +75,6 @@ pub enum JobPayload {
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream(UpsertYoutubeStreamJobPayload),
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
-    UpdateUpcomingStream,
     SendNotification(SendNotificationJobPayload),
     InstallDiscordCommands,
 }
@@ -120,7 +118,6 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::UpdateBilibiliChannelViewAndSubscriber => {
                     JobPayload::UpdateBilibiliChannelViewAndSubscriber
                 }
-                JobKind::UpdateUpcomingStream => JobPayload::UpdateUpcomingStream,
                 JobKind::UpdateYoutubeChannelDonation => JobPayload::UpdateYoutubeChannelDonation,
                 JobKind::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
                 JobKind::UpsertYoutubeStream => {

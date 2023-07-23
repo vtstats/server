@@ -1,37 +1,31 @@
 use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgQueryResult, PgPool, Result};
 
-/// 1. change `stream_status` to `live` and
-/// 2. update `start_time` if not set
-/// 3. update `title` and `like_max` if provided
-pub struct StartStreamQuery<'q> {
-    pub stream_id: i32,
-    pub start_time: DateTime<Utc>,
-    pub likes: Option<i32>,
-    pub title: Option<&'q str>,
-}
+pub async fn start_stream<'q>(
+    stream_id: i32,
+    title: Option<&'q str>,
+    start_time: DateTime<Utc>,
+    likes: Option<i32>,
+    pool: &PgPool,
+) -> Result<PgQueryResult> {
+    let query = sqlx::query!(
+        r#"
+ UPDATE streams
+    SET title      = COALESCE($1, title),
+        updated_at = NOW(),
+        start_time = COALESCE(start_time, $2),
+        status     = 'live',
+        like_max   = GREATEST($3, like_max)
+  WHERE stream_id  = $4
+        "#,
+        title,      // $1
+        start_time, // $2
+        likes,      // $3
+        stream_id,  // $4
+    )
+    .execute(pool);
 
-impl<'q> StartStreamQuery<'q> {
-    pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
-        let query = sqlx::query(
-            r#"
-     UPDATE streams
-        SET title          = COALESCE($1, title),
-            updated_at     = $2,
-            start_time     = COALESCE(start_time, $2),
-            status         = 'live',
-            like_max       = GREATEST($3, like_max)
-      WHERE stream_id      = $4
-            "#,
-        )
-        .bind(self.title) // $1
-        .bind(self.start_time) // $2
-        .bind(self.likes) // $3
-        .bind(self.stream_id) // $4
-        .execute(pool);
-
-        crate::otel::instrument("UPDATE", "streams", query).await
-    }
+    crate::otel::instrument("UPDATE", "streams", query).await
 }
 
 #[cfg(test)]
@@ -53,14 +47,7 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
     {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        let res = StartStreamQuery {
-            stream_id: 1,
-            start_time: time,
-            likes: None,
-            title: None,
-        }
-        .execute(&pool)
-        .await?;
+        let res = start_stream(1, None, time, None, &pool).await?;
 
         let row = sqlx::query!("SELECT status::TEXT, start_time FROM streams WHERE stream_id = 1")
             .fetch_one(&pool)
@@ -74,14 +61,7 @@ INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedu
     {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        let res = StartStreamQuery {
-            stream_id: 2,
-            start_time: time,
-            likes: Some(100),
-            title: Some("title_alt"),
-        }
-        .execute(&pool)
-        .await?;
+        let res = start_stream(2, Some("title_alt"), time, Some(100), &pool).await?;
 
         let row = sqlx::query!(
             "SELECT status::TEXT, start_time, title, like_max FROM streams WHERE stream_id = 2"

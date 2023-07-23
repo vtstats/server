@@ -86,6 +86,8 @@ pub async fn execute(
                         vtuber_id: payload.vtuber_id.clone(),
                         stream_id: stream.stream_id,
                         message_id: msg_id,
+                        start_message_id: None,
+                        end_message_id: None,
                     },
                 }
                 .execute(pool)

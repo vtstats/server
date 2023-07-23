@@ -6,7 +6,6 @@ mod send_notification;
 mod subscribe_youtube_pubsub;
 mod update_bilibili_channel_view_and_subscriber;
 mod update_currency_exchange_rate;
-mod update_upcoming_stream;
 mod update_youtube_channel_donation;
 mod update_youtube_channel_view_and_subscriber;
 mod upsert_youtube_stream;
@@ -49,7 +48,6 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
         UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
         UpsertYoutubeStream(_) => "upsert_youtube_stream",
         CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
-        UpdateUpcomingStream => "update_upcoming_stream",
         SendNotification(_) => "send_notification",
         InstallDiscordCommands => "install_discord_commands",
     };
@@ -95,7 +93,6 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
                 collect_youtube_stream_metadata::execute(&pool, hub, continuation, payload).await
             }
             SendNotification(payload) => send_notification::execute(&pool, hub, payload).await,
-            UpdateUpcomingStream => update_upcoming_stream::execute(&pool).await,
             InstallDiscordCommands => install_discord_command::execute(&hub.client).await,
         };
 
