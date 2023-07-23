@@ -845,6 +845,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "integration-s3"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "hex",
+ "hmac",
+ "reqwest",
+ "sha2",
+ "vtstat-utils",
+]
+
+[[package]]
 name = "integration-telegram"
 version = "0.1.0"
 dependencies = [
@@ -2157,20 +2170,16 @@ name = "vtstat-request"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "base64 0.21.2",
  "bytes",
  "chrono",
  "futures",
- "hex",
- "hmac",
+ "integration-s3",
  "metrics",
  "pretty_assertions",
- "quick-protobuf",
  "reqwest",
  "serde",
  "serde_json",
  "serde_with",
- "sha2",
  "tracing",
  "vtstat-utils",
 ]
@@ -2180,15 +2189,11 @@ name = "vtstat-utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "chrono",
- "hex",
- "hmac",
  "log",
  "metrics",
  "metrics-exporter-prometheus",
  "metrics-util",
  "reqwest",
- "sha2",
  "tokio",
  "tracing",
  "tracing-appender",
@@ -2206,6 +2211,7 @@ dependencies = [
  "hmac",
  "integration-admin",
  "integration-discord",
+ "integration-s3",
  "integration-youtube",
  "metrics",
  "pretty_assertions",

@@ -24,6 +24,7 @@ members = [
     "integration-discord",
     "integration-telegram",
     "integration-youtube",
+    "integration-s3",
     "vtstat-database",
     "vtstat-request",
     "vtstat-utils",

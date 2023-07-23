@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use warp::{reply::Response, Filter, Rejection, Reply};
 
 use integration_admin::{validate, GoogleCerts};
+use integration_s3::upload_file;
 use integration_youtube::youtubei;
 use vtstat_database::{
     channels::{CreateChannel, ListChannelsQuery, Platform},
@@ -207,8 +208,7 @@ async fn create_vtuber(pool: PgPool, payload: CreateVTuberPayload) -> Result<Res
 
             let file = res.bytes().await?;
 
-            vtstat_utils::upload_file(&format!("thumbnail/{}.jpg", id), file, "image/jpg", &client)
-                .await
+            upload_file(&format!("thumbnail/{}.jpg", id), file, "image/jpg", &client).await
         }
 
         if let Ok(url) = upload_thumbnail(&url, &payload.vtuber_id).await {

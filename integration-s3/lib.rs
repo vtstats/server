@@ -8,7 +8,7 @@ use reqwest::{
 use sha2::{Digest, Sha256};
 use std::env;
 
-use crate::instrument_send;
+use vtstat_utils::instrument_send;
 
 pub async fn upload_file<T>(
     filename: &str,

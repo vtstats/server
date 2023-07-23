@@ -4,6 +4,7 @@ use futures::TryFutureExt;
 use tracing::instrument;
 
 use super::RequestHub;
+use integration_s3::upload_file;
 use vtstat_utils::instrument_send;
 
 impl RequestHub {
@@ -19,7 +20,7 @@ impl RequestHub {
 
         let filename = format!("{}.webp", stream_id);
 
-        match self.upload_file(&filename, data, "image/webp").await {
+        match upload_file(&filename, data, "image/webp", &self.client).await {
             Ok(url) => Some(url),
             Err(err) => {
                 tracing::error!("Failed to upload thumbnail: {:?}", err);
