@@ -1,13 +1,14 @@
 use chrono::{Duration, DurationRound, Utc};
+use integration_youtube::data_api::videos::{list_videos, Stream};
 use vtstat_database::{
     jobs::{
         queue_collect_youtube_stream_metadata, queue_send_notification,
         UpsertYoutubeStreamJobPayload,
     },
-    streams::{StreamStatus as StreamStatus_, UpsertYouTubeStreamQuery},
+    streams::UpsertYouTubeStreamQuery,
     PgPool,
 };
-use vtstat_request::{RequestHub, StreamStatus};
+use vtstat_request::RequestHub;
 
 use super::JobResult;
 
@@ -22,25 +23,21 @@ pub async fn execute(
         vtuber_id,
     } = payload;
 
-    let mut streams = hub.youtube_streams(&[platform_stream_id.clone()]).await?;
+    let mut videos = list_videos(&platform_stream_id, &hub.client).await?;
 
-    let Some(youtube_stream) = streams.first_mut() else {
+    let stream: Option<Stream> = videos.pop().and_then(Into::into);
+
+    let Some(youtube_stream) = stream else {
         anyhow::bail!("Stream not found, platform_stream_id={platform_stream_id}");
     };
 
     let thumbnail_url = hub.upload_thumbnail(&youtube_stream.id).await;
 
-    let status = match youtube_stream.status {
-        StreamStatus::Ended => StreamStatus_::Ended,
-        StreamStatus::Live => StreamStatus_::Live,
-        StreamStatus::Scheduled => StreamStatus_::Scheduled,
-    };
-
     let stream_id = UpsertYouTubeStreamQuery {
         platform_stream_id: &youtube_stream.id,
         channel_id,
         title: &youtube_stream.title,
-        status,
+        status: youtube_stream.status,
         thumbnail_url,
         schedule_time: youtube_stream.schedule_time,
         start_time: youtube_stream.start_time,

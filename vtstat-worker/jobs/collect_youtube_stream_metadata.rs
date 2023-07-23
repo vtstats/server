@@ -1,4 +1,12 @@
 use chrono::{DateTime, Duration, DurationRound, NaiveDateTime, Utc};
+use integration_youtube::{
+    data_api::videos::{list_videos, Stream},
+    youtubei::{
+        live_chat::{LiveChatMessage, MemberMessageType, PaidMessageType},
+        updated_metadata, updated_metadata_with_continuation, youtube_live_chat,
+        youtube_live_chat_with_continuation,
+    },
+};
 use vtstat_database::{
     currencies::{Currency, ListCurrenciesQuery},
     donations::{
@@ -13,10 +21,7 @@ use vtstat_database::{
     },
     PgPool,
 };
-use vtstat_request::{
-    response::{MemberMessageType, PaidMessageType},
-    LiveChatMessage, RequestHub,
-};
+use vtstat_request::RequestHub;
 
 use super::JobResult;
 
@@ -41,10 +46,9 @@ pub async fn execute(
         .unwrap_or_default();
 
     let metadata = if !metadata_continuation.is_empty() {
-        hub.updated_metadata_with_continuation(&metadata_continuation)
-            .await
+        updated_metadata_with_continuation(&metadata_continuation, &hub.client).await
     } else {
-        hub.updated_metadata(&platform_stream_id).await
+        updated_metadata(&platform_stream_id, &hub.client).await
     }?;
 
     let (mut timeout, next_metadata_continuation) =
@@ -72,11 +76,9 @@ pub async fn execute(
     }
 
     let (messages, next_chat_timeout, next_chat_continuation) = if !chat_continuation.is_empty() {
-        hub.youtube_live_chat_with_continuation(chat_continuation)
-            .await
+        youtube_live_chat_with_continuation(chat_continuation, &hub.client).await
     } else {
-        hub.youtube_live_chat(&platform_channel_id, &platform_stream_id)
-            .await
+        youtube_live_chat(&platform_channel_id, &platform_stream_id, &hub.client).await
     }
     .map(|(messages, continuation)| {
         match continuation.and_then(|c| c.get_continuation_and_timeout()) {
@@ -106,10 +108,8 @@ pub async fn execute(
             return Ok(JobResult::Completed);
         }
 
-        let stream = hub
-            .youtube_streams(&[platform_stream_id.clone()])
-            .await?
-            .pop();
+        let mut videos = list_videos(&platform_stream_id, &hub.client).await?;
+        let stream: Option<Stream> = videos.pop().and_then(Into::into);
 
         end_stream_with_values(
             stream_id,

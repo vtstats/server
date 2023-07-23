@@ -492,14 +492,14 @@ impl LiveChatMessage {
                 })
             } else {
                 for (k, _) in unknown {
-                    tracing::warn!("Unknown AddChatItemAction item: {}", k);
+                    eprintln!("Unknown AddChatItemAction item: {}", k);
                 }
 
                 None
             }
         } else {
             for (k, _) in unknown {
-                tracing::warn!("Unknown action: {}", k);
+                eprintln!("Unknown action: {}", k);
             }
 
             None

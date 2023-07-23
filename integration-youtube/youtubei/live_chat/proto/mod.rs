@@ -41,7 +41,7 @@ pub fn get_continuation(channel_id: &str, stream_id: &str) -> Result<String> {
 
 #[test]
 fn test() {
-    pretty_assertions::assert_eq!(
+    assert_eq!(
         "0ofMyANhGlhDaWtxSndvWVZVTnhiVE5DVVV4c1NtWjJhMVJ6V0Y5b2RtMHdWVzFCRWd0eFRtVkthRXBXUkU5VE9Cb1Q2cWpkdVFFTkNndHhUbVZLYUVwV1JFOVRPQ0FCMAGCAQIIAQ==",
         get_continuation(
             "UCqm3BQLlJfvkTsX_hvm0UmA",

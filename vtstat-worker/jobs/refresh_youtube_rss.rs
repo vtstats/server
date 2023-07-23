@@ -2,12 +2,15 @@ use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
 use vtstat_database::{
     channels::ListChannelsQuery,
-    streams::{ListYouTubeStreamsQuery, StreamStatus as StreamStatus_, UpsertYouTubeStreamQuery},
+    streams::{ListYouTubeStreamsQuery, UpsertYouTubeStreamQuery},
     PgPool,
 };
-use vtstat_request::{RequestHub, StreamStatus};
+use vtstat_request::RequestHub;
 
-use integration_youtube::rss_feed::FetchYouTubeVideosRSS;
+use integration_youtube::{
+    data_api::videos::{list_videos, Stream},
+    rss_feed::FetchYouTubeVideosRSS,
+};
 
 use super::JobResult;
 
@@ -62,7 +65,13 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     tracing::debug!("Missing video ids: {:?}", missing);
 
-    let streams = hub.youtube_streams(&missing).await?;
+    let mut streams: Vec<Stream> = Vec::with_capacity(missing.len());
+
+    // youtube limits 50 streams per request
+    for chunk in missing.chunks(50) {
+        let videos = list_videos(&chunk.join(","), &hub.client).await?;
+        streams.extend(videos.into_iter().filter_map(Into::into));
+    }
 
     if streams.is_empty() {
         tracing::debug!("Stream not found, ids={:?}", missing);
@@ -87,11 +96,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
             platform_stream_id: &stream.id,
             channel_id: channel.channel_id,
             title: &stream.title,
-            status: match stream.status {
-                StreamStatus::Ended => StreamStatus_::Ended,
-                StreamStatus::Live => StreamStatus_::Live,
-                StreamStatus::Scheduled => StreamStatus_::Scheduled,
-            },
+            status: stream.status,
             thumbnail_url,
             schedule_time: stream.schedule_time,
             start_time: stream.start_time,

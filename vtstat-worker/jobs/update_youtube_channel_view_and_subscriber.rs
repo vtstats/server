@@ -1,4 +1,5 @@
 use chrono::{Duration, DurationRound, Utc};
+use integration_youtube::data_api::channels::list_channels;
 use vtstat_database::{
     channel_stats::{
         AddChannelSubscriberStatsQuery, AddChannelSubscriberStatsRow, AddChannelViewStatsQuery,
@@ -33,7 +34,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
             acc
         });
 
-        let response = hub.youtube_channels(&channel_ids).await?;
+        let response = list_channels(&channel_ids, &hub.client).await?;
 
         for item in response.items {
             let channel = chunk.iter().find(|ch| ch.platform_id == item.id);

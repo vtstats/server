@@ -876,6 +876,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha-1",
+ "vtstat-database",
  "vtstat-utils",
  "warp",
 ]

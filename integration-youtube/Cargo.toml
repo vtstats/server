@@ -18,11 +18,15 @@ reqwest = { version = "0.11.18", default-features = false, features = [
     "json",
     "rustls-tls"
 ] }
+chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
 warp = { version = "0.3.5", default-features = false }
 vtstat-utils = { path = "../vtstat-utils" }
+vtstat-database = { path = "../vtstat-database" }
 # pubsubhubbub
 roxmltree = "0.18.0"
 hmac = "0.12.1"
 sha-1 = "0.10.1"
+# youtubei, proto
+quick-protobuf = "0.8.1"
