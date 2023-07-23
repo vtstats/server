@@ -1,5 +1,4 @@
 mod channels;
-pub mod telegram;
 mod thumbnail;
 
 use reqwest::Client;

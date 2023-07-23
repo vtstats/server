@@ -869,6 +869,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "vtstat-utils",
  "warp",
 ]
 

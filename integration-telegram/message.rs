@@ -1,8 +1,8 @@
 use std::env;
 
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::RequestHub;
 use vtstat_utils::instrument_send;
 
 #[derive(Serialize)]
@@ -52,40 +52,38 @@ pub struct Message {
     // "text": String
 }
 
-impl RequestHub {
-    pub async fn send_telegram_message(
-        &self,
-        message: SendMessageRequestBody,
-    ) -> anyhow::Result<Message> {
-        let url = format!(
-            "https://api.telegram.org/bot{}/sendMessage",
-            &env::var("TELEGRAM_BOT_TOKEN")?
-        );
+pub async fn send_message(
+    message: SendMessageRequestBody,
+    client: &Client,
+) -> anyhow::Result<Message> {
+    let url = format!(
+        "https://api.telegram.org/bot{}/sendMessage",
+        &env::var("TELEGRAM_BOT_TOKEN")?
+    );
 
-        let req = self.client.post(url).form(&message);
+    let req = client.post(url).form(&message);
 
-        let res = instrument_send(&self.client, req).await?;
+    let res = instrument_send(&client, req).await?;
 
-        let json: MessageResponse = res.json().await?;
+    let json: MessageResponse = res.json().await?;
 
-        Ok(json.result)
-    }
+    Ok(json.result)
+}
 
-    pub async fn edit_telegram_message(
-        &self,
-        message: EditMessageRequestBody,
-    ) -> anyhow::Result<Message> {
-        let url = format!(
-            "https://api.telegram.org/bot{}/editMessageText",
-            &env::var("TELEGRAM_BOT_TOKEN")?
-        );
+pub async fn edit_message(
+    message: EditMessageRequestBody,
+    client: &Client,
+) -> anyhow::Result<Message> {
+    let url = format!(
+        "https://api.telegram.org/bot{}/editMessageText",
+        &env::var("TELEGRAM_BOT_TOKEN")?
+    );
 
-        let req = self.client.post(url).form(&message);
+    let req = client.post(url).form(&message);
 
-        let res = instrument_send(&self.client, req).await?;
+    let res = instrument_send(&client, req).await?;
 
-        let json: MessageResponse = res.json().await?;
+    let json: MessageResponse = res.json().await?;
 
-        Ok(json.result)
-    }
+    Ok(json.result)
 }
