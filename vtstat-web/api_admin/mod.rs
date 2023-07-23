@@ -37,6 +37,7 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
+        .and(warp::query())
         .and_then(list_notifications);
 
     let vtubers_api = warp::path!("admin" / "vtubers")
@@ -132,8 +133,8 @@ async fn list_channels(pool: PgPool) -> Result<Response, Rejection> {
     Ok(warp::reply::json(&channels).into_response())
 }
 
-async fn list_notifications(pool: PgPool) -> Result<Response, Rejection> {
-    let notifications = vtstat_database::subscriptions::list(&pool)
+async fn list_notifications(pool: PgPool, parameter: ListParameter) -> Result<Response, Rejection> {
+    let notifications = vtstat_database::subscriptions::list(parameter.end_at, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 

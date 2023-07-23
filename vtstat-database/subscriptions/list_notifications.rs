@@ -48,8 +48,15 @@ impl ListNotificationsQuery {
     }
 }
 
-pub async fn list(pool: &PgPool) -> Result<Vec<Notification>> {
-    let query = sqlx::query_as::<_, Notification>("SELECT * FROM notifications").fetch_all(pool);
+pub async fn list(end_at: Option<DateTime<Utc>>, pool: &PgPool) -> Result<Vec<Notification>> {
+    let query = sqlx::query_as::<_, Notification>(
+        "SELECT * FROM notifications \
+        WHERE (updated_at < $1 OR $1 is null) \
+        ORDER BY updated_at DESC \
+        LIMIT 24",
+    )
+    .bind(end_at)
+    .fetch_all(pool);
 
     crate::otel::instrument("SELECT", "notifications", query).await
 }
