@@ -80,8 +80,6 @@ pub async fn youtube_streams_list(
     query: ReqQuery,
     db: Database,
 ) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/v4/youtube_streams");
-
     let ReqQuery {
         ids,
         status,

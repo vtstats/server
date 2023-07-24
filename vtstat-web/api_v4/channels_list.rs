@@ -25,8 +25,6 @@ pub async fn youtube_channels_list(
     query: ReqQuery,
     db: Database,
 ) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/v4/youtube_channels");
-
     tracing::info!("ids={:?}", query.ids);
 
     let updated_at = db
@@ -49,8 +47,6 @@ pub async fn bilibili_channels_list(
     query: ReqQuery,
     db: Database,
 ) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/v4/bilibili_channels");
-
     tracing::info!("ids={:?}", query.ids);
 
     let updated_at = db

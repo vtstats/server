@@ -1,7 +1,7 @@
 use metrics::{histogram, increment_counter};
 use std::{env, net::SocketAddr};
 use tokio::sync::oneshot::Receiver;
-use tracing::field::Empty;
+use tracing::{field::Empty, Span};
 use vtstat_database::PgPool;
 use warp::Filter;
 
@@ -47,36 +47,13 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
                 ]),
         )
         .recover(reject::handle_rejection)
-        .with(warp::trace(|info| {
-            if info.path() == "/api/whoami" {
-                return tracing::info_span!("Ignored");
-            }
-
-            let span = tracing::info_span!(
-                "Request",
-                name = Empty,
-                span.kind = "server",
-                service.name = "vtstat-web",
-                req.path = info.path(),
-                req.method = info.method().as_str(),
-                req.referer = Empty,
-                otel.status_code = Empty,
-                otel.status_description = Empty,
-                //// error
-                error.message = Empty,
-                error.cause_chain = Empty,
-            );
-
-            if let Some(referer) = info.referer() {
-                span.record("req.referer", referer);
-            }
-
-            span
-        }))
         .with(warp::log::custom(|info| {
+            Span::current().record("http.res.status_code", info.status().as_u16());
+
             let method = info.method().as_str().to_string();
             let status_code = info.status().as_str().to_string();
             let path = info.path().to_string();
+
             histogram!(
                 "http_server_requests_elapsed_seconds",
                 info.elapsed(),
@@ -90,6 +67,29 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
                 "status_code" => status_code,
                 "path" => path
             );
+        }))
+        .with(warp::trace(|info| {
+            if info.path() == "/api/whoami" {
+                return tracing::trace_span!("Ignored");
+            }
+
+            let name = format!("{} {}", info.method().as_str(), info.path());
+
+            let span = tracing::info_span!(
+                "Http Server",
+                "message" = name,
+                "span.kind" = "server",
+                "http.req.path" = info.path(),
+                "http.req.method" = info.method().as_str(),
+                "http.req.referer" = Empty,
+                "http.res.status_code" = Empty,
+            );
+
+            if let Some(referer) = info.referer() {
+                span.record("http.req.referer", referer);
+            }
+
+            span
         }));
 
     let address = env::var("SERVER_ADDRESS")?.parse::<SocketAddr>()?;

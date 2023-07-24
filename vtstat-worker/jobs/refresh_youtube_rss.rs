@@ -74,7 +74,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     }
 
     if streams.is_empty() {
-        tracing::debug!("Stream not found, ids={:?}", missing);
+        tracing::warn!("Stream not found, ids={:?}", missing);
         return Ok(JobResult::Next {
             run: now + Duration::hours(1),
             continuation: None,

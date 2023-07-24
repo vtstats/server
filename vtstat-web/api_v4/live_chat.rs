@@ -25,8 +25,6 @@ pub async fn live_chat_highlight(
     query: ReqQuery,
     db: Database,
 ) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/v4/live_chat/highlight");
-
     tracing::info!("id={}", query.id);
 
     let paid = db

@@ -38,7 +38,7 @@ pub async fn updated_metadata_with_continuation(
         continuation,
     });
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: Response = res.json().await?;
 

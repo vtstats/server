@@ -40,7 +40,7 @@ pub async fn youtube_live_chat_with_continuation(
         continuation: &continuation,
     });
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: Response = res.json().await?;
 

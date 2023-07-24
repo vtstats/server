@@ -1,10 +1,7 @@
 use metrics::{histogram, increment_counter};
 use sqlx::Result;
 use std::{future::Future, time::Instant};
-use tracing::{
-    field::{debug, display, Empty},
-    Instrument, Span,
-};
+use tracing::Instrument;
 
 #[inline(always)]
 pub async fn instrument<T>(
@@ -12,20 +9,12 @@ pub async fn instrument<T>(
     table: &'static str,
     query: impl Future<Output = Result<T>>,
 ) -> Result<T> {
-    let database = "holostats";
-
     let span = tracing::info_span!(
-        "Query",
-        name = format!("{operation} {database}.{table}"),
-        span.kind = "client",
-        //// database
-        db.name = database,
-        db.system = "postgresql",
-        db.operation = operation,
-        db.sql.table = table,
-        //// error
-        error.message = Empty,
-        error.cause_chain = Empty,
+        "Database Query",
+        "message" = format!("{operation} {table}"),
+        "span.kind" = "client",
+        "db.operation" = operation,
+        "db.sql.table" = table,
     );
 
     async move {
@@ -47,10 +36,7 @@ pub async fn instrument<T>(
 
         // TODO: use `inspect_err` once stable
         if let Err(err) = &result {
-            Span::current()
-                .record("otel.status_code", "ERROR")
-                .record("error.message", display(err))
-                .record("error.cause_chain", debug(err));
+            tracing::error!(exception.stacktrace = ?err, message= %err);
         }
 
         result

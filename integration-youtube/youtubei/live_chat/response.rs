@@ -491,15 +491,19 @@ impl LiveChatMessage {
                     color: get_color(msg.color),
                 })
             } else {
-                for (k, _) in unknown {
-                    eprintln!("Unknown AddChatItemAction item: {}", k);
+                let mut keys: Vec<_> = unknown.keys().collect();
+                keys.dedup();
+                for key in keys {
+                    tracing::warn!("Unknown AddChatItemAction item: {key}");
                 }
 
                 None
             }
         } else {
-            for (k, _) in unknown {
-                eprintln!("Unknown action: {}", k);
+            let mut keys: Vec<_> = unknown.keys().collect();
+            keys.dedup();
+            for key in keys {
+                tracing::warn!("Unknown action: {key}");
             }
 
             None

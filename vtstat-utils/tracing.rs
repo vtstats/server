@@ -1,32 +1,28 @@
-use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     filter::{filter_fn, LevelFilter},
     fmt::format::FmtSpan,
     layer::SubscriberExt,
-    registry, Layer,
+    registry,
 };
 
-pub fn init() -> WorkerGuard {
+pub fn init() {
     let filter_layer = filter_fn(|metadata| {
         metadata.target().starts_with("vtstat") && metadata.name() != "Ignored"
     });
 
-    let log_dir = std::env::var("LOG_DIR").unwrap_or("/var/log/vtstat".into());
-
-    let file_appender = tracing_appender::rolling::daily(log_dir, "log");
-
-    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-
     let fmt_layer = tracing_subscriber::fmt::layer()
-        .with_target(false)
+        .json()
+        .with_level(true)
+        .flatten_event(true)
         .with_span_events(FmtSpan::CLOSE)
-        .with_writer(non_blocking)
-        .with_filter(LevelFilter::INFO);
+        .with_current_span(true)
+        .with_span_list(false);
 
-    let subscriber = registry().with(filter_layer).with(fmt_layer);
+    let subscriber = registry()
+        .with(LevelFilter::INFO)
+        .with(filter_layer)
+        .with(fmt_layer);
 
     tracing::subscriber::set_global_default(subscriber)
         .expect("failed to initialize tracing subscriber");
-
-    guard
 }

@@ -61,7 +61,7 @@ pub async fn list_videos(id: &str, client: &Client) -> anyhow::Result<Vec<Video>
 
     let req = client.get(url);
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: VideosListResponse = res.json().await?;
 
@@ -81,13 +81,13 @@ pub struct Stream {
     pub likes: Option<i32>,
 }
 
-impl Into<Option<Stream>> for Video {
-    fn into(self) -> Option<Stream> {
-        let snippet = self.snippet?;
-        let detail = self.live_streaming_details?;
+impl From<Video> for Option<Stream> {
+    fn from(video: Video) -> Option<Stream> {
+        let snippet = video.snippet?;
+        let detail = video.live_streaming_details?;
 
         Some(Stream {
-            id: self.id,
+            id: video.id,
             title: snippet.title,
             channel_id: snippet.channel_id,
             status: if detail.actual_end_time.is_some() {
@@ -103,7 +103,7 @@ impl Into<Option<Stream>> for Video {
             viewers: detail
                 .concurrent_viewers
                 .and_then(|v| i32::from_str(&v).ok()),
-            likes: self
+            likes: video
                 .statistics
                 .and_then(|s| s.like_count)
                 .and_then(|v| i32::from_str(&v).ok()),

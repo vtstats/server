@@ -19,8 +19,6 @@ pub struct ResBody {
 }
 
 pub async fn stream_times(query: ReqQuery, db: Database) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/v4/stream_times");
-
     tracing::info!("id={}", query.id);
 
     let times = StreamTimesQuery {

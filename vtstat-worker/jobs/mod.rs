@@ -10,15 +10,12 @@ mod update_youtube_channel_donation;
 mod update_youtube_channel_view_and_subscriber;
 mod upsert_youtube_stream;
 
-use std::time::Instant;
-
 use chrono::{DateTime, Utc};
 use metrics::{histogram, increment_counter};
+use std::time::Instant;
 use tokio::sync::mpsc::Sender;
-use tracing::{
-    field::{debug, display, Empty},
-    Instrument, Span,
-};
+use tracing::Instrument;
+
 use vtstat_database::{
     jobs::{Job, JobPayload::*, JobStatus, UpdateJobQuery},
     PgPool,
@@ -53,19 +50,12 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
     };
 
     let span = match &payload {
-        HealthCheck => tracing::info_span!("Ignored"),
+        HealthCheck => tracing::trace_span!("Ignored"),
         _ => tracing::info_span!(
-            "Job",
-            "span.kind" = "client",
-            "name" = Empty,
-            //// otel
-            "otel.status_code" = "OK",
-            //// job
+            "Worker Job",
+            "message" = &format!("Job {job_type}"),
+            "job.id" = job_id,
             "job.type" = job_type,
-            "job.payload" = Empty,
-            //// error
-            "error.message" = Empty,
-            "error.cause_chain" = Empty,
         ),
     };
 
@@ -125,12 +115,7 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
                 continuation: None,
             },
             Err(ref err) => {
-                eprintln!("[Job Error] {job_type}-{job_id} {err}");
-
-                Span::current()
-                    .record("otel.status_code", "ERROR")
-                    .record("error.message", display(err))
-                    .record("error.cause_chain", debug(err));
+                tracing::error!(exception.stacktrace = ?err, message= %err);
 
                 UpdateJobQuery {
                     job_id,

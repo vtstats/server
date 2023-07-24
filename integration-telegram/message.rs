@@ -63,7 +63,7 @@ pub async fn send_message(
 
     let req = client.post(url).form(&message);
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: MessageResponse = res.json().await?;
 
@@ -81,7 +81,7 @@ pub async fn edit_message(
 
     let req = client.post(url).form(&message);
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: MessageResponse = res.json().await?;
 

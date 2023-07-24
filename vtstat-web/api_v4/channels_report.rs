@@ -55,8 +55,6 @@ pub struct ResBody {
 }
 
 pub async fn channels_report(query: ReqQuery, db: Database) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", &"GET /api/v4/channels_report");
-
     tracing::info!(
         "ids={:?}, metrics={:?}, start_at={:?}, end_at={:?}",
         query.ids,

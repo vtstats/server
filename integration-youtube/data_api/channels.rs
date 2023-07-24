@@ -47,7 +47,7 @@ pub async fn list_channels(
 
     let req = client.get(url);
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: YouTubeChannelsListResponse = res.json().await?;
 

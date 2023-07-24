@@ -1,6 +1,6 @@
 use integration_youtube::pubsub::Event;
 use std::convert::Into;
-use tracing::Span;
+
 use warp::{http::StatusCode, Rejection};
 
 use vtstat_database::{
@@ -13,8 +13,6 @@ use vtstat_database::{
 use crate::reject::WarpError;
 
 pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, Rejection> {
-    Span::current().record("name", "POST /api/pubsub");
-
     match event {
         Event::Modification {
             platform_channel_id,

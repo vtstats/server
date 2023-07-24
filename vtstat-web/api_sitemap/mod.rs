@@ -1,7 +1,6 @@
 use std::convert::Into;
 use std::env;
 use std::fmt::Write;
-use tracing::Span;
 use vtstat_database::{vtubers::ListVtubersQuery, PgPool};
 use warp::{Filter, Rejection};
 
@@ -18,8 +17,6 @@ const PAGES: &[&str] = &[
 
 // Returns a sitemap for crawler like google search
 async fn sitemap_get(pool: PgPool) -> Result<impl warp::Reply, Rejection> {
-    Span::current().record("name", "GET /api/sitemap");
-
     let mut res = String::new();
 
     let hostname = env::var("SERVER_HOSTNAME").map_err(Into::<WarpError>::into)?;
