@@ -26,7 +26,7 @@ pub struct YoutubeSuperChatDonationValue {
     pub author_badges: String,
     pub author_channel_id: String,
     pub paid_amount: String,
-    pub paid_currency_code: String,
+    pub paid_currency_symbol: String,
     pub paid_color: String,
 }
 
@@ -37,7 +37,7 @@ pub struct YoutubeSuperStickerDonationValue {
     pub author_badges: String,
     pub author_channel_id: String,
     pub paid_amount: String,
-    pub paid_currency_code: String,
+    pub paid_currency_symbol: String,
     pub paid_color: String,
 }
 

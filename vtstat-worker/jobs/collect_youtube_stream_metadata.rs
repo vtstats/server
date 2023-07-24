@@ -8,7 +8,6 @@ use integration_youtube::{
     },
 };
 use vtstat_database::{
-    currencies::{Currency, ListCurrenciesQuery},
     donations::{
         AddDonationQuery, AddDonationRow, DonationValue, YoutubeMemberMilestoneDonationValue,
         YoutubeNewMemberDonationValue, YoutubeSuperChatDonationValue,
@@ -172,14 +171,13 @@ async fn collect_donation_and_chat(
 
     let mut chat_stats_rows = Vec::<AddStreamChatStatsRow>::new();
 
-    let currencies = ListCurrenciesQuery.execute(pool).await?;
-
     for message in messages {
         match message {
             LiveChatMessage::Text {
                 timestamp, badges, ..
             } => {
                 let Some (time)  = parse_timestamp(&timestamp) else {
+                    tracing::warn!("Failed to parse timestamp: {timestamp:?}.");
                     continue;
                 };
 
@@ -210,6 +208,7 @@ async fn collect_donation_and_chat(
                 badges,
             } => {
                 let Some(time) = parse_timestamp(&timestamp) else {
+                    tracing::warn!("Failed to parse timestamp: {timestamp:?}.");
                     continue;
                 };
 
@@ -245,10 +244,12 @@ async fn collect_donation_and_chat(
                 color,
             } => {
                 let Some(time) = parse_timestamp(&timestamp) else {
+                    tracing::warn!("Failed to parse timestamp: {timestamp:?}.");
                     continue;
                 };
 
-                let Some((paid_currency_code, paid_amount)) = parse_amount(&amount, &currencies) else {
+                let Some((paid_symbol, paid_amount)) = parse_amount(&amount) else {
+                    tracing::warn!("Failed to parse amount: {amount:?}.");
                     continue;
                 };
 
@@ -256,7 +257,7 @@ async fn collect_donation_and_chat(
                     PaidMessageType::SuperChat => {
                         DonationValue::YoutubeSuperChat(YoutubeSuperChatDonationValue {
                             paid_amount,
-                            paid_currency_code: paid_currency_code.into(),
+                            paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
                             message: text,
                             author_name,
@@ -267,7 +268,7 @@ async fn collect_donation_and_chat(
                     PaidMessageType::SuperSticker => {
                         DonationValue::YoutubeSuperSticker(YoutubeSuperStickerDonationValue {
                             paid_amount,
-                            paid_currency_code: paid_currency_code.into(),
+                            paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
                             message: text,
                             author_name,
@@ -316,7 +317,7 @@ fn parse_timestamp(string: &str) -> Option<DateTime<Utc>> {
     ))
 }
 
-fn parse_amount<'a>(amount: &str, currencies: &'a [Currency]) -> Option<(&'a str, String)> {
+fn parse_amount(amount: &str) -> Option<(&str, String)> {
     let i = amount.find(|ch: char| ch.is_ascii_digit())?;
 
     let (mut symbol, mut value) = amount.split_at(i);
@@ -328,13 +329,11 @@ fn parse_amount<'a>(amount: &str, currencies: &'a [Currency]) -> Option<(&'a str
         return None;
     }
 
-    let currency = currencies
-        .iter()
-        .find(|c| c.symbol == symbol || c.code == symbol)?;
+    let value = value.replace(',', "");
 
-    let value: f32 = value.replace(',', "").parse().ok()?;
+    let _: f32 = value.parse().ok()?;
 
-    Some((&currency.code, format!("{value:.2}")))
+    Some((symbol, value))
 }
 
 #[test]
@@ -360,38 +359,15 @@ fn test_parse_timestamp() {
 
 #[test]
 fn test_parse_amount() {
-    let currencies = vec![
-        Currency {
-            symbol: "$".into(),
-            code: "USD".into(),
-        },
-        Currency {
-            symbol: "¥".into(),
-            code: "JPY".into(),
-        },
-    ];
-
-    assert_eq!(parse_amount("", &currencies), None);
-    assert_eq!(parse_amount("$", &currencies), None);
-    assert_eq!(parse_amount("¥¥", &currencies), None);
-    assert_eq!(parse_amount("JPY", &currencies), None);
-    assert_eq!(parse_amount("10.00", &currencies), None);
-    assert_eq!(parse_amount("1.0.00", &currencies), None);
-    assert_eq!(parse_amount("$10.0.00", &currencies), None);
-    assert_eq!(
-        parse_amount("$1,000.00", &currencies),
-        Some(("USD", "1000.00".into()))
-    );
-    assert_eq!(
-        parse_amount("JPY 99.99", &currencies),
-        Some(("JPY", "99.99".into()))
-    );
-    assert_eq!(
-        parse_amount("¥99.9999", &currencies),
-        Some(("JPY", "100.00".into()))
-    );
-    assert_eq!(
-        parse_amount("USD 99.9901", &currencies),
-        Some(("USD", "99.99".into()))
-    );
+    assert_eq!(parse_amount("",), None);
+    assert_eq!(parse_amount("$",), None);
+    assert_eq!(parse_amount("¥¥",), None);
+    assert_eq!(parse_amount("JPY",), None);
+    assert_eq!(parse_amount("10.00",), None);
+    assert_eq!(parse_amount("1.0.00",), None);
+    assert_eq!(parse_amount("$10.0.00",), None);
+    assert_eq!(parse_amount("$1,000.00",), Some(("$", "1000.00".into())));
+    assert_eq!(parse_amount("JPY 99.99",), Some(("JPY", "99.99".into())));
+    assert_eq!(parse_amount("¥99.9999",), Some(("¥", "100.00".into())));
+    assert_eq!(parse_amount("USD 99.9901",), Some(("USD", "99.99".into())));
 }
