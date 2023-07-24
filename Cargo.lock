@@ -812,21 +812,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "integration-admin"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "jsonwebtoken",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "vtstat-utils",
- "warp",
-]
-
-[[package]]
 name = "integration-discord"
 version = "0.1.0"
 dependencies = [
@@ -840,6 +825,21 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "vtstat-utils",
+ "warp",
+]
+
+[[package]]
+name = "integration-googleauth"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "jsonwebtoken",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
  "vtstat-utils",
  "warp",
 ]
@@ -2210,8 +2210,8 @@ dependencies = [
  "chrono",
  "hex",
  "hmac",
- "integration-admin",
  "integration-discord",
+ "integration-googleauth",
  "integration-s3",
  "integration-youtube",
  "metrics",

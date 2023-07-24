@@ -28,7 +28,7 @@ tracing-futures = "0.2.5"
 warp = { version = "0.3.5", default-features = false }
 vtstat-database = { path = "../vtstat-database" }
 vtstat-utils = { path = "../vtstat-utils" }
-integration-admin = { path = "../integration-admin" }
+integration-googleauth = { path = "../integration-googleauth" }
 integration-discord = { path = "../integration-discord" }
 integration-youtube = { path = "../integration-youtube" }
 integration-s3 = { path = "../integration-s3" }

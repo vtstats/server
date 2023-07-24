@@ -9,7 +9,7 @@ use warp::reject::Reject;
 use warp::reply::Response;
 use warp::{Rejection, Reply};
 
-use integration_admin::validate::NeedLogin;
+use integration_googleauth::validate::NeedLogin;
 
 #[derive(Debug)]
 pub struct WarpError(pub AnyhowError);

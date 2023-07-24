@@ -3,7 +3,7 @@ use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use warp::{reply::Response, Filter, Rejection, Reply};
 
-use integration_admin::{validate, GoogleCerts};
+use integration_googleauth::{validate, GoogleCerts};
 use integration_s3::upload_file;
 use integration_youtube::youtubei;
 use vtstat_database::{

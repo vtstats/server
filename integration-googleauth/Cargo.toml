@@ -1,5 +1,5 @@
 [package]
-name = "integration-admin"
+name = "integration-googleauth"
 version = { workspace = true }
 authors = { workspace = true }
 edition = { workspace = true }

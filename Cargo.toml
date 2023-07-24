@@ -20,8 +20,8 @@ path = "main.rs"
 [workspace]
 members = [
     ".",
-    "integration-admin",
     "integration-discord",
+    "integration-googleauth",
     "integration-telegram",
     "integration-youtube",
     "integration-s3",
