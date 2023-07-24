@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX jobs_job_id ON jobs (job_id);
