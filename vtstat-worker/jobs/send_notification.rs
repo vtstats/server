@@ -1,7 +1,7 @@
 use anyhow::bail;
 use std::fmt::Write;
 use vtstat_database::{
-    channels::ListChannelsQuery,
+    channels::list_youtube_channels,
     jobs::SendNotificationJobPayload,
     streams::{ListYouTubeStreamsQuery, Stream, StreamStatus},
     subscriptions::{
@@ -220,11 +220,7 @@ pub async fn build_discord_embed(
 }
 
 pub async fn _build_telegram_message(stream: &Stream, pool: &PgPool) -> anyhow::Result<String> {
-    let channels = ListChannelsQuery {
-        platform: "youtube",
-    }
-    .execute(pool)
-    .await?;
+    let channels = list_youtube_channels(pool).await?;
 
     let vtubers = ListVtubersQuery.execute(pool).await?;
 

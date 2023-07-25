@@ -2,17 +2,24 @@ use sqlx::{PgPool, Result};
 
 use super::Channel;
 
-pub struct ListChannelsQuery<'q> {
-    pub platform: &'q str,
+pub async fn list_youtube_channels(pool: &PgPool) -> Result<Vec<Channel>> {
+    let query = sqlx::query_as!(
+        Channel,
+        "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" \
+        FROM channels WHERE platform = 'youtube'"
+    )
+    .fetch_all(pool);
+
+    crate::otel::instrument("SELECT", "channels", query).await
 }
 
-impl<'q> ListChannelsQuery<'q> {
-    pub async fn execute(self, pool: &PgPool) -> Result<Vec<Channel>> {
-        let query =
-            sqlx::query_as::<_, Channel>(r#"SELECT * FROM channels WHERE platform::text = $1"#)
-                .bind(self.platform)
-                .fetch_all(pool);
+pub async fn list_bilibili_channels(pool: &PgPool) -> Result<Vec<Channel>> {
+    let query = sqlx::query_as!(
+        Channel,
+        "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" \
+        FROM channels WHERE platform = 'bilibili'"
+    )
+    .fetch_all(pool);
 
-        crate::otel::instrument("SELECT", "channels", query).await
-    }
+    crate::otel::instrument("SELECT", "channels", query).await
 }

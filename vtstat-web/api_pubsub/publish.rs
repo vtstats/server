@@ -4,7 +4,7 @@ use std::convert::Into;
 use warp::{http::StatusCode, Rejection};
 
 use vtstat_database::{
-    channels::ListChannelsQuery,
+    channels::list_youtube_channels,
     jobs::{JobPayload, PushJobQuery, UpsertYoutubeStreamJobPayload},
     streams::{delete_stream, end_stream, ListYouTubeStreamsQuery, StreamStatus},
     PgPool,
@@ -18,12 +18,9 @@ pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, R
             platform_channel_id,
             platform_stream_id,
         } => {
-            let channels = ListChannelsQuery {
-                platform: "youtube",
-            }
-            .execute(&pool)
-            .await
-            .map_err(Into::<WarpError>::into)?;
+            let channels = list_youtube_channels(&pool)
+                .await
+                .map_err(Into::<WarpError>::into)?;
 
             let channel = channels
                 .into_iter()

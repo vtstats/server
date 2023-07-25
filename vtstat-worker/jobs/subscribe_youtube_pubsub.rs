@@ -1,7 +1,7 @@
 use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
 
-use vtstat_database::channels::ListChannelsQuery;
+use vtstat_database::channels::list_youtube_channels;
 use vtstat_database::PgPool;
 use vtstat_request::RequestHub;
 
@@ -12,11 +12,7 @@ use super::JobResult;
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
     let next_run = Utc::now().duration_trunc(Duration::days(1)).unwrap() + Duration::days(1);
 
-    let channels = ListChannelsQuery {
-        platform: "youtube",
-    }
-    .execute(pool)
-    .await?;
+    let channels = list_youtube_channels(pool).await?;
 
     let _ = stream::unfold(channels.iter(), |mut iter| async {
         let channel = iter.next()?;

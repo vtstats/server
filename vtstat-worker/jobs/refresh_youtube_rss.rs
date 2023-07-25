@@ -1,7 +1,7 @@
 use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
 use vtstat_database::{
-    channels::ListChannelsQuery,
+    channels::list_youtube_channels,
     streams::{ListYouTubeStreamsQuery, UpsertYouTubeStreamQuery},
     PgPool,
 };
@@ -19,11 +19,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     let now_str = now.to_string();
 
-    let youtube_channels = ListChannelsQuery {
-        platform: "youtube",
-    }
-    .execute(pool)
-    .await?;
+    let youtube_channels = list_youtube_channels(pool).await?;
 
     let feeds = stream::unfold(youtube_channels.iter(), |mut iter| async {
         let channel = iter.next()?;

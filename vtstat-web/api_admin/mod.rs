@@ -8,7 +8,6 @@ use warp::{reply::Response, Filter, Rejection, Reply};
 
 use integration_googleauth::{validate, GoogleCerts};
 use vtstat_database::{
-    channels::ListChannelsQuery,
     streams::{Column, ListYouTubeStreamsQuery, Ordering},
     PgPool,
 };
@@ -130,12 +129,9 @@ async fn list_streams(pool: PgPool, parameter: ListParameter) -> Result<Response
 }
 
 async fn list_channels(pool: PgPool) -> Result<Response, Rejection> {
-    let channels = ListChannelsQuery {
-        platform: "youtube",
-    }
-    .execute(&pool)
-    .await
-    .map_err(Into::<WarpError>::into)?;
+    let channels = vtstat_database::channels::list_youtube_channels(&pool)
+        .await
+        .map_err(Into::<WarpError>::into)?;
 
     Ok(warp::reply::json(&channels).into_response())
 }

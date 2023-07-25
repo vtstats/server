@@ -5,7 +5,7 @@ use vtstat_database::{
         AddChannelSubscriberStatsQuery, AddChannelSubscriberStatsRow, AddChannelViewStatsQuery,
         AddChannelViewStatsRow,
     },
-    channels::ListChannelsQuery,
+    channels::list_bilibili_channels,
     PgPool,
 };
 use vtstat_request::RequestHub;
@@ -15,11 +15,7 @@ use super::JobResult;
 pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
     let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
 
-    let bilibili_channels = ListChannelsQuery {
-        platform: "bilibili",
-    }
-    .execute(pool)
-    .await?;
+    let bilibili_channels = list_bilibili_channels(pool).await?;
 
     let mut channel_view_stats = Vec::with_capacity(bilibili_channels.len());
     let mut channel_subscribe_stats = Vec::with_capacity(bilibili_channels.len());

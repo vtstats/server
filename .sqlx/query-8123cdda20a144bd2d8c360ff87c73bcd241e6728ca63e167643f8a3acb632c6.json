@@ -1,0 +1,49 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE platform = 'bilibili'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "channel_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "platform_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "vtuber_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "platform: _",
+        "type_info": {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8123cdda20a144bd2d8c360ff87c73bcd241e6728ca63e167643f8a3acb632c6"
+}
