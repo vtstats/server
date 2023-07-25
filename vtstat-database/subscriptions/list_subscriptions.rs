@@ -191,22 +191,22 @@ impl CreateDiscordSubscriptionQuery {
             self.payload.vtuber_id
         );
 
-        let query = sqlx::query(
+        let query = sqlx::query!(
             "INSERT INTO subscriptions (kind, payload) \
             VALUES ('discord_stream_update', $1) \
             ON CONFLICT DO NOTHING \
             RETURNING subscription_id",
+            Json(&self.payload) as _
         )
-        .bind(Json(&self.payload))
         .fetch_optional(pool);
 
-        let row = crate::otel::instrument("INSERT", "subscriptions", query).await?;
+        let record = crate::otel::instrument("INSERT", "subscriptions", query).await?;
 
-        let Some(row) = row else {
+        let Some(record) = record else {
             anyhow::bail!("subscription `{}` already exists.", self.payload.vtuber_id)
         };
 
-        Ok(row.try_get::<i32, _>("subscription_id")?)
+        Ok(record.subscription_id)
     }
 }
 

@@ -11,7 +11,7 @@ pub struct PushJobQuery {
 }
 
 impl PushJobQuery {
-    pub async fn execute(self, pool: &PgPool) -> Result<Job> {
+    pub async fn execute(self, pool: &PgPool) -> Result<i32> {
         let kind = match self.payload {
             JobPayload::HealthCheck => JobKind::HealthCheck,
             JobPayload::RefreshYoutubeRss => JobKind::RefreshYoutubeRss,
@@ -30,7 +30,7 @@ impl PushJobQuery {
             JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,
         };
 
-        let query = sqlx::query_as::<_, Job>(
+        let query = sqlx::query!(
             r#"
 INSERT INTO jobs (kind, payload, status, next_run, continuation)
      VALUES ($1, $2, 'queued', $3, $4)
@@ -39,16 +39,18 @@ ON CONFLICT (kind, payload) DO UPDATE
             next_run     = $3,
             continuation = $4,
             updated_at   = NOW()
-  RETURNING *
+  RETURNING job_id
             "#,
+            kind as _,               // $1
+            Json(self.payload) as _, // $2
+            self.next_run,           // $3
+            self.continuation,       // $4
         )
-        .bind(kind)
-        .bind(Json(self.payload))
-        .bind(self.next_run)
-        .bind(self.continuation)
         .fetch_one(pool);
 
-        crate::otel::instrument("INSERT", "jobs", query).await
+        let record = crate::otel::instrument("INSERT", "jobs", query).await?;
+
+        Ok(record.job_id)
     }
 }
 
@@ -58,7 +60,7 @@ pub async fn queue_send_notification(
     stream_platform_id: String,
     vtuber_id: String,
     pool: &PgPool,
-) -> Result<()> {
+) -> Result<i32> {
     PushJobQuery {
         continuation: None,
         next_run: Some(time),
@@ -69,8 +71,7 @@ pub async fn queue_send_notification(
         }),
     }
     .execute(pool)
-    .await?;
-    Ok(())
+    .await
 }
 
 pub async fn queue_collect_youtube_stream_metadata(
@@ -79,7 +80,7 @@ pub async fn queue_collect_youtube_stream_metadata(
     platform_stream_id: String,
     platform_channel_id: String,
     pool: &PgPool,
-) -> Result<()> {
+) -> Result<i32> {
     PushJobQuery {
         continuation: None,
         next_run: Some(time),
@@ -90,8 +91,7 @@ pub async fn queue_collect_youtube_stream_metadata(
         }),
     }
     .execute(pool)
-    .await?;
-    Ok(())
+    .await
 }
 
 #[cfg(test)]
@@ -103,7 +103,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     // should push a new job
     {
-        let job = PushJobQuery {
+        PushJobQuery {
             continuation: None,
             next_run: None,
             payload: JobPayload::HealthCheck,
@@ -111,12 +111,7 @@ async fn test(pool: PgPool) -> Result<()> {
         .execute(&pool)
         .await?;
 
-        assert_eq!(job.status, JobStatus::Queued);
-        assert_eq!(job.payload, JobPayload::HealthCheck);
-        assert_eq!(job.next_run, None);
-        assert_eq!(job.continuation, None);
-
-        let job = PushJobQuery {
+        PushJobQuery {
             continuation: Some("continuation".into()),
             next_run: None,
             payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
@@ -128,13 +123,9 @@ async fn test(pool: PgPool) -> Result<()> {
         .execute(&pool)
         .await?;
 
-        assert_eq!(job.status, JobStatus::Queued);
-        assert_eq!(job.next_run, None);
-        assert_eq!(job.continuation, Some("continuation".into()));
-
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        let job = PushJobQuery {
+        PushJobQuery {
             continuation: None,
             next_run: Some(time),
             payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
@@ -146,15 +137,11 @@ async fn test(pool: PgPool) -> Result<()> {
         .execute(&pool)
         .await?;
 
-        assert_eq!(job.status, JobStatus::Queued);
-        assert_eq!(job.next_run, Some(time));
-        assert_eq!(job.continuation, None);
-
         assert_eq!(
-            sqlx::query_as::<_, Job>("SELECT * FROM jobs")
-                .fetch_all(&pool)
+            sqlx::query!("SELECT COUNT(*) as \"count!\" FROM jobs")
+                .fetch_one(&pool)
                 .await?
-                .len(),
+                .count,
             3
         );
     }
@@ -165,7 +152,7 @@ async fn test(pool: PgPool) -> Result<()> {
             .execute(&pool)
             .await?;
 
-        let job = PushJobQuery {
+        PushJobQuery {
             continuation: Some("foobar".into()),
             next_run: None,
             payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
@@ -176,8 +163,6 @@ async fn test(pool: PgPool) -> Result<()> {
         }
         .execute(&pool)
         .await?;
-
-        assert_eq!(job.continuation, Some("foobar".into()));
 
         assert_eq!(
             sqlx::query_as::<_, Job>("SELECT * FROM jobs")

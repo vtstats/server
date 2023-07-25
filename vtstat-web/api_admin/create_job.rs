@@ -23,7 +23,7 @@ pub enum CreateJobPayload {
 }
 
 pub async fn create_job(pool: PgPool, payload: CreateJobPayload) -> Result<Response, Rejection> {
-    let job = PushJobQuery {
+    let job_id = PushJobQuery {
         continuation: None,
         next_run: Some(Utc::now()),
         payload: match payload {
@@ -48,7 +48,7 @@ pub async fn create_job(pool: PgPool, payload: CreateJobPayload) -> Result<Respo
     .map_err(Into::<WarpError>::into)?;
 
     Ok(warp::reply::json(&ActionResponse {
-        msg: format!("Run {} created", job.job_id),
+        msg: format!("Job#{job_id} created."),
     })
     .into_response())
 }

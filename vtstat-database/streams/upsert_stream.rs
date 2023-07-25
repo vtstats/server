@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{PgPool, Result, Row};
+use sqlx::{PgPool, Result};
 
 use super::StreamStatus;
 
@@ -20,7 +20,7 @@ pub struct UpsertYouTubeStreamQuery<'q> {
 
 impl<'q> UpsertYouTubeStreamQuery<'q> {
     pub async fn execute(self, pool: &PgPool) -> Result<i32> {
-        let query = sqlx::query(
+        let query = sqlx::query!(
             r#"
 INSERT INTO streams AS t (
                 platform,
@@ -41,22 +41,22 @@ ON CONFLICT (platform, platform_id) DO UPDATE
             schedule_time  = COALESCE($6, t.schedule_time),
             start_time     = COALESCE($7, t.start_time),
             end_time       = COALESCE($8, t.end_time)
-  RETURNING *
+  RETURNING stream_id
             "#,
+            self.platform_stream_id, // $1
+            self.channel_id,         // $2
+            self.title,              // $3
+            self.status as _,        // $4
+            self.thumbnail_url,      // $5
+            self.schedule_time,      // $6
+            self.start_time,         // $7
+            self.end_time,           // $8
         )
-        .bind(self.platform_stream_id) // $1
-        .bind(self.channel_id) // $2
-        .bind(self.title) // $3
-        .bind(self.status) // $4
-        .bind(self.thumbnail_url) // $5
-        .bind(self.schedule_time) // $6
-        .bind(self.start_time) // $7
-        .bind(self.end_time) // $8
         .fetch_one(pool);
 
-        let row = crate::otel::instrument("INSERT", "streams", query).await?;
+        let record = crate::otel::instrument("INSERT", "streams", query).await?;
 
-        row.try_get("stream_id")
+        Ok(record.stream_id)
     }
 }
 

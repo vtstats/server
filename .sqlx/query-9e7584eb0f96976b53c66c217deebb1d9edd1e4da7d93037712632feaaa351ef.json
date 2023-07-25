@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO channels (platform, platform_id, vtuber_id, kind) VALUES($1, $2, $3, '') RETURNING channel_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "channel_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        },
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9e7584eb0f96976b53c66c217deebb1d9edd1e4da7d93037712632feaaa351ef"
+}

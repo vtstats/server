@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nINSERT INTO jobs (kind, payload, status, next_run, continuation)\n     VALUES ($1, $2, 'queued', $3, $4)\nON CONFLICT (kind, payload) DO UPDATE\n        SET status       = 'queued',\n            next_run     = $3,\n            continuation = $4,\n            updated_at   = NOW()\n  RETURNING job_id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "job_kind",
+            "kind": {
+              "Enum": [
+                "health_check",
+                "refresh_youtube_rss",
+                "subscribe_youtube_pubsub",
+                "update_youtube_channel_view_and_subscriber",
+                "update_bilibili_channel_view_and_subscriber",
+                "update_youtube_channel_donation",
+                "update_currency_exchange_rate",
+                "upsert_youtube_stream",
+                "collect_youtube_stream_metadata",
+                "collect_youtube_stream_live_chat",
+                "update_upcoming_stream",
+                "install_discord_commands",
+                "send_notification"
+              ]
+            }
+          }
+        },
+        "Jsonb",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "1d9236436bf7d38f230f514bb4e3561816129d9947ce8a6b100fa63596809787"
+}

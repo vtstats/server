@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO subscriptions (kind, payload) VALUES ('discord_stream_update', $1) ON CONFLICT DO NOTHING RETURNING subscription_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "subscription_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Jsonb"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8e1c68fd0fe92b9dd6528d4082c5c04ed1e42f705bdddf033d2ae74b78716d59"
+}

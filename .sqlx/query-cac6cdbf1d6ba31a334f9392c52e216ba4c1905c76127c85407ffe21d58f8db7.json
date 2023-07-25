@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO subscriptions (kind, payload) VALUES ('telegram_stream_update', $1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cac6cdbf1d6ba31a334f9392c52e216ba4c1905c76127c85407ffe21d58f8db7"
+}

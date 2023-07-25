@@ -1,4 +1,4 @@
-use sqlx::{PgPool, Result, Row};
+use sqlx::{PgPool, Result};
 
 use super::Platform;
 
@@ -10,18 +10,18 @@ pub struct CreateChannel {
 
 impl CreateChannel {
     pub async fn execute(&self, pool: &PgPool) -> Result<i32> {
-        let query = sqlx::query(
+        let query = sqlx::query!(
             "INSERT INTO channels (platform, platform_id, vtuber_id, kind) \
             VALUES($1, $2, $3, '') \
             RETURNING channel_id",
+            self.platform as _,
+            self.platform_id,
+            self.vtuber_id,
         )
-        .bind(self.platform)
-        .bind(&self.platform_id)
-        .bind(&self.vtuber_id)
         .fetch_one(pool);
 
-        let row = crate::otel::instrument("INSERT", "channels", query).await?;
+        let record = crate::otel::instrument("INSERT", "channels", query).await?;
 
-        row.try_get("channel_id")
+        Ok(record.channel_id)
     }
 }

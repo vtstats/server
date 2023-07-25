@@ -14,7 +14,8 @@ pub struct StreamViewerStats {
 
 impl StreamViewerStatsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<StreamViewerStats>> {
-        let query = sqlx::query_as::<_, StreamViewerStats>(
+        let query = sqlx::query_as!(
+            StreamViewerStats,
             r#"
      SELECT time, count
        FROM stream_viewer_stats
@@ -26,9 +27,9 @@ impl StreamViewerStatsQuery {
                    AND platform_id = $2
             )
             "#,
+            self.platform,
+            self.platform_stream_id,
         )
-        .bind(self.platform)
-        .bind(self.platform_stream_id)
         .fetch_all(pool);
 
         crate::otel::instrument("SELECT", "stream_viewer_stats", query).await

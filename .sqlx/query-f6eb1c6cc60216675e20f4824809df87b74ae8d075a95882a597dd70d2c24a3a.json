@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE subscriptions SET payload = $1, updated_at = NOW() WHERE subscription_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Jsonb",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f6eb1c6cc60216675e20f4824809df87b74ae8d075a95882a597dd70d2c24a3a"
+}

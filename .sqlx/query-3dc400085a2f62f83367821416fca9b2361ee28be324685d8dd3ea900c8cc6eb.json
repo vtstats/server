@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n     SELECT time, count\n       FROM stream_viewer_stats\n      WHERE stream_id IN\n            (\n                SELECT stream_id\n                  FROM streams\n                 WHERE platform::TEXT = $1\n                   AND platform_id = $2\n            )\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "3dc400085a2f62f83367821416fca9b2361ee28be324685d8dd3ea900c8cc6eb"
+}

@@ -11,7 +11,7 @@ pub struct Currency {
 impl ListCurrenciesQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<Currency>> {
         let query =
-            sqlx::query_as::<_, Currency>("SELECT code, symbol FROM currencies").fetch_all(pool);
+            sqlx::query_as!(Currency, "SELECT code, symbol FROM currencies").fetch_all(pool);
 
         crate::otel::instrument("SELECT", "currencies", query).await
     }
