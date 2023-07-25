@@ -1,4 +1,5 @@
 mod list_job;
+mod next_queued;
 mod pull_job;
 mod push_job;
 mod re_run;
@@ -10,12 +11,13 @@ use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
 
 pub use self::list_job::*;
+pub use self::next_queued::*;
 pub use self::pull_job::*;
 pub use self::push_job::*;
 pub use self::re_run::*;
 pub use self::update_job::*;
 
-#[derive(sqlx::Type, Debug, PartialEq, Eq, Serialize)]
+#[derive(sqlx::Type, Debug, PartialEq, Eq, Serialize, Clone, Copy)]
 #[sqlx(type_name = "job_status", rename_all = "snake_case")]
 pub enum JobStatus {
     Queued,

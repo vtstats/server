@@ -50,6 +50,18 @@ ON CONFLICT (kind, payload) DO UPDATE
 
         let record = crate::otel::instrument("INSERT", "jobs", query).await?;
 
+        if let Some(next_run) = self.next_run {
+            let _ = sqlx::query!(
+                "SELECT pg_notify('vt_new_job_queued', $1)",
+                next_run.timestamp_millis().to_string()
+            )
+            .execute(pool)
+            .await
+            .map_err(|err| {
+                tracing::error!("push job: {err:?}");
+            });
+        }
+
         Ok(record.job_id)
     }
 }

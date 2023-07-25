@@ -32,7 +32,21 @@ impl UpdateJobQuery {
         .bind(self.last_run) // $5
         .fetch_one(pool);
 
-        crate::otel::instrument("UPDATE", "jobs", query).await
+        let job = crate::otel::instrument("UPDATE", "jobs", query).await?;
+
+        if let (JobStatus::Queued, Some(next_run)) = (self.status, self.next_run) {
+            let _ = sqlx::query!(
+                "SELECT pg_notify('vt_new_job_queued', $1)",
+                next_run.timestamp_millis().to_string()
+            )
+            .execute(pool)
+            .await
+            .map_err(|err| {
+                tracing::error!("push job: {err:?}");
+            });
+        }
+
+        Ok(job)
     }
 }
 

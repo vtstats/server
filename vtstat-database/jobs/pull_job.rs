@@ -2,34 +2,26 @@ use sqlx::{PgPool, Result};
 
 use super::Job;
 
-pub struct PullJobQuery {
-    pub limit: i64,
-}
+pub async fn pull_jobs(pool: &PgPool) -> Result<Vec<Job>> {
+    let query = sqlx::query_as::<_, Job>(
+        r#"
+   UPDATE jobs
+      SET status = 'running'
+    WHERE job_id IN
+          (
+               SELECT job_id
+               FROM jobs
+               WHERE (next_run <= NOW() OR next_run IS NULL)
+               AND status = 'queued'
+               ORDER BY next_run
+               FOR UPDATE SKIP LOCKED
+          )
+RETURNING *
+        "#,
+    )
+    .fetch_all(pool);
 
-impl PullJobQuery {
-    pub async fn execute(self, pool: &PgPool) -> Result<Vec<Job>> {
-        let query = sqlx::query_as::<_, Job>(
-            r#"
-     UPDATE jobs
-        SET status = 'running'
-      WHERE job_id IN
-            (
-                 SELECT job_id
-                 FROM jobs
-                 WHERE (next_run <= NOW() OR next_run IS NULL)
-                 AND status = 'queued'
-                 ORDER BY next_run
-                 FOR UPDATE SKIP LOCKED
-                 LIMIT $1
-            )
-  RETURNING *
-            "#,
-        )
-        .bind(self.limit)
-        .fetch_all(pool);
-
-        crate::otel::instrument("UPDATE", "jobs", query).await
-    }
+    crate::otel::instrument("UPDATE", "jobs", query).await
 }
 
 #[cfg(test)]
@@ -50,11 +42,7 @@ INSERT INTO jobs (kind, payload, status, next_run)
     .execute(&pool)
     .await?;
 
-    let jobs = PullJobQuery { limit: 0 }.execute(&pool).await?;
-
-    assert!(jobs.is_empty());
-
-    let jobs = PullJobQuery { limit: 5 }.execute(&pool).await?;
+    let jobs = pull_jobs(&pool).await?;
 
     assert_eq!(jobs.len(), 1);
     assert_eq!(
