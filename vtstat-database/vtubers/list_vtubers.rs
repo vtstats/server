@@ -20,7 +20,7 @@ pub struct VTuber {
 
 impl ListVtubersQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<VTuber>> {
-        let query = sqlx::query_as::<_, VTuber>("SELECT * FROM vtubers").fetch_all(pool);
+        let query = sqlx::query_as!(VTuber, "SELECT * FROM vtubers").fetch_all(pool);
 
         crate::otel::instrument("SELECT", "vtubers", query).await
     }

@@ -155,14 +155,14 @@ impl RemoveDiscordSubscriptionQuery {
             "DELETE FROM notifications WHERE subscription_id = $1",
             subscription_id
         )
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         sqlx::query!(
             "DELETE FROM subscriptions WHERE subscription_id = $1",
             subscription_id
         )
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         tx.commit().await?;

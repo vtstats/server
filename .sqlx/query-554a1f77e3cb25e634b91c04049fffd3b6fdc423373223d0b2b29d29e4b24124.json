@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n UPDATE streams\n    SET title      = COALESCE($1, title),\n        updated_at = NOW(),\n        start_time = COALESCE(start_time, $2),\n        status     = 'live',\n        like_max   = GREATEST($3, like_max)\n  WHERE stream_id  = $4\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "554a1f77e3cb25e634b91c04049fffd3b6fdc423373223d0b2b29d29e4b24124"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE streams SET status = 'ended', end_time = NOW() WHERE stream_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ddbd3758f963833db871cb0a37f45e27756e52e6345c130be89528910bc0b03c"
+}

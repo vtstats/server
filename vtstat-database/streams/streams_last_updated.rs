@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{postgres::PgRow, PgPool, Result, Row};
+use sqlx::{PgPool, Result};
 
 type UtcTime = DateTime<Utc>;
 
@@ -7,11 +7,11 @@ pub struct YouTubeStreamsLastUpdated;
 
 impl YouTubeStreamsLastUpdated {
     pub async fn execute(self, pool: &PgPool) -> Result<Option<UtcTime>> {
-        let query = sqlx::query("SELECT MAX(updated_at) from streams")
-            .try_map(|row: PgRow| row.try_get::<Option<UtcTime>, _>("max"))
-            .fetch_one(pool);
+        let query = sqlx::query!("SELECT MAX(updated_at) from streams").fetch_one(pool);
 
-        crate::otel::instrument("SELECT", "streams", query).await
+        crate::otel::instrument("SELECT", "streams", query)
+            .await
+            .map(|row| row.max)
     }
 }
 

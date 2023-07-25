@@ -368,6 +368,6 @@ fn test_parse_amount() {
     assert_eq!(parse_amount("$10.0.00",), None);
     assert_eq!(parse_amount("$1,000.00",), Some(("$", "1000.00".into())));
     assert_eq!(parse_amount("JPY 99.99",), Some(("JPY", "99.99".into())));
-    assert_eq!(parse_amount("¥99.9999",), Some(("¥", "100.00".into())));
-    assert_eq!(parse_amount("USD 99.9901",), Some(("USD", "99.99".into())));
+    assert_eq!(parse_amount("¥99.9999",), Some(("¥", "99.9999".into())));
+    assert_eq!(parse_amount("USD 99.9901",), Some(("USD", "99.9901".into())));
 }

@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM vtubers",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "vtuber_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "native_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "english_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "japanese_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "twitter_username",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "debuted_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "retired_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "thumbnail_url",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "4b511f587867c556d37f1cf018c4bff6f622b6d0616ab3f9f34ecbf5b15d72b4"
+}

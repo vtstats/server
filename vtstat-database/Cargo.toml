@@ -14,14 +14,14 @@ chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
 serde_with = "3.0.0"
-sqlx = { version = "0.6.3", default-features = false, features = [
+sqlx = { version = "0.7.1", default-features = false, features = [
     "chrono",
     "json",
     "macros",
     "migrate",
-    "offline",
     "postgres",
-    "runtime-tokio-rustls",
+    "runtime-tokio",
+    "tls-rustls"
 ] }
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"

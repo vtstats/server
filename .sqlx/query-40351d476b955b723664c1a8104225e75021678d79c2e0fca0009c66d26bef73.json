@@ -1,0 +1,39 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.vtuber_id, s.status as \"status: _\" from streams s LEFT JOIN channels c ON s.channel_id = c.channel_id WHERE s.stream_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "vtuber_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "status: _",
+        "type_info": {
+          "Custom": {
+            "name": "stream_status",
+            "kind": {
+              "Enum": [
+                "scheduled",
+                "live",
+                "ended"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "40351d476b955b723664c1a8104225e75021678d79c2e0fca0009c66d26bef73"
+}
