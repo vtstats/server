@@ -29,7 +29,9 @@ pub async fn create_vtuber(
     pool: PgPool,
     payload: CreateVTuberPayload,
 ) -> Result<Response, Rejection> {
-    let mut channel = youtubei::browse_channel(&payload.youtube_channel_id)
+    let client = Client::new();
+
+    let mut channel = youtubei::browse_channel(&payload.youtube_channel_id, &client)
         .await
         .map_err(WarpError)?;
 
@@ -42,19 +44,7 @@ pub async fn create_vtuber(
         .map(|t| t.url);
 
     if let Some(url) = thumbnail_url.take() {
-        async fn upload_thumbnail(url: &str, id: &str) -> anyhow::Result<String> {
-            let client = Client::new();
-
-            let req = client.get(url);
-
-            let res = instrument_send(&client, req).await?.error_for_status()?;
-
-            let file = res.bytes().await?;
-
-            upload_file(&format!("thumbnail/{}.jpg", id), file, "image/jpg", &client).await
-        }
-
-        if let Ok(url) = upload_thumbnail(&url, &payload.vtuber_id).await {
+        if let Ok(url) = upload_thumbnail(&url, &payload.vtuber_id, &client).await {
             thumbnail_url = Some(url);
         }
     }
@@ -87,4 +77,14 @@ pub async fn create_vtuber(
         StatusCode::CREATED,
     )
     .into_response())
+}
+
+async fn upload_thumbnail(url: &str, id: &str, client: &Client) -> anyhow::Result<String> {
+    let req = client.get(url);
+
+    let res = instrument_send(client, req).await?.error_for_status()?;
+
+    let file = res.bytes().await?;
+
+    upload_file(&format!("thumbnail/{}.jpg", id), file, "image/jpg", client).await
 }

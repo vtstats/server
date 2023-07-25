@@ -1,7 +1,7 @@
 mod channels;
 mod thumbnail;
 
-use reqwest::Client;
+use reqwest::{Client, ClientBuilder};
 
 pub use channels::*;
 #[derive(Clone)]
@@ -12,7 +12,12 @@ pub struct RequestHub {
 impl RequestHub {
     pub fn new() -> Self {
         RequestHub {
-            client: Client::new(),
+            client: ClientBuilder::new()
+                .brotli(true)
+                .deflate(true)
+                .gzip(true)
+                .build()
+                .unwrap(),
         }
     }
 }

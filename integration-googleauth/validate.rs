@@ -21,10 +21,10 @@ struct Cert {
     kid: String,
 }
 
-#[derive(Deserialize)]
 pub struct GoogleCerts {
     keys: Vec<Cert>,
     expire: DateTime<Utc>,
+    client: Client,
 }
 
 #[derive(Deserialize, Debug)]
@@ -38,6 +38,7 @@ impl GoogleCerts {
         Arc::new(Mutex::new(GoogleCerts {
             keys: vec![],
             expire: Utc::now(),
+            client: Client::new(),
         }))
     }
 
@@ -46,11 +47,11 @@ impl GoogleCerts {
     }
 
     async fn refresh(&mut self) -> anyhow::Result<()> {
-        let client = Client::new();
+        let req = self
+            .client
+            .get("https://www.googleapis.com/oauth2/v3/certs");
 
-        let req = client.get("https://www.googleapis.com/oauth2/v3/certs");
-
-        let res = instrument_send(&client, req).await?;
+        let res = instrument_send(&self.client, req).await?;
 
         let max_age = res
             .headers()
