@@ -16,7 +16,19 @@ pub enum Interaction {
         channel_id: String,
         data: ApplicationCommandData,
         app_permissions: Permissions,
+        member: Member,
     },
+}
+
+#[derive(Deserialize, Debug, PartialEq)]
+pub struct Member {
+    pub user: MemberUser,
+    pub roles: Vec<String>,
+}
+
+#[derive(Deserialize, Debug, PartialEq)]
+pub struct MemberUser {
+    pub id: String,
 }
 
 #[derive(Debug, PartialEq)]
@@ -120,6 +132,7 @@ impl<'de> de::Deserialize<'de> for Interaction {
             "1" => Ok(Interaction::Ping),
             "2" => Ok(Interaction::ApplicationCommand {
                 data: serde_json::from_str(get("data")?).map_err(de::Error::custom)?,
+                member: serde_json::from_str(get("member")?).map_err(de::Error::custom)?,
                 guild_id: get("guild_id")?.trim_matches('"').into(),
                 channel_id: get("channel_id")?.trim_matches('"').into(),
                 app_permissions: get("app_permissions")?
@@ -221,7 +234,11 @@ fn test() {
                     name: "arg1".into(),
                     value: "test".into()
                 }]
-            }
+            },
+            member: Member {
+                roles: vec![],
+                user: MemberUser { id: "id".into() }
+            },
         }
     );
 
@@ -234,7 +251,11 @@ fn test() {
             data: ApplicationCommandData {
                 name: "list".into(),
                 options: vec![]
-            }
+            },
+            member: Member {
+                roles: vec![],
+                user: MemberUser { id: "".into() }
+            },
         }
     );
 
@@ -250,7 +271,11 @@ fn test() {
                     name: "subscription_id".into(),
                     value: 3
                 }]
-            }
+            },
+            member: Member {
+                roles: vec![],
+                user: MemberUser { id: "".into() }
+            },
         }
     );
 
