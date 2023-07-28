@@ -71,8 +71,8 @@ async fn handle_command(
     let command = data.name.as_str();
 
     match command {
-        "list" => list_subscriptions(&pool, guild_id, channel_id).await,
-        "list_all" => list_all_subscriptions(&pool, guild_id).await,
+        "list" => list_subscriptions(pool, guild_id, channel_id).await,
+        "list_all" => list_all_subscriptions(pool, guild_id).await,
         "add" | "remove" => {
             check_permission(&guild_id, &app_permissions, &member, cache).await?;
 
@@ -81,9 +81,9 @@ async fn handle_command(
                 .ok_or_else(|| anyhow::anyhow!("Can't get option `vtuber_id`"))?;
 
             if command == "add" {
-                create_subscription(&pool, guild_id, channel_id, vtuber_id).await
+                create_subscription(pool, guild_id, channel_id, vtuber_id).await
             } else {
-                remove_subscription(&pool, guild_id, channel_id, vtuber_id).await
+                remove_subscription(pool, guild_id, channel_id, vtuber_id).await
             }
         }
         _ => Ok(format!("Error: unknown command {command:?}")),

@@ -14,6 +14,7 @@ mod api_admin;
 mod api_discord;
 mod api_pubsub;
 mod api_sitemap;
+mod api_v4;
 // mod api_telegram;
 
 pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
@@ -24,11 +25,10 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
     let routes = warp::path("api").and(
         whoami
             .or(api_sitemap::sitemap(pool.clone()))
-            // .or(api_telegram::routes(pool.clone()))
+            .or(api_v4::routes(pool.clone()))
             .or(api_discord::routes(pool.clone()))
             .or(api_admin::routes(pool.clone()))
-            .or(api_pubsub::verify())
-            .or(api_pubsub::publish(pool)),
+            .or(api_pubsub::routes(pool)),
     );
 
     let filter = routes

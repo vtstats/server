@@ -1,0 +1,63 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE vtuber_id = ANY($1) AND platform = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "channel_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "platform_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "vtuber_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "platform: _",
+        "type_info": {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ae4e3d2033842971d8c368629b604b6165a49a5a01e060a941bef506f9853e52"
+}

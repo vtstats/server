@@ -1,14 +1,13 @@
 use anyhow::bail;
 use std::fmt::Write;
 use vtstat_database::{
-    channels::list_youtube_channels,
     jobs::SendNotificationJobPayload,
-    streams::{ListYouTubeStreamsQuery, Stream, StreamStatus},
+    streams::{find_stream_by_platform_id, Stream, StreamStatus},
     subscriptions::{
         InsertNotificationQuery, ListDiscordSubscriptionQuery, ListNotificationsQuery,
         NotificationPayload, UpdateNotificationQuery,
     },
-    vtubers::ListVtubersQuery,
+    vtubers::find_vtuber,
     PgPool,
 };
 use vtstat_request::RequestHub;
@@ -33,18 +32,13 @@ pub async fn execute(
         return Ok(JobResult::Completed);
     }
 
-    let streams = ListYouTubeStreamsQuery {
-        platform_ids: &[payload.stream_platform_id],
-        ..Default::default()
-    }
-    .execute(pool)
-    .await?;
+    let stream = find_stream_by_platform_id(&payload.stream_platform_id, pool).await?;
 
-    let Some(stream) = streams.first() else {
+    let Some(stream) = stream else {
         return Ok(JobResult::Completed);
     };
 
-    let embeds = vec![build_discord_embed(stream, &payload.vtuber_id, pool).await?];
+    let embeds = vec![build_discord_embed(&stream, &payload.vtuber_id, pool).await?];
 
     for subscription in subscriptions {
         let previous_notification = ListNotificationsQuery {
@@ -104,9 +98,7 @@ pub async fn build_discord_embed(
     vtuber_id: &str,
     pool: &PgPool,
 ) -> anyhow::Result<Embed> {
-    let vtubers = ListVtubersQuery.execute(pool).await?;
-
-    let vtuber = vtubers.iter().find(|vtb| vtb.vtuber_id == vtuber_id);
+    let vtuber = find_vtuber(vtuber_id, pool).await?;
 
     let color = match stream.status {
         StreamStatus::Scheduled => 0x009688,
@@ -114,6 +106,7 @@ pub async fn build_discord_embed(
         StreamStatus::Ended => 0x3F51B5,
     };
     let thumbnail = vtuber
+        .as_ref()
         .and_then(|v| v.thumbnail_url.as_ref())
         .map(|url| EmbedThumbnail { url: url.clone() });
     let author = vtuber.map(|v| {
@@ -219,15 +212,12 @@ pub async fn build_discord_embed(
     })
 }
 
-pub async fn _build_telegram_message(stream: &Stream, pool: &PgPool) -> anyhow::Result<String> {
-    let channels = list_youtube_channels(pool).await?;
-
-    let vtubers = ListVtubersQuery.execute(pool).await?;
-
-    let vtuber = channels
-        .iter()
-        .find(|ch| ch.platform_id == stream.platform_channel_id)
-        .and_then(|ch| vtubers.iter().find(|vtb| vtb.vtuber_id == ch.vtuber_id));
+pub async fn _build_telegram_message(
+    stream: &Stream,
+    vtuber_id: &str,
+    pool: &PgPool,
+) -> anyhow::Result<String> {
+    let vtuber = find_vtuber(vtuber_id, pool).await?;
 
     let Some(vtuber) = vtuber else {
         bail!("Stream not found");
@@ -239,11 +229,11 @@ pub async fn _build_telegram_message(stream: &Stream, pool: &PgPool) -> anyhow::
         r#"<a href="http://youtu.be/{}">{}</a>"#,
         stream.platform_id, stream.title,
     );
-    let _ = writeln!(
-        buf,
-        r#"from <a href="https://www.youtube.com/channel/{}">{}</a>"#,
-        stream.platform_channel_id, vtuber.native_name,
-    );
+    // let _ = writeln!(
+    //     buf,
+    //     r#"from <a href="https://www.youtube.com/channel/{}">{}</a>"#,
+    //     stream.platform_channel_id, vtuber.native_name,
+    // );
     match stream.status {
         StreamStatus::Scheduled => {
             if let Some(time) = stream.schedule_time {

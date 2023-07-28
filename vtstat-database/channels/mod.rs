@@ -4,9 +4,9 @@ mod list_channels;
 pub use self::create_channel::*;
 pub use self::list_channels::*;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(sqlx::FromRow, Serialize)]
+#[derive(Serialize)]
 pub struct Channel {
     pub channel_id: i32,
     pub platform_id: String,
@@ -14,8 +14,9 @@ pub struct Channel {
     pub platform: Platform,
 }
 
-#[derive(sqlx::Type, Serialize, Clone, Copy)]
+#[derive(sqlx::Type, Serialize, Deserialize, Clone, Copy)]
 #[sqlx(type_name = "platform", rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Platform {
     Youtube,
     Bilibili,

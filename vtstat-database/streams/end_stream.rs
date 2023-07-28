@@ -13,9 +13,9 @@ pub async fn end_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
     Ok(())
 }
 
-pub async fn end_stream_with_values<'q>(
+pub async fn end_stream_with_values(
     stream_id: i32,
-    title: Option<&'q str>,
+    title: Option<&str>,
     schedule_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
     end_time: Option<DateTime<Utc>>,
@@ -55,10 +55,10 @@ async fn test(pool: PgPool) -> Result<()> {
 
     sqlx::query!(
         r#"
-    INSERT INTO streams (stream_id, platform, platform_id, title, like_max, status, channel_id)
-         VALUES (1, 'youtube', 'id1', 'title1', 100, 'live', 1),
-                (2, 'youtube', 'id2', 'title2', 100, 'scheduled', 1),
-                (3, 'youtube', 'id3', 'title3', 100, 'ended', 1);
+    INSERT INTO streams (stream_id, vtuber_id, platform, platform_id, title, like_max, status, channel_id)
+         VALUES (1, 'vtuber1', 'youtube', 'id1', 'title1', 100, 'live', 1),
+                (2, 'vtuber1', 'youtube', 'id2', 'title2', 100, 'scheduled', 1),
+                (3, 'vtuber1', 'youtube', 'id3', 'title3', 100, 'ended', 1);
     "#
     )
     .execute(&pool)

@@ -8,12 +8,12 @@ use integration_youtube::{
     },
 };
 use vtstat_database::{
-    donations::{
-        AddDonationQuery, AddDonationRow, DonationValue, YoutubeMemberMilestoneDonationValue,
+    jobs::{queue_send_notification, CollectYoutubeStreamMetadataJobPayload},
+    stream_events::{
+        add_stream_events, StreamEventValue, YoutubeMemberMilestoneDonationValue,
         YoutubeNewMemberDonationValue, YoutubeSuperChatDonationValue,
         YoutubeSuperStickerDonationValue,
     },
-    jobs::{queue_send_notification, CollectYoutubeStreamMetadataJobPayload},
     stream_stats::{AddStreamChatStatsQuery, AddStreamChatStatsRow, AddStreamViewerStatsQuery},
     streams::{
         delete_stream, end_stream, end_stream_with_values, find_stream, start_stream, StreamStatus,
@@ -167,7 +167,7 @@ async fn collect_donation_and_chat(
         return Ok(());
     }
 
-    let mut donation_rows = Vec::<AddDonationRow>::new();
+    let mut donation_rows = Vec::<(DateTime<Utc>, StreamEventValue)>::new();
 
     let mut chat_stats_rows = Vec::<AddStreamChatStatsRow>::new();
 
@@ -214,23 +214,23 @@ async fn collect_donation_and_chat(
 
                 let value = match ty {
                     MemberMessageType::New => {
-                        DonationValue::YoutubeNewMember(YoutubeNewMemberDonationValue {
+                        StreamEventValue::YoutubeNewMember(YoutubeNewMemberDonationValue {
                             message: text,
                             author_name,
                             author_badges: badges.join(","),
                             author_channel_id,
                         })
                     }
-                    MemberMessageType::Milestone => {
-                        DonationValue::YoutubeMemberMilestone(YoutubeMemberMilestoneDonationValue {
+                    MemberMessageType::Milestone => StreamEventValue::YoutubeMemberMilestone(
+                        YoutubeMemberMilestoneDonationValue {
                             author_name,
                             author_badges: badges.join(","),
                             author_channel_id,
-                        })
-                    }
+                        },
+                    ),
                 };
 
-                donation_rows.push(AddDonationRow { time, value })
+                donation_rows.push((time, value))
             }
 
             LiveChatMessage::Paid {
@@ -255,7 +255,7 @@ async fn collect_donation_and_chat(
 
                 let value = match ty {
                     PaidMessageType::SuperChat => {
-                        DonationValue::YoutubeSuperChat(YoutubeSuperChatDonationValue {
+                        StreamEventValue::YoutubeSuperChat(YoutubeSuperChatDonationValue {
                             paid_amount,
                             paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
@@ -266,7 +266,7 @@ async fn collect_donation_and_chat(
                         })
                     }
                     PaidMessageType::SuperSticker => {
-                        DonationValue::YoutubeSuperSticker(YoutubeSuperStickerDonationValue {
+                        StreamEventValue::YoutubeSuperSticker(YoutubeSuperStickerDonationValue {
                             paid_amount,
                             paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
@@ -278,7 +278,7 @@ async fn collect_donation_and_chat(
                     }
                 };
 
-                donation_rows.push(AddDonationRow { time, value })
+                donation_rows.push((time, value))
             }
         }
     }
@@ -293,12 +293,7 @@ async fn collect_donation_and_chat(
     }
 
     if !donation_rows.is_empty() {
-        AddDonationQuery {
-            stream_id,
-            rows: donation_rows,
-        }
-        .execute(pool)
-        .await?;
+        add_stream_events(stream_id, donation_rows, pool).await?;
     }
 
     Ok(())

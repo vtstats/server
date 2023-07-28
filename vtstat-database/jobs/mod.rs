@@ -19,6 +19,7 @@ pub use self::update_job::*;
 
 #[derive(sqlx::Type, Debug, PartialEq, Eq, Serialize, Clone, Copy)]
 #[sqlx(type_name = "job_status", rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum JobStatus {
     Queued,
     Running,
@@ -28,6 +29,7 @@ pub enum JobStatus {
 
 #[derive(sqlx::Type, Serialize, Clone, Copy)]
 #[sqlx(type_name = "job_kind", rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum JobKind {
     HealthCheck,
     RefreshYoutubeRss,

@@ -17,74 +17,76 @@ use crate::{filters::with_pool, reject::WarpError};
 pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = Rejection> + Clone {
     let certs = GoogleCerts::new();
 
-    let jobs_api = warp::path!("admin" / "jobs")
+    let jobs_api = warp::path!("jobs")
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and(warp::query())
         .and_then(list_jobs);
 
-    let streams_api = warp::path!("admin" / "streams")
+    let streams_api = warp::path!("streams")
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and(warp::query())
         .and_then(list_streams);
 
-    let notifications_api = warp::path!("admin" / "notifications")
+    let notifications_api = warp::path!("notifications")
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and(warp::query())
         .and_then(list_notifications);
 
-    let vtubers_api = warp::path!("admin" / "vtubers")
+    let vtubers_api = warp::path!("vtubers")
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and_then(list_vtubers);
 
-    let subscriptions_api = warp::path!("admin" / "subscriptions")
+    let subscriptions_api = warp::path!("subscriptions")
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and_then(list_subscriptions);
 
-    let channels_api = warp::path!("admin" / "channels")
+    let channels_api = warp::path!("channels")
         .and(warp::get())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and_then(list_channels);
 
-    let create_job_api = warp::path!("admin" / "jobs")
+    let create_job_api = warp::path!("jobs")
         .and(warp::put())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and(warp::body::json())
         .and_then(create_job::create_job);
 
-    let re_run_job_api = warp::path!("admin" / "jobs" / i32 / "re_run")
+    let re_run_job_api = warp::path!("jobs" / i32 / "re_run")
         .and(warp::post())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
         .and_then(re_run_job::re_run_job);
 
-    let create_vtuber_api = warp::path!("admin" / "vtuber")
+    let create_vtuber_api = warp::path!("vtuber")
         .and(warp::put())
         .and(validate(certs))
         .and(with_pool(pool))
         .and(warp::body::json())
         .and_then(create_vtuber::create_vtuber);
 
-    jobs_api
-        .or(streams_api)
-        .or(notifications_api)
-        .or(vtubers_api)
-        .or(subscriptions_api)
-        .or(channels_api)
-        .or(create_job_api)
-        .or(re_run_job_api)
-        .or(create_vtuber_api)
+    warp::path("admin").and(
+        jobs_api
+            .or(streams_api)
+            .or(notifications_api)
+            .or(vtubers_api)
+            .or(subscriptions_api)
+            .or(channels_api)
+            .or(create_job_api)
+            .or(re_run_job_api)
+            .or(create_vtuber_api),
+    )
 }
 
 #[derive(Deserialize)]

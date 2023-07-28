@@ -27,7 +27,8 @@ INSERT INTO
         platform_id,
         title,
         channel_id,
-        status
+        status,
+        vtuber_id
     )
 VALUES
     (
@@ -36,5 +37,6 @@ VALUES
         'id1',
         'title1',
         1,
-        'ended'
+        'ended',
+        'vtuber1'
     );

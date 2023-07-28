@@ -1,102 +1,90 @@
-mod channels_list;
-mod channels_report;
-mod live_chat;
+mod channel_stats;
+mod channels;
+mod stream_events;
+mod stream_stats;
 mod stream_times;
-mod streams_list;
-mod streams_report;
+mod streams;
+mod vtubers;
 
-use channels_list::{bilibili_channels_list, youtube_channels_list};
-use channels_report::channels_report;
-use live_chat::live_chat_highlight;
-use stream_times::stream_times;
-use streams_list::youtube_streams_list;
-use streams_report::streams_report;
+use channel_stats::*;
+use channels::*;
+use stream_events::*;
+use stream_stats::*;
+use stream_times::*;
+use streams::*;
+use vtubers::*;
 
-use holostats_database::Database;
-use warp::Filter;
+use vtstat_database::PgPool;
+use warp::{Filter, Rejection, Reply};
 
-use crate::filters::with_db;
+use crate::filters::with_pool;
 
-pub fn api(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path("v4").and(
-        api_youtube_channels(db.clone())
-            .or(api_bilibili_channels(db.clone()))
-            .or(api_youtube_streams(db.clone()))
-            .or(api_stream_times(db.clone()))
-            .or(api_streams_report(db.clone()))
-            .or(api_channels_report(db.clone()))
-            .or(api_live_chat_hightlight(db)),
+pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    let api_channels = warp::path!("channels")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(list_channels);
+
+    let api_channel_subscriber_stats = warp::path!("channel_stats" / "subscriber")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(channel_subscriber_stats);
+
+    let api_channel_view_stats = warp::path!("channel_stats" / "view")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(channel_view_stats);
+
+    let api_scheduled_streams = warp::path!("streams" / "scheduled")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(list_scheduled_streams);
+
+    let api_live_streams = warp::path!("streams" / "live")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(list_live_streams);
+
+    let api_ended_streams = warp::path!("streams" / "ended")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(list_ended_streams);
+
+    let api_stream_viewer_stats = warp::path!("stream_stats" / "viewer")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(stream_viewer_stats);
+
+    let api_stream_chat_stats = warp::path!("stream_stats" / "chat")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(stream_chat_stats);
+
+    let api_stream_times = warp::path!("stream_times")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(stream_times);
+
+    let api_stream_stats = warp::path!("stream_events")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(stream_events);
+
+    let api_vtubers = warp::path!("vtubers")
+        .and(with_pool(pool.clone()))
+        .and_then(list_vtubers);
+
+    warp::path("v4").and(warp::get()).and(
+        api_channels
+            .or(api_channel_subscriber_stats)
+            .or(api_channel_view_stats)
+            .or(api_scheduled_streams)
+            .or(api_live_streams)
+            .or(api_ended_streams)
+            .or(api_stream_viewer_stats)
+            .or(api_stream_chat_stats)
+            .or(api_stream_times)
+            .or(api_stream_stats)
+            .or(api_vtubers),
     )
-}
-
-pub fn api_youtube_channels(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("youtube_channels")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(youtube_channels_list)
-}
-
-pub fn api_bilibili_channels(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("bilibili_channels")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(bilibili_channels_list)
-}
-
-pub fn api_youtube_streams(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("youtube_streams")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(youtube_streams_list)
-}
-
-pub fn api_streams_report(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("streams_report")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(streams_report)
-}
-
-pub fn api_channels_report(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("channels_report")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(channels_report)
-}
-
-pub fn api_stream_times(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("stream_times")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(stream_times)
-}
-
-pub fn api_live_chat_hightlight(
-    db: Database,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("live_chat" / "highlight")
-        .and(warp::get())
-        .and(warp::query())
-        .and(with_db(db))
-        .and_then(live_chat_highlight)
 }

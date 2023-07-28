@@ -1,33 +1,21 @@
 use std::convert::Into;
-use tracing::Span;
 use warp::Rejection;
 
-use holostats_database::{stream::StreamTimesQuery, Database};
+use vtstat_database::{streams as db, PgPool};
 
 use crate::reject::WarpError;
 
 #[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ReqQuery {
-    id: String,
+    id: i32,
 }
 
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ResBody {
-    pub times: Vec<(i64, i64)>,
-}
-
-pub async fn stream_times(query: ReqQuery, db: Database) -> Result<impl warp::Reply, Rejection> {
+pub async fn stream_times(query: ReqQuery, pool: PgPool) -> Result<impl warp::Reply, Rejection> {
     tracing::info!("id={}", query.id);
 
-    let times = StreamTimesQuery {
-        vtuber_id: &query.id,
-        ..Default::default()
-    }
-    .execute(&db.pool)
-    .await
-    .map_err(Into::<WarpError>::into)?;
+    let times = db::stream_times(query.id, &pool)
+        .await
+        .map_err(Into::<WarpError>::into)?;
 
-    Ok(warp::reply::json(&ResBody { times }))
+    Ok(warp::reply::json(&times))
 }

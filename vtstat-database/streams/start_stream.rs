@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgQueryResult, PgPool, Result};
 
-pub async fn start_stream<'q>(
+pub async fn start_stream(
     stream_id: i32,
-    title: Option<&'q str>,
+    title: Option<&str>,
     start_time: DateTime<Utc>,
     likes: Option<i32>,
     pool: &PgPool,
@@ -35,10 +35,10 @@ async fn test(pool: PgPool) -> Result<()> {
 
     sqlx::query!(
         r#"
-INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedule_time, start_time, end_time, status)
-     VALUES (1, 'title1', 1, 'id1', 'youtube', to_timestamp(0), NULL, NULL, 'scheduled'),
-            (2, 'title2', 2, 'id2', 'youtube', to_timestamp(0), to_timestamp(10000), to_timestamp(12000), 'live'),
-            (3, 'title3', 2, 'id3', 'youtube', to_timestamp(10000), to_timestamp(15000), to_timestamp(17000), 'ended');
+INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platform, schedule_time, start_time, end_time, status)
+     VALUES (1, 'vtuber1', 'title1', 1, 'id1', 'youtube', to_timestamp(0), NULL, NULL, 'scheduled'),
+            (2, 'vtuber1', 'title2', 2, 'id2', 'youtube', to_timestamp(0), to_timestamp(10000), to_timestamp(12000), 'live'),
+            (3, 'vtuber1', 'title3', 2, 'id3', 'youtube', to_timestamp(10000), to_timestamp(15000), to_timestamp(17000), 'ended');
         "#
     )
     .execute(&pool)

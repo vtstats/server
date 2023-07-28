@@ -1,5 +1,5 @@
-pub mod add_donation;
-pub mod list_donations;
+mod add_stream_events;
+mod list_stream_events;
 
 use chrono::DateTime;
 use chrono::Utc;
@@ -7,12 +7,13 @@ use serde::Deserialize;
 use serde::Serialize;
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
 
-pub use self::add_donation::*;
-pub use self::list_donations::*;
+pub use self::add_stream_events::*;
+pub use self::list_stream_events::*;
 
-#[derive(sqlx::Type)]
-#[sqlx(type_name = "donation_kind", rename_all = "snake_case")]
-pub enum DonationKind {
+#[derive(Debug, sqlx::Type, Clone, Copy, Serialize)]
+#[sqlx(type_name = "stream_event_kind", rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum StreamEventKind {
     YoutubeSuperChat,
     YoutubeSuperSticker,
     YoutubeNewMember,
@@ -58,37 +59,39 @@ pub struct YoutubeMemberMilestoneDonationValue {
 
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
-pub enum DonationValue {
+pub enum StreamEventValue {
     YoutubeSuperChat(YoutubeSuperChatDonationValue),
     YoutubeSuperSticker(YoutubeSuperStickerDonationValue),
     YoutubeNewMember(YoutubeNewMemberDonationValue),
     YoutubeMemberMilestone(YoutubeMemberMilestoneDonationValue),
 }
 
-#[derive(Debug)]
-pub struct Donation {
+#[derive(Debug, Serialize)]
+pub struct StreamEvent {
     pub time: DateTime<Utc>,
-    pub value: DonationValue,
+    pub kind: StreamEventKind,
+    pub value: StreamEventValue,
 }
 
-impl FromRow<'_, PgRow> for Donation {
+impl FromRow<'_, PgRow> for StreamEvent {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
-        Ok(Donation {
-            time: row.try_get("time")?,
-            value: match row.try_get::<DonationKind, _>("kind")? {
-                DonationKind::YoutubeSuperChat => {
-                    DonationValue::YoutubeSuperChat(row.try_get::<Json<_>, _>("value")?.0)
-                }
-                DonationKind::YoutubeSuperSticker => {
-                    DonationValue::YoutubeSuperSticker(row.try_get::<Json<_>, _>("value")?.0)
-                }
-                DonationKind::YoutubeNewMember => {
-                    DonationValue::YoutubeNewMember(row.try_get::<Json<_>, _>("value")?.0)
-                }
-                DonationKind::YoutubeMemberMilestone => {
-                    DonationValue::YoutubeMemberMilestone(row.try_get::<Json<_>, _>("value")?.0)
-                }
-            },
-        })
+        let time = row.try_get("time")?;
+        let kind = row.try_get::<StreamEventKind, _>("kind")?;
+        let value = match kind {
+            StreamEventKind::YoutubeSuperChat => {
+                StreamEventValue::YoutubeSuperChat(row.try_get::<Json<_>, _>("value")?.0)
+            }
+            StreamEventKind::YoutubeSuperSticker => {
+                StreamEventValue::YoutubeSuperSticker(row.try_get::<Json<_>, _>("value")?.0)
+            }
+            StreamEventKind::YoutubeNewMember => {
+                StreamEventValue::YoutubeNewMember(row.try_get::<Json<_>, _>("value")?.0)
+            }
+            StreamEventKind::YoutubeMemberMilestone => {
+                StreamEventValue::YoutubeMemberMilestone(row.try_get::<Json<_>, _>("value")?.0)
+            }
+        };
+
+        Ok(StreamEvent { time, kind, value })
     }
 }

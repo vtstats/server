@@ -1,39 +1,26 @@
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 use sqlx::{PgPool, Result};
 
-pub struct StreamViewerStatsQuery {
-    platform: String,
-    platform_stream_id: String,
-}
-
-#[derive(sqlx::FromRow)]
+#[derive(Serialize)]
 pub struct StreamViewerStats {
     pub time: DateTime<Utc>,
     pub count: i32,
 }
 
-impl StreamViewerStatsQuery {
-    pub async fn execute(self, pool: &PgPool) -> Result<Vec<StreamViewerStats>> {
-        let query = sqlx::query_as!(
-            StreamViewerStats,
-            r#"
-     SELECT time, count
-       FROM stream_viewer_stats
-      WHERE stream_id IN
-            (
-                SELECT stream_id
-                  FROM streams
-                 WHERE platform::TEXT = $1
-                   AND platform_id = $2
-            )
-            "#,
-            self.platform,
-            self.platform_stream_id,
-        )
-        .fetch_all(pool);
+pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<StreamViewerStats>> {
+    let query = sqlx::query_as!(
+        StreamViewerStats,
+        r#"
+ SELECT time, count
+   FROM stream_viewer_stats
+  WHERE stream_id = $1
+        "#,
+        stream_id,
+    )
+    .fetch_all(pool);
 
-        crate::otel::instrument("SELECT", "stream_viewer_stats", query).await
-    }
+    crate::otel::instrument("SELECT", "stream_viewer_stats", query).await
 }
 
 // TODO add unit tests

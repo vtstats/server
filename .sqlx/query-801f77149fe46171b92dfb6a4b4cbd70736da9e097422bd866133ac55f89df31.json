@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n SELECT time, count\n   FROM channel_view_stats\n  WHERE channel_id = $1\n    AND (time >= $2 OR $2 IS NULL)\n    AND (time <= $3 OR $3 IS NULL)\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "801f77149fe46171b92dfb6a4b4cbd70736da9e097422bd866133ac55f89df31"
+}

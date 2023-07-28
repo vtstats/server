@@ -14,7 +14,6 @@ pub struct Stream {
     pub platform_id: String,
     pub stream_id: i32,
     pub title: String,
-    pub platform_channel_id: String,
     pub vtuber_id: String,
     pub thumbnail_url: Option<String>,
     #[serde(with = "ts_milliseconds_option")]
@@ -33,7 +32,7 @@ pub struct Stream {
 
 #[derive(Debug, sqlx::Type, Serialize, PartialEq, Eq)]
 #[sqlx(type_name = "stream_status", rename_all = "lowercase")]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[derive(Default)]
 pub enum StreamStatus {
     #[default]
@@ -78,6 +77,112 @@ impl Ordering {
     }
 }
 
+pub async fn filter_streams_order_by_schedule_time_desc(
+    vtuber_ids: &[String],
+    status: StreamStatus,
+    start_at: Option<DateTime<Utc>>,
+    end_at: Option<DateTime<Utc>>,
+    pool: PgPool,
+) -> Result<Vec<Stream>> {
+    let query = sqlx::query_as!(
+        Stream,
+        "SELECT platform_id, \
+        stream_id, \
+        title, \
+        vtuber_id, \
+        thumbnail_url, \
+        schedule_time, \
+        start_time, \
+        end_time, \
+        viewer_max, \
+        viewer_avg, \
+        like_max, \
+        updated_at, \
+        status as \"status: _\" \
+        FROM streams \
+        WHERE vtuber_id = ANY($1) \
+        AND status = $2 \
+        AND (schedule_time >= $3 OR $3 IS NULL) \
+        AND (schedule_time <= $4 OR $4 IS NULL) \
+        ORDER BY schedule_time DESC \
+        LIMIT 24",
+        vtuber_ids,
+        status as _,
+        start_at,
+        end_at
+    )
+    .fetch_all(&pool);
+
+    crate::otel::instrument("SELECT", "streams", query).await
+}
+
+pub async fn filter_streams_order_by_start_time_desc(
+    vtuber_ids: &[String],
+    status: StreamStatus,
+    start_at: Option<DateTime<Utc>>,
+    end_at: Option<DateTime<Utc>>,
+    pool: PgPool,
+) -> Result<Vec<Stream>> {
+    let query = sqlx::query_as!(
+        Stream,
+        "SELECT platform_id, \
+        stream_id, \
+        title, \
+        vtuber_id, \
+        thumbnail_url, \
+        schedule_time, \
+        start_time, \
+        end_time, \
+        viewer_max, \
+        viewer_avg, \
+        like_max, \
+        updated_at, \
+        status as \"status: _\" \
+        FROM streams \
+        WHERE vtuber_id = ANY($1) \
+        AND status = $2 \
+        AND (start_time >= $3 OR $3 IS NULL) \
+        AND (start_time <= $4 OR $4 IS NULL) \
+        ORDER BY start_time DESC \
+        LIMIT 24",
+        vtuber_ids,
+        status as _,
+        start_at,
+        end_at
+    )
+    .fetch_all(&pool);
+
+    crate::otel::instrument("SELECT", "streams", query).await
+}
+
+pub async fn find_stream_by_platform_id(
+    platform_id: &str,
+    pool: &PgPool,
+) -> Result<Option<Stream>> {
+    let query = sqlx::query_as!(
+        Stream,
+        "SELECT platform_id, \
+        stream_id, \
+        title, \
+        vtuber_id, \
+        thumbnail_url, \
+        schedule_time, \
+        start_time, \
+        end_time, \
+        viewer_max, \
+        viewer_avg, \
+        like_max, \
+        updated_at, \
+        status as \"status: _\" \
+        FROM streams \
+        WHERE platform_id = $1",
+        platform_id
+    )
+    .fetch_optional(pool);
+
+    crate::otel::instrument("SELECT", "streams", query).await
+}
+
 pub struct ListYouTubeStreamsQuery<'q> {
     pub ids: &'q [i32],
     // TODO add platform
@@ -118,8 +223,7 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
 
     pub fn into_query_builder(self) -> QueryBuilder<'q, Postgres> {
         let init = "\
-       SELECT s.platform_id, \
-              c.platform_id platform_channel_id, \
+       SELECT platform_id, \
               stream_id, \
               title, \
               vtuber_id, \
@@ -132,8 +236,7 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
               like_max, \
               updated_at, \
               status \
-         FROM streams s \
-    LEFT JOIN channels c ON s.channel_id = c.channel_id\
+         FROM streams s\
          ";
 
         let mut qb = QueryBuilder::<Postgres>::new(init);
@@ -288,10 +391,10 @@ async fn test(pool: PgPool) -> Result<()> {
 
     sqlx::query!(
         r#"
-INSERT INTO streams (stream_id, title, channel_id, platform_id, platform, schedule_time, start_time, end_time, status)
-     VALUES (1, 'title1', 1, 'id1', 'youtube', to_timestamp(200),   to_timestamp(1800),  to_timestamp(8000),  'live'),
-            (2, 'title2', 2, 'id2', 'youtube', to_timestamp(0),     to_timestamp(10000), to_timestamp(12000), 'live'),
-            (3, 'title3', 2, 'id3', 'youtube', to_timestamp(10000), to_timestamp(15000), to_timestamp(17000), 'ended');
+INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platform, schedule_time, start_time, end_time, status)
+     VALUES (1, 'vtuber1', 'title1', 1, 'id1', 'youtube', to_timestamp(200),   to_timestamp(1800),  to_timestamp(8000),  'live'),
+            (2, 'vtuber2', 'title2', 2, 'id2', 'youtube', to_timestamp(0),     to_timestamp(10000), to_timestamp(12000), 'live'),
+            (3, 'vtuber3', 'title3', 2, 'id3', 'youtube', to_timestamp(10000), to_timestamp(15000), to_timestamp(17000), 'ended');
         "#
     )
     .execute(&pool)

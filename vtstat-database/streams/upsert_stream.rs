@@ -6,6 +6,7 @@ use super::StreamStatus;
 /// insert or update a stream row
 #[derive(Default)]
 pub struct UpsertYouTubeStreamQuery<'q> {
+    pub vtuber_id: &'q str,
     // TODO: add platform field
     pub platform_stream_id: &'q str,
     pub channel_id: i32,
@@ -31,9 +32,10 @@ INSERT INTO streams AS t (
                 thumbnail_url,
                 schedule_time,
                 start_time,
-                end_time
+                end_time,
+                vtuber_id
             )
-     VALUES ('youtube', $1, $2, $3, $4, $5, $6, $7, $8)
+     VALUES ('youtube', $1, $2, $3, $4, $5, $6, $7, $8, $9)
 ON CONFLICT (platform, platform_id) DO UPDATE
         SET title          = COALESCE($3, t.title),
             status         = COALESCE($4, t.status),
@@ -51,6 +53,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
             self.schedule_time,      // $6
             self.start_time,         // $7
             self.end_time,           // $8
+            self.vtuber_id,          // $9
         )
         .fetch_one(pool);
 
@@ -75,6 +78,7 @@ async fn test(pool: PgPool) -> Result<()> {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         let stream_id = UpsertYouTubeStreamQuery {
+            vtuber_id: "vtuber1",
             channel_id: 1,
             platform_stream_id: "id1",
             title: "title1",
@@ -101,6 +105,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     {
         let stream_id = UpsertYouTubeStreamQuery {
+            vtuber_id: "vtuber1",
             channel_id: 1,
             platform_stream_id: "id1",
             status: StreamStatus::Ended,
@@ -135,6 +140,7 @@ async fn test(pool: PgPool) -> Result<()> {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
         let stream_id = UpsertYouTubeStreamQuery {
+            vtuber_id: "vtuber1",
             channel_id: 1,
             platform_stream_id: "id1",
             start_time: Some(time),

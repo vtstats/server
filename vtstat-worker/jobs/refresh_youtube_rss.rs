@@ -89,6 +89,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         let thumbnail_url = hub.upload_thumbnail(&stream.id).await;
 
         UpsertYouTubeStreamQuery {
+            vtuber_id: &channel.vtuber_id,
             platform_stream_id: &stream.id,
             channel_id: channel.channel_id,
             title: &stream.title,

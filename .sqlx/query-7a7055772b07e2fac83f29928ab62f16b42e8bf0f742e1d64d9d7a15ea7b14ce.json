@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n     SELECT time, count, from_member_count\n       FROM stream_chat_stats\n      WHERE stream_id IN\n            (\n                SELECT stream_id\n                  FROM streams\n                 WHERE platform::TEXT = $1\n                   AND platform_id = $2\n            )\n            ",
+  "query": "\n SELECT time, count, from_member_count\n   FROM stream_chat_stats\n  WHERE stream_id = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -21,8 +21,7 @@
     ],
     "parameters": {
       "Left": [
-        "Text",
-        "Text"
+        "Int4"
       ]
     },
     "nullable": [
@@ -31,5 +30,5 @@
       false
     ]
   },
-  "hash": "d88e84a40a07492c08f04188c3c512914b21191040c736aab6a5e73811b00a3c"
+  "hash": "7a7055772b07e2fac83f29928ab62f16b42e8bf0f742e1d64d9d7a15ea7b14ce"
 }

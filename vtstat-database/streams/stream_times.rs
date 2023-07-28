@@ -1,67 +1,65 @@
 use chrono::{DateTime, Duration, Utc};
-use futures_util::stream::TryStreamExt;
-use sqlx::{postgres::PgRow, PgPool, Result, Row};
+use sqlx::{PgPool, Result};
 use std::cmp::{max, min};
 
-type UtcTime = DateTime<Utc>;
-
-pub struct StreamTimesQuery<'q> {
-    pub vtuber_id: &'q str,
-    pub start_at: UtcTime,
+pub struct StreamTimesQuery {
+    pub channel_id: i32,
+    pub start_at: DateTime<Utc>,
 }
 
-impl<'q> Default for StreamTimesQuery<'q> {
-    fn default() -> Self {
-        StreamTimesQuery {
-            vtuber_id: "",
-            start_at: Utc::now() - Duration::weeks(44),
-        }
-    }
+pub async fn stream_times(channel_id: i32, pool: &PgPool) -> Result<Vec<(i64, i64)>> {
+    stream_times_start_at(channel_id, Utc::now() - Duration::weeks(44), pool).await
 }
 
-impl<'q> StreamTimesQuery<'q> {
-    pub async fn execute(self, pool: &PgPool) -> Result<Vec<(i64, i64)>> {
-        let query = sqlx::query(
-            r#"
-     SELECT start_time, end_time
-       FROM streams
-      WHERE channel_id IN
-            (
-                SELECT channel_id FROM channels WHERE vtuber_id = $1
-            )
-        AND start_time > $2
-        AND end_time IS NOT NULL
-   ORDER BY start_time DESC
-            "#,
-        )
-        .bind(self.vtuber_id) // $1
-        .bind(self.start_at) // $2
-        .fetch(pool)
-        .try_fold(Vec::<(i64, i64)>::new(), |mut acc, row: PgRow| async move {
-            let start = row.try_get::<DateTime<Utc>, _>("start_time")?.timestamp();
-            let end = row.try_get::<DateTime<Utc>, _>("end_time")?.timestamp();
-            let one_hour: i64 = 60 * 60;
+async fn stream_times_start_at(
+    channel_id: i32,
+    start_at: DateTime<Utc>,
+    pool: &PgPool,
+) -> Result<Vec<(i64, i64)>> {
+    let query = sqlx::query!(
+        r#"
+  SELECT start_time, end_time
+    FROM streams
+   WHERE channel_id = $1
+     AND start_time > $2
+     AND end_time IS NOT NULL
+ORDER BY start_time DESC
+        "#,
+        channel_id, // $1
+        start_at,   // $2
+    )
+    .fetch_all(pool);
 
-            let mut time = end - (end % one_hour);
+    let records = crate::otel::instrument("SELECT", "streams", query).await?;
 
-            while (start - time) < one_hour {
-                let duration = min(time + one_hour, end) - max(start, time);
+    let mut result = Vec::<(i64, i64)>::new();
 
-                match acc.last_mut() {
-                    Some(last) if last.0 == time => {
-                        last.1 += duration;
-                    }
-                    _ => acc.push((time, duration)),
+    for record in records {
+        let (Some(start), Some(end)) = (record.start_time, record.end_time) else {
+            continue;
+        };
+
+        let start = start.timestamp();
+        let end = end.timestamp();
+        let one_hour: i64 = 60 * 60;
+
+        let mut time = end - (end % one_hour);
+
+        while (start - time) < one_hour {
+            let duration = min(time + one_hour, end) - max(start, time);
+
+            match result.last_mut() {
+                Some(last) if last.0 == time => {
+                    last.1 += duration;
                 }
-
-                time -= one_hour;
+                _ => result.push((time, duration)),
             }
 
-            Ok(acc)
-        });
-
-        crate::otel::instrument("SELECT", "streams", query).await
+            time -= one_hour;
+        }
     }
+
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -71,10 +69,10 @@ async fn test(pool: PgPool) -> Result<()> {
 
     sqlx::query!(
         r#"
-INSERT INTO streams (platform, platform_id, title, channel_id, schedule_time, start_time, end_time, status)
-     VALUES ('youtube', 'id1', 'title1', 1, NULL, to_timestamp(1800), to_timestamp(8000), 'ended'),
-            ('youtube', 'id2', 'title2', 1, NULL, to_timestamp(10000), to_timestamp(12000), 'ended'),
-            ('youtube', 'id3', 'title3', 1, NULL, to_timestamp(15000), to_timestamp(17000), 'ended');      
+INSERT INTO streams (platform, vtuber_id, platform_id, title, channel_id, schedule_time, start_time, end_time, status)
+     VALUES ('youtube', 'vtuber1', 'id1', 'title1', 1, NULL, to_timestamp(1800), to_timestamp(8000), 'ended'),
+            ('youtube', 'vtuber1', 'id2', 'title2', 1, NULL, to_timestamp(10000), to_timestamp(12000), 'ended'),
+            ('youtube', 'vtuber1', 'id3', 'title3', 1, NULL, to_timestamp(15000), to_timestamp(17000), 'ended');
         "#
     )
     .execute(&pool)
@@ -83,23 +81,13 @@ INSERT INTO streams (platform, platform_id, title, channel_id, schedule_time, st
     let big_bang = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc);
 
     {
-        let times = StreamTimesQuery {
-            vtuber_id: "vtuber2",
-            start_at: big_bang,
-        }
-        .execute(&pool)
-        .await?;
+        let times = stream_times_start_at(2, big_bang, &pool).await?;
 
         assert!(times.is_empty());
     }
 
     {
-        let times = StreamTimesQuery {
-            vtuber_id: "vtuber1",
-            start_at: big_bang,
-        }
-        .execute(&pool)
-        .await?;
+        let times = stream_times_start_at(1, big_bang, &pool).await?;
 
         assert_eq!(
             times,

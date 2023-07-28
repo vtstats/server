@@ -2,7 +2,6 @@ use sqlx::{PgPool, Result};
 
 pub struct ListCurrenciesQuery;
 
-#[derive(sqlx::FromRow)]
 pub struct Currency {
     pub code: String,
     pub symbol: String,

@@ -40,7 +40,6 @@ impl AddStreamChatStatsQuery {
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use super::StreamChatStats;
     use chrono::{Duration, NaiveDateTime};
 
     let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
@@ -69,7 +68,7 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats: Vec<StreamChatStats> = sqlx::query_as("SELECT * FROM stream_chat_stats")
+    let stats = sqlx::query!("SELECT * FROM stream_chat_stats")
         .fetch_all(&pool)
         .await?;
     assert_eq!(stats.len(), 3);
@@ -99,7 +98,7 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats: Vec<StreamChatStats> = sqlx::query_as("SELECT * FROM stream_chat_stats")
+    let stats = sqlx::query!("SELECT * FROM stream_chat_stats")
         .fetch_all(&pool)
         .await?;
     assert_eq!(stats.len(), 4);

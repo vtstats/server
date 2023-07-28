@@ -28,12 +28,14 @@ pub async fn execute(
     let stream: Option<Stream> = videos.pop().and_then(Into::into);
 
     let Some(youtube_stream) = stream else {
-        anyhow::bail!("Stream not found, platform_stream_id={platform_stream_id}");
+        tracing::warn!("Stream not found, platform_stream_id={platform_stream_id}");
+        return Ok(JobResult::Completed);
     };
 
     let thumbnail_url = hub.upload_thumbnail(&youtube_stream.id).await;
 
     let stream_id = UpsertYouTubeStreamQuery {
+        vtuber_id: &vtuber_id,
         platform_stream_id: &youtube_stream.id,
         channel_id,
         title: &youtube_stream.title,
