@@ -34,9 +34,8 @@ pub enum JobKind {
     HealthCheck,
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
-    UpdateYoutubeChannelViewAndSubscriber,
-    UpdateBilibiliChannelViewAndSubscriber,
-    UpdateYoutubeChannelDonation,
+    #[sqlx(rename = "update_youtube_channel_view_and_subscriber")]
+    UpdateChannelStats,
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream,
     CollectYoutubeStreamMetadata,
@@ -73,9 +72,7 @@ pub enum JobPayload {
     HealthCheck,
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
-    UpdateYoutubeChannelViewAndSubscriber,
-    UpdateBilibiliChannelViewAndSubscriber,
-    UpdateYoutubeChannelDonation,
+    UpdateChannelStats,
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream(UpsertYoutubeStreamJobPayload),
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
@@ -116,13 +113,7 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::HealthCheck => JobPayload::HealthCheck,
                 JobKind::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
                 JobKind::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
-                JobKind::UpdateYoutubeChannelViewAndSubscriber => {
-                    JobPayload::UpdateYoutubeChannelViewAndSubscriber
-                }
-                JobKind::UpdateBilibiliChannelViewAndSubscriber => {
-                    JobPayload::UpdateBilibiliChannelViewAndSubscriber
-                }
-                JobKind::UpdateYoutubeChannelDonation => JobPayload::UpdateYoutubeChannelDonation,
+                JobKind::UpdateChannelStats => JobPayload::UpdateChannelStats,
                 JobKind::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
                 JobKind::UpsertYoutubeStream => {
                     JobPayload::UpsertYoutubeStream(row.try_get::<Json<_>, _>("payload")?.0)

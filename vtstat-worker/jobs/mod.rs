@@ -4,10 +4,8 @@ mod install_discord_command;
 mod refresh_youtube_rss;
 mod send_notification;
 mod subscribe_youtube_pubsub;
-mod update_bilibili_channel_view_and_subscriber;
+mod update_channel_stats;
 mod update_currency_exchange_rate;
-mod update_youtube_channel_donation;
-mod update_youtube_channel_view_and_subscriber;
 mod upsert_youtube_stream;
 
 use chrono::{DateTime, Utc};
@@ -39,9 +37,7 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
         HealthCheck => "health_check",
         RefreshYoutubeRss => "refresh_youtube_rss",
         SubscribeYoutubePubsub => "subscribe_youtube_pubsub",
-        UpdateYoutubeChannelViewAndSubscriber => "update_youtube_channel_view_and_subscriber",
-        UpdateBilibiliChannelViewAndSubscriber => "update_bilibili_channel_view_and_subscriber",
-        UpdateYoutubeChannelDonation => "update_youtube_channel_donation",
+        UpdateChannelStats => "update_channel_stats",
         UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
         UpsertYoutubeStream(_) => "upsert_youtube_stream",
         CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
@@ -66,14 +62,7 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
             HealthCheck => health_check::execute().await,
             RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, hub).await,
             SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, hub).await,
-            UpdateYoutubeChannelViewAndSubscriber => {
-                update_youtube_channel_view_and_subscriber::execute(&pool, hub).await
-            }
-            UpdateBilibiliChannelViewAndSubscriber => {
-                update_bilibili_channel_view_and_subscriber::execute(&pool, hub).await
-            }
-            // TODO:
-            UpdateYoutubeChannelDonation => update_youtube_channel_donation::execute().await,
+            UpdateChannelStats => update_channel_stats::execute(&pool, hub).await,
             // TODO:
             UpdateCurrencyExchangeRate => update_currency_exchange_rate::execute(&pool).await,
             UpsertYoutubeStream(payload) => {

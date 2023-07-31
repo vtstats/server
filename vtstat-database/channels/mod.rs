@@ -1,8 +1,10 @@
 mod create_channel;
 mod list_channels;
+mod update_channel_stats;
 
-pub use self::create_channel::*;
-pub use self::list_channels::*;
+pub use create_channel::*;
+pub use list_channels::*;
+pub use update_channel_stats::*;
 
 use serde::{Deserialize, Serialize};
 

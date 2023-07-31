@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgQueryResult, PgPool, Postgres, QueryBuilder, Result};
 
-pub struct AddChannelSubscriberStatsQuery {
+pub struct AddChannelSubscriberStatsQuery<'q> {
     pub time: DateTime<Utc>,
-    pub rows: Vec<AddChannelSubscriberStatsRow>,
+    pub rows: &'q [AddChannelSubscriberStatsRow],
 }
 
 pub struct AddChannelSubscriberStatsRow {
@@ -11,7 +11,7 @@ pub struct AddChannelSubscriberStatsRow {
     pub count: i32,
 }
 
-impl AddChannelSubscriberStatsQuery {
+impl<'q> AddChannelSubscriberStatsQuery<'q> {
     pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             "INSERT INTO channel_subscriber_stats AS s (channel_id, time, count) ",
@@ -37,14 +37,13 @@ impl AddChannelSubscriberStatsQuery {
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use super::ChannelsSubscriberStats;
     use chrono::NaiveDateTime;
 
     let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
     let result = AddChannelSubscriberStatsQuery {
         time,
-        rows: vec![
+        rows: &vec![
             AddChannelSubscriberStatsRow {
                 channel_id: 1,
                 count: 20,
@@ -63,17 +62,14 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats = sqlx::query_as!(
-        ChannelsSubscriberStats,
-        "SELECT time, count FROM channel_subscriber_stats"
-    )
-    .fetch_all(&pool)
-    .await?;
+    let stats = sqlx::query!("SELECT time, count FROM channel_subscriber_stats")
+        .fetch_all(&pool)
+        .await?;
     assert_eq!(stats.len(), 3);
 
     let result = AddChannelSubscriberStatsQuery {
         time,
-        rows: vec![
+        rows: &vec![
             AddChannelSubscriberStatsRow {
                 channel_id: 2,
                 count: 20,
@@ -92,12 +88,9 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats = sqlx::query_as!(
-        ChannelsSubscriberStats,
-        "SELECT time, count FROM channel_subscriber_stats"
-    )
-    .fetch_all(&pool)
-    .await?;
+    let stats = sqlx::query!("SELECT time, count FROM channel_subscriber_stats")
+        .fetch_all(&pool)
+        .await?;
     assert_eq!(stats.len(), 4);
     assert!(stats.iter().all(|s| s.count == 20));
     assert!(stats.iter().all(|s| s.time == time));

@@ -15,9 +15,7 @@ pub enum CreateJobPayload {
     HealthCheck,
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
-    UpdateYoutubeChannelViewAndSubscriber,
-    UpdateBilibiliChannelViewAndSubscriber,
-    UpdateYoutubeChannelDonation,
+    UpdateChannelStats,
     UpdateCurrencyExchangeRate,
     InstallDiscordCommands,
 }
@@ -30,15 +28,7 @@ pub async fn create_job(pool: PgPool, payload: CreateJobPayload) -> Result<Respo
             CreateJobPayload::HealthCheck => JobPayload::HealthCheck,
             CreateJobPayload::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
             CreateJobPayload::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
-            CreateJobPayload::UpdateYoutubeChannelViewAndSubscriber => {
-                JobPayload::UpdateYoutubeChannelViewAndSubscriber
-            }
-            CreateJobPayload::UpdateBilibiliChannelViewAndSubscriber => {
-                JobPayload::UpdateBilibiliChannelViewAndSubscriber
-            }
-            CreateJobPayload::UpdateYoutubeChannelDonation => {
-                JobPayload::UpdateYoutubeChannelDonation
-            }
+            CreateJobPayload::UpdateChannelStats => JobPayload::UpdateChannelStats,
             CreateJobPayload::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
             CreateJobPayload::InstallDiscordCommands => JobPayload::InstallDiscordCommands,
         },

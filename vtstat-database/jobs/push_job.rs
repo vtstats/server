@@ -16,13 +16,7 @@ impl PushJobQuery {
             JobPayload::HealthCheck => JobKind::HealthCheck,
             JobPayload::RefreshYoutubeRss => JobKind::RefreshYoutubeRss,
             JobPayload::SubscribeYoutubePubsub => JobKind::SubscribeYoutubePubsub,
-            JobPayload::UpdateYoutubeChannelViewAndSubscriber => {
-                JobKind::UpdateYoutubeChannelViewAndSubscriber
-            }
-            JobPayload::UpdateBilibiliChannelViewAndSubscriber => {
-                JobKind::UpdateBilibiliChannelViewAndSubscriber
-            }
-            JobPayload::UpdateYoutubeChannelDonation => JobKind::UpdateYoutubeChannelDonation,
+            JobPayload::UpdateChannelStats => JobKind::UpdateChannelStats,
             JobPayload::UpdateCurrencyExchangeRate => JobKind::UpdateCurrencyExchangeRate,
             JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,

@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgQueryResult, PgPool, Postgres, QueryBuilder, Result};
 
-pub struct AddChannelViewStatsQuery {
+pub struct AddChannelViewStatsQuery<'q> {
     pub time: DateTime<Utc>,
-    pub rows: Vec<AddChannelViewStatsRow>,
+    pub rows: &'q [AddChannelViewStatsRow],
 }
 
 pub struct AddChannelViewStatsRow {
@@ -11,7 +11,7 @@ pub struct AddChannelViewStatsRow {
     pub count: i32,
 }
 
-impl AddChannelViewStatsQuery {
+impl<'q> AddChannelViewStatsQuery<'q> {
     pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
         let mut query_builder: QueryBuilder<Postgres> =
             QueryBuilder::new("INSERT INTO channel_view_stats AS s (channel_id, time, count) ");
@@ -43,7 +43,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     let result = AddChannelViewStatsQuery {
         time,
-        rows: vec![
+        rows: &vec![
             AddChannelViewStatsRow {
                 channel_id: 1,
                 count: 20,
@@ -72,7 +72,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     let result = AddChannelViewStatsQuery {
         time,
-        rows: vec![
+        rows: &vec![
             AddChannelViewStatsRow {
                 channel_id: 2,
                 count: 20,
