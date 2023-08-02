@@ -1,16 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n SELECT time, count\n   FROM channel_view_stats\n  WHERE channel_id = $1\n    AND (time >= $2 OR $2 IS NULL)\n    AND (time <= $3 OR $3 IS NULL)\n        ",
+  "query": "\n SELECT time ts, count v1\n   FROM channel_view_stats\n  WHERE channel_id = $1\n    AND (time >= $2 OR $2 IS NULL)\n    AND (time <= $3 OR $3 IS NULL)\n        ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "time",
+        "name": "ts",
         "type_info": "Timestamptz"
       },
       {
         "ordinal": 1,
-        "name": "count",
+        "name": "v1",
         "type_info": "Int4"
       }
     ],
@@ -26,5 +26,5 @@
       false
     ]
   },
-  "hash": "801f77149fe46171b92dfb6a4b4cbd70736da9e097422bd866133ac55f89df31"
+  "hash": "d94f085e68d31c56d2ba4159a298adfe92dc0a8484061d6651a235a9faeb333e"
 }

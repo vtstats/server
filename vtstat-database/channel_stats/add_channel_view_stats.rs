@@ -36,14 +36,14 @@ impl<'q> AddChannelViewStatsQuery<'q> {
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use super::ChannelsViewStats;
+    use crate::SeriesData;
     use chrono::NaiveDateTime;
 
     let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
     let result = AddChannelViewStatsQuery {
         time,
-        rows: &vec![
+        rows: &[
             AddChannelViewStatsRow {
                 channel_id: 1,
                 count: 20,
@@ -63,8 +63,8 @@ async fn test(pool: PgPool) -> Result<()> {
 
     assert_eq!(result.rows_affected(), 3);
     let stats = sqlx::query_as!(
-        ChannelsViewStats,
-        "SELECT time, count FROM channel_view_stats"
+        SeriesData,
+        "SELECT time ts, count v1 FROM channel_view_stats"
     )
     .fetch_all(&pool)
     .await?;
@@ -72,7 +72,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     let result = AddChannelViewStatsQuery {
         time,
-        rows: &vec![
+        rows: &[
             AddChannelViewStatsRow {
                 channel_id: 2,
                 count: 20,
@@ -92,14 +92,14 @@ async fn test(pool: PgPool) -> Result<()> {
 
     assert_eq!(result.rows_affected(), 3);
     let stats = sqlx::query_as!(
-        ChannelsViewStats,
-        "SELECT time, count FROM channel_view_stats"
+        SeriesData,
+        "SELECT time ts, count v1 FROM channel_view_stats"
     )
     .fetch_all(&pool)
     .await?;
     assert_eq!(stats.len(), 4);
-    assert!(stats.iter().all(|s| s.count == 20));
-    assert!(stats.iter().all(|s| s.time == time));
+    assert!(stats.iter().all(|s| s.v1 == 20));
+    assert!(stats.iter().all(|s| s.ts == time));
 
     Ok(())
 }

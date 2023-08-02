@@ -1,5 +1,7 @@
 use sqlx::{PgPool, Result};
 
+use crate::channels::ChannelWithStats;
+
 use super::{Channel, Platform};
 
 pub async fn list_youtube_channels(pool: &PgPool) -> Result<Vec<Channel>> {
@@ -24,14 +26,27 @@ pub async fn list_bilibili_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     crate::otel::instrument("SELECT", "channels", query).await
 }
 
-pub async fn list_channels(
+pub async fn list_channels(pool: &PgPool) -> Result<Vec<Channel>> {
+    let query = sqlx::query_as!(
+        Channel,
+        "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels"
+    )
+    .fetch_all(pool);
+
+    crate::otel::instrument("SELECT", "channels", query).await
+}
+
+pub async fn list_channels_with_stats(
     vtuber_ids: &[String],
     platform: Platform,
     pool: &PgPool,
-) -> Result<Vec<Channel>> {
+) -> Result<Vec<ChannelWithStats>> {
     let query = sqlx::query_as!(
-        Channel,
-        "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" \
+        ChannelWithStats,
+        "SELECT vtuber_id, \
+        platform as \"platform: _\", \
+        view, view_1d_ago, view_7d_ago, view_30d_ago, \
+        subscriber, subscriber_1d_ago, subscriber_7d_ago, subscriber_30d_ago \
         FROM channels \
         WHERE vtuber_id = ANY($1) \
         AND platform = $2",

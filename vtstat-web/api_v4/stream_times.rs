@@ -6,14 +6,13 @@ use vtstat_database::{streams as db, PgPool};
 use crate::reject::WarpError;
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReqQuery {
-    id: i32,
+    vtuber_id: String,
 }
 
 pub async fn stream_times(query: ReqQuery, pool: PgPool) -> Result<impl warp::Reply, Rejection> {
-    tracing::info!("id={}", query.id);
-
-    let times = db::stream_times(query.id, &pool)
+    let times = db::stream_times(&query.vtuber_id, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 

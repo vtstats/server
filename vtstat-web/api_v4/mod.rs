@@ -35,6 +35,11 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(with_pool(pool.clone()))
         .and_then(channel_view_stats);
 
+    let api_get_stream = warp::path!("streams")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(list_stream_by_platform_id);
+
     let api_scheduled_streams = warp::path!("streams" / "scheduled")
         .and(warp::query())
         .and(with_pool(pool.clone()))
@@ -72,12 +77,13 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
 
     let api_vtubers = warp::path!("vtubers")
         .and(with_pool(pool.clone()))
-        .and_then(list_vtubers);
+        .and_then(list_vtubers_and_channels);
 
     warp::path("v4").and(warp::get()).and(
         api_channels
             .or(api_channel_subscriber_stats)
             .or(api_channel_view_stats)
+            .or(api_get_stream)
             .or(api_scheduled_streams)
             .or(api_live_streams)
             .or(api_ended_streams)

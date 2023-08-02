@@ -38,12 +38,13 @@ impl<'q> AddChannelSubscriberStatsQuery<'q> {
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
     use chrono::NaiveDateTime;
+    use sqlx::Row;
 
     let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
     let result = AddChannelSubscriberStatsQuery {
         time,
-        rows: &vec![
+        rows: &[
             AddChannelSubscriberStatsRow {
                 channel_id: 1,
                 count: 20,
@@ -62,14 +63,14 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats = sqlx::query!("SELECT time, count FROM channel_subscriber_stats")
+    let stats = sqlx::query("SELECT count v1, time ts FROM channel_subscriber_stats")
         .fetch_all(&pool)
         .await?;
     assert_eq!(stats.len(), 3);
 
     let result = AddChannelSubscriberStatsQuery {
         time,
-        rows: &vec![
+        rows: &[
             AddChannelSubscriberStatsRow {
                 channel_id: 2,
                 count: 20,
@@ -88,12 +89,14 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     assert_eq!(result.rows_affected(), 3);
-    let stats = sqlx::query!("SELECT time, count FROM channel_subscriber_stats")
+    let stats = sqlx::query("SELECT time, count FROM channel_subscriber_stats")
         .fetch_all(&pool)
         .await?;
     assert_eq!(stats.len(), 4);
-    assert!(stats.iter().all(|s| s.count == 20));
-    assert!(stats.iter().all(|s| s.time == time));
+    assert!(stats.iter().all(|s| s.get::<i32, _>("count") == 20));
+    assert!(stats
+        .iter()
+        .all(|s| s.get::<DateTime<Utc>, _>("time") == time));
 
     Ok(())
 }

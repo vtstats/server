@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE vtuber_id = ANY($1) AND platform = $2",
+  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels",
   "describe": {
     "columns": [
       {
@@ -36,21 +36,7 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "TextArray",
-        {
-          "Custom": {
-            "name": "platform",
-            "kind": {
-              "Enum": [
-                "youtube",
-                "bilibili",
-                "twitch"
-              ]
-            }
-          }
-        }
-      ]
+      "Left": []
     },
     "nullable": [
       false,
@@ -59,5 +45,5 @@
       false
     ]
   },
-  "hash": "ae4e3d2033842971d8c368629b604b6165a49a5a01e060a941bef506f9853e52"
+  "hash": "b3570161363b1ad7681c475ad1a929037f306e7f08006f7061e7fe7d240a442a"
 }

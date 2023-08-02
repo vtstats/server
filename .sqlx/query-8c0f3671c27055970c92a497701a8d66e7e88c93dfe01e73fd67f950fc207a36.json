@@ -1,0 +1,99 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT vtuber_id, platform as \"platform: _\", view, view_1d_ago, view_7d_ago, view_30d_ago, subscriber, subscriber_1d_ago, subscriber_7d_ago, subscriber_30d_ago FROM channels WHERE vtuber_id = ANY($1) AND platform = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "vtuber_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "platform: _",
+        "type_info": {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "view",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "view_1d_ago",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "view_7d_ago",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "view_30d_ago",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "subscriber",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "subscriber_1d_ago",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "subscriber_7d_ago",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "subscriber_30d_ago",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8c0f3671c27055970c92a497701a8d66e7e88c93dfe01e73fd67f950fc207a36"
+}

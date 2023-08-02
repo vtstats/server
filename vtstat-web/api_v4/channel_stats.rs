@@ -7,7 +7,7 @@ use crate::reject::WarpError;
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReqQuery {
-    id: i32,
+    channel_id: i32,
     #[serde(default, with = "ts_milliseconds_option")]
     start_at: Option<DateTime<Utc>>,
     #[serde(default, with = "ts_milliseconds_option")]
@@ -18,7 +18,7 @@ pub async fn channel_subscriber_stats(
     query: ReqQuery,
     pool: PgPool,
 ) -> Result<Response, Rejection> {
-    let res = db::channel_subscriber_stats(query.id, query.end_at, query.start_at, &pool)
+    let res = db::channel_subscriber_stats(query.channel_id, query.start_at, query.end_at, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 
@@ -26,7 +26,7 @@ pub async fn channel_subscriber_stats(
 }
 
 pub async fn channel_view_stats(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
-    let res = db::channel_view_stats(query.id, query.end_at, query.start_at, &pool)
+    let res = db::channel_view_stats(query.channel_id, query.start_at, query.end_at, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 

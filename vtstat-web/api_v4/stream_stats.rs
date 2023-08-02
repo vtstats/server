@@ -5,12 +5,13 @@ use warp::{reply::Response, Rejection, Reply};
 use crate::reject::WarpError;
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReqQuery {
-    id: i32,
+    stream_id: i32,
 }
 
 pub async fn stream_viewer_stats(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
-    let stats = db::stream_viewer_stats(query.id, &pool)
+    let stats = db::stream_viewer_stats(query.stream_id, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 
@@ -18,7 +19,7 @@ pub async fn stream_viewer_stats(query: ReqQuery, pool: PgPool) -> Result<Respon
 }
 
 pub async fn stream_chat_stats(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
-    let stats = db::stream_chat_stats(query.id, &pool)
+    let stats = db::stream_chat_stats(query.stream_id, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 

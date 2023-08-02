@@ -1,21 +1,21 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n SELECT time, count, from_member_count\n   FROM stream_chat_stats\n  WHERE stream_id = $1\n        ",
+  "query": "\n SELECT time ts, count v1, from_member_count v2\n   FROM stream_chat_stats\n  WHERE stream_id = $1\n        ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "time",
+        "name": "ts",
         "type_info": "Timestamptz"
       },
       {
         "ordinal": 1,
-        "name": "count",
+        "name": "v1",
         "type_info": "Int4"
       },
       {
         "ordinal": 2,
-        "name": "from_member_count",
+        "name": "v2",
         "type_info": "Int4"
       }
     ],
@@ -30,5 +30,5 @@
       false
     ]
   },
-  "hash": "7a7055772b07e2fac83f29928ab62f16b42e8bf0f742e1d64d9d7a15ea7b14ce"
+  "hash": "cb9a8085225b9d6277c0b5b0735488d534fecbe1bd5c68754bd61020d230e628"
 }

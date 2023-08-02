@@ -2,7 +2,7 @@ mod add_stream_events;
 mod list_stream_events;
 
 use chrono::DateTime;
-use chrono::{serde::ts_milliseconds, Utc};
+use chrono::Utc;
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};

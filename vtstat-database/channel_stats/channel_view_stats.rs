@@ -1,25 +1,18 @@
 use chrono::{DateTime, Utc};
-use serde::Serialize;
 use sqlx::{PgPool, Result};
 
-use crate::channel_stats::AddChannelViewStatsRow;
-
-#[derive(Serialize)]
-pub struct ChannelsViewStats {
-    pub time: DateTime<Utc>,
-    pub count: i32,
-}
+use crate::{channel_stats::AddChannelViewStatsRow, SeriesData};
 
 pub async fn channel_view_stats(
     channel_id: i32,
     start_at: Option<DateTime<Utc>>,
     end_at: Option<DateTime<Utc>>,
     pool: &PgPool,
-) -> Result<Vec<ChannelsViewStats>> {
+) -> Result<Vec<SeriesData>> {
     let query = sqlx::query_as!(
-        ChannelsViewStats,
+        SeriesData,
         r#"
- SELECT time, count
+ SELECT time ts, count v1
    FROM channel_view_stats
   WHERE channel_id = $1
     AND (time >= $2 OR $2 IS NULL)

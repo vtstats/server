@@ -1,18 +1,12 @@
-use chrono::{DateTime, Utc};
-use serde::Serialize;
 use sqlx::{PgPool, Result};
 
-#[derive(Serialize)]
-pub struct StreamViewerStats {
-    pub time: DateTime<Utc>,
-    pub count: i32,
-}
+use crate::SeriesData;
 
-pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<StreamViewerStats>> {
+pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<SeriesData>> {
     let query = sqlx::query_as!(
-        StreamViewerStats,
+        SeriesData,
         r#"
- SELECT time, count
+ SELECT time ts, count v1
    FROM stream_viewer_stats
   WHERE stream_id = $1
         "#,

@@ -1,19 +1,12 @@
-use chrono::{DateTime, Utc};
-use serde::Serialize;
 use sqlx::{PgPool, Result};
 
-#[derive(Serialize)]
-pub struct StreamChatStats {
-    pub time: DateTime<Utc>,
-    pub count: i32,
-    pub from_member_count: i32,
-}
+use crate::SeriesData2;
 
-pub async fn stream_chat_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<StreamChatStats>> {
+pub async fn stream_chat_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<SeriesData2>> {
     let query = sqlx::query_as!(
-        StreamChatStats,
+        SeriesData2,
         r#"
- SELECT time, count, from_member_count
+ SELECT time ts, count v1, from_member_count v2
    FROM stream_chat_stats
   WHERE stream_id = $1
         "#,

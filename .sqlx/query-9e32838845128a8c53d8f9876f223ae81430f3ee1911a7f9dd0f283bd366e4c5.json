@@ -1,16 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n SELECT time, count\n   FROM stream_viewer_stats\n  WHERE stream_id = $1\n        ",
+  "query": "\n SELECT time ts, count v1\n   FROM stream_viewer_stats\n  WHERE stream_id = $1\n        ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "time",
+        "name": "ts",
         "type_info": "Timestamptz"
       },
       {
         "ordinal": 1,
-        "name": "count",
+        "name": "v1",
         "type_info": "Int4"
       }
     ],
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "7c095328da2bba0500f3e997d4c5be4b4d7563dab3752c4934ad2836bb01a129"
+  "hash": "9e32838845128a8c53d8f9876f223ae81430f3ee1911a7f9dd0f283bd366e4c5"
 }

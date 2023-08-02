@@ -5,6 +5,7 @@ use sqlx::{PgPool, Result};
 pub struct ListVtubersQuery;
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VTuber {
     pub vtuber_id: String,
     pub native_name: String,

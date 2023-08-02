@@ -77,7 +77,7 @@ impl Ordering {
     }
 }
 
-pub async fn filter_streams_order_by_schedule_time_desc(
+pub async fn filter_streams_order_by_schedule_time_asc(
     vtuber_ids: &[String],
     status: StreamStatus,
     start_at: Option<DateTime<Utc>>,
@@ -104,7 +104,7 @@ pub async fn filter_streams_order_by_schedule_time_desc(
         AND status = $2 \
         AND (schedule_time >= $3 OR $3 IS NULL) \
         AND (schedule_time <= $4 OR $4 IS NULL) \
-        ORDER BY schedule_time DESC \
+        ORDER BY schedule_time ASC \
         LIMIT 24",
         vtuber_ids,
         status as _,
