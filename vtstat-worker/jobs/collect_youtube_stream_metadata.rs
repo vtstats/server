@@ -212,19 +212,21 @@ async fn collect_donation_and_chat(
                     continue;
                 };
 
+                let badges = badges.join(",");
+
                 let value = match ty {
                     MemberMessageType::New => {
                         StreamEventValue::YoutubeNewMember(YoutubeNewMemberDonationValue {
                             message: text,
                             author_name,
-                            author_badges: badges.join(","),
+                            author_badges: (!badges.is_empty()).then_some(badges),
                             author_channel_id,
                         })
                     }
                     MemberMessageType::Milestone => StreamEventValue::YoutubeMemberMilestone(
                         YoutubeMemberMilestoneDonationValue {
                             author_name,
-                            author_badges: badges.join(","),
+                            author_badges: (!badges.is_empty()).then_some(badges),
                             author_channel_id,
                         },
                     ),
@@ -253,15 +255,17 @@ async fn collect_donation_and_chat(
                     continue;
                 };
 
+                let badges = badges.join(",");
+
                 let value = match ty {
                     PaidMessageType::SuperChat => {
                         StreamEventValue::YoutubeSuperChat(YoutubeSuperChatDonationValue {
                             paid_amount,
                             paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
-                            message: text,
+                            message: (!text.is_empty()).then_some(text),
                             author_name,
-                            author_badges: badges.join(","),
+                            author_badges: (!badges.is_empty()).then_some(badges),
                             author_channel_id,
                         })
                     }
@@ -270,9 +274,9 @@ async fn collect_donation_and_chat(
                             paid_amount,
                             paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
-                            message: text,
+                            message: (!text.is_empty()).then_some(text),
                             author_name,
-                            author_badges: badges.join(","),
+                            author_badges: (!badges.is_empty()).then_some(badges),
                             author_channel_id,
                         })
                     }

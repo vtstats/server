@@ -2,7 +2,7 @@ mod add_stream_events;
 mod list_stream_events;
 
 use chrono::DateTime;
-use chrono::Utc;
+use chrono::{serde::ts_milliseconds, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::{postgres::PgRow, types::Json, FromRow, Row};
@@ -22,9 +22,11 @@ pub enum StreamEventKind {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct YoutubeSuperChatDonationValue {
-    pub message: String,
+    #[serde(default)]
+    pub message: Option<String>,
     pub author_name: String,
-    pub author_badges: String,
+    #[serde(default)]
+    pub author_badges: Option<String>,
     pub author_channel_id: String,
     pub paid_amount: String,
     pub paid_currency_symbol: String,
@@ -33,9 +35,11 @@ pub struct YoutubeSuperChatDonationValue {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct YoutubeSuperStickerDonationValue {
-    pub message: String,
+    #[serde(default)]
+    pub message: Option<String>,
     pub author_name: String,
-    pub author_badges: String,
+    #[serde(default)]
+    pub author_badges: Option<String>,
     pub author_channel_id: String,
     pub paid_amount: String,
     pub paid_currency_symbol: String,
@@ -46,14 +50,16 @@ pub struct YoutubeSuperStickerDonationValue {
 pub struct YoutubeNewMemberDonationValue {
     pub message: String,
     pub author_name: String,
-    pub author_badges: String,
+    #[serde(default)]
+    pub author_badges: Option<String>,
     pub author_channel_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct YoutubeMemberMilestoneDonationValue {
     pub author_name: String,
-    pub author_badges: String,
+    #[serde(default)]
+    pub author_badges: Option<String>,
     pub author_channel_id: String,
 }
 
