@@ -1,18 +1,20 @@
+mod catalog;
 mod channel_stats;
 mod channels;
+mod currencies;
 mod stream_events;
 mod stream_stats;
 mod stream_times;
 mod streams;
-mod vtubers;
 
+use catalog::*;
 use channel_stats::*;
 use channels::*;
+use currencies::*;
 use stream_events::*;
 use stream_stats::*;
 use stream_times::*;
 use streams::*;
-use vtubers::*;
 
 use vtstat_database::PgPool;
 use warp::{Filter, Rejection, Reply};
@@ -34,6 +36,10 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(channel_view_stats);
+
+    let api_currencies = warp::path!("currencies")
+        .and(with_pool(pool.clone()))
+        .and_then(list_currencies);
 
     let api_get_stream = warp::path!("streams")
         .and(warp::query())
@@ -75,14 +81,16 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(with_pool(pool.clone()))
         .and_then(stream_events);
 
-    let api_vtubers = warp::path!("vtubers")
+    let api_catalog = warp::path!("catalog")
         .and(with_pool(pool.clone()))
-        .and_then(list_vtubers_and_channels);
+        .and_then(catalog);
 
     warp::path("v4").and(warp::get()).and(
         api_channels
+            .or(api_catalog)
             .or(api_channel_subscriber_stats)
             .or(api_channel_view_stats)
+            .or(api_currencies)
             .or(api_get_stream)
             .or(api_scheduled_streams)
             .or(api_live_streams)
@@ -90,7 +98,6 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
             .or(api_stream_viewer_stats)
             .or(api_stream_chat_stats)
             .or(api_stream_times)
-            .or(api_stream_stats)
-            .or(api_vtubers),
+            .or(api_stream_stats),
     )
 }

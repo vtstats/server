@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT code, symbol FROM currencies",
+  "query": "SELECT code, rate FROM currencies",
   "describe": {
     "columns": [
       {
@@ -10,8 +10,8 @@
       },
       {
         "ordinal": 1,
-        "name": "symbol",
-        "type_info": "Text"
+        "name": "rate",
+        "type_info": "Float4"
       }
     ],
     "parameters": {
@@ -22,5 +22,5 @@
       false
     ]
   },
-  "hash": "c6dfef5ce6d7f2de6499c2139eb0cb746745fdeae7efcf339b8932f062118d0a"
+  "hash": "46e1b1e8602619bb9da2ea0bd2ddf6b1ec47561a15dd1a8a2d161bad0b504d21"
 }

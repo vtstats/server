@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT group_id, root, native_name, english_name, japanese_name, children as \"children!: _ \" FROM groups",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "group_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "root",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 2,
+        "name": "native_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "english_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "japanese_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "children!: _ ",
+        "type_info": "TextArray"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "672f99159cf1bbf58419add0a98f0694af2491effaa22b9119ebe81290361269"
+}

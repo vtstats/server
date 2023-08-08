@@ -3,6 +3,7 @@ pub mod otel;
 pub mod channel_stats;
 pub mod channels;
 pub mod currencies;
+pub mod groups;
 pub mod jobs;
 pub mod stream_events;
 pub mod stream_stats;
