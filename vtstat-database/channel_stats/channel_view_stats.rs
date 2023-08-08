@@ -33,7 +33,7 @@ pub async fn channel_view_stats_before(
 ) -> Result<Vec<AddChannelViewStatsRow>> {
     let query = sqlx::query_as!(
         AddChannelViewStatsRow,
-        "SELECT channel_id, count FROM channel_view_stats WHERE (time, channel_id) IN \
+        "SELECT channel_id, count AS value FROM channel_view_stats WHERE (time, channel_id) IN \
         (SELECT MAX(time), channel_id FROM channel_view_stats WHERE time <= $1 GROUP BY channel_id)",
         before
     )

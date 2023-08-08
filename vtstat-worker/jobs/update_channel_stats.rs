@@ -1,16 +1,19 @@
-use chrono::{Duration, DurationRound, Utc};
+use chrono::{DateTime, Duration, DurationRound, Utc};
 use integration_youtube::data_api::channels::list_channels;
 use reqwest::Client;
 use tokio::try_join;
 use vtstat_database::{
     channel_stats::{
-        channel_subscriber_stats_before, channel_view_stats_before, AddChannelSubscriberStatsQuery,
-        AddChannelSubscriberStatsRow, AddChannelViewStatsQuery, AddChannelViewStatsRow,
+        add_channel_revenue_stats, channel_revenue_stats_before, channel_subscriber_stats_before,
+        channel_view_stats_before, AddChannelSubscriberStatsQuery, AddChannelSubscriberStatsRow,
+        AddChannelViewStatsQuery, AddChannelViewStatsRow, ChannelRevenueStatsRow,
     },
     channels::{list_youtube_channels, update_channel_stats, Channel, ChannelStatsSummary},
+    stream_events::list_revenue_by_channel_start_at,
     PgPool,
 };
 use vtstat_request::RequestHub;
+use vtstat_utils::currency::currency_symbol_to_code;
 
 use super::JobResult;
 
@@ -22,6 +25,8 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     let (ref mut view_stats, ref mut subscriber_stats) =
         youtube_channels_stats(&youtube_channels, &hub.client).await?;
 
+    let revenue_stats = &mut (channel_revenue_stats(&youtube_channels, now - Duration::hours(1), pool).await?);
+
     let (
         ref mut view_stats_1d_ago,
         ref mut view_stats_7d_ago,
@@ -29,6 +34,9 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         ref mut subscriber_stats_1d_ago,
         ref mut subscriber_stats_7d_ago,
         ref mut subscriber_stats_30d_ago,
+        ref mut revenue_stats_1d_ago,
+        ref mut revenue_stats_7d_ago,
+        ref mut revenue_stats_30d_ago,
     ) = try_join!(
         channel_view_stats_before(now - Duration::days(1), pool),
         channel_view_stats_before(now - Duration::days(7), pool),
@@ -36,12 +44,19 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         channel_subscriber_stats_before(now - Duration::days(1), pool),
         channel_subscriber_stats_before(now - Duration::days(7), pool),
         channel_subscriber_stats_before(now - Duration::days(30), pool),
+        channel_revenue_stats_before(now - Duration::days(1), pool),
+        channel_revenue_stats_before(now - Duration::days(7), pool),
+        channel_revenue_stats_before(now - Duration::days(30), pool),
     )?;
+
+    if !revenue_stats.is_empty() {
+        add_channel_revenue_stats(pool, now, revenue_stats).await?;
+    }
 
     if !view_stats.is_empty() {
         AddChannelViewStatsQuery {
             time: now,
-            rows: &view_stats,
+            rows: view_stats,
         }
         .execute(pool)
         .await?;
@@ -50,7 +65,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     if !subscriber_stats.is_empty() {
         AddChannelSubscriberStatsQuery {
             time: now,
-            rows: &subscriber_stats,
+            rows: subscriber_stats,
         }
         .execute(pool)
         .await?;
@@ -60,7 +75,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         ($vec:ident, $id:expr) => {
             $vec.iter()
                 .position(|v| v.channel_id == $id)
-                .map(|i| $vec.swap_remove(i).count)
+                .map(|i| $vec.swap_remove(i).value)
         };
     }
 
@@ -74,6 +89,10 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         subscriber_1d_ago: find_map!(subscriber_stats_1d_ago, c.channel_id),
         subscriber_7d_ago: find_map!(subscriber_stats_7d_ago, c.channel_id),
         subscriber_30d_ago: find_map!(subscriber_stats_30d_ago, c.channel_id),
+        revenue: find_map!(revenue_stats, c.channel_id),
+        revenue_1d_ago: find_map!(revenue_stats_1d_ago, c.channel_id),
+        revenue_7d_ago: find_map!(revenue_stats_7d_ago, c.channel_id),
+        revenue_30d_ago: find_map!(revenue_stats_30d_ago, c.channel_id),
     });
 
     update_channel_stats(rows, pool).await?;
@@ -82,6 +101,53 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         run: now + Duration::hours(1),
         continuation: None,
     })
+}
+
+async fn channel_revenue_stats(
+    channels: &[Channel],
+    start_at: DateTime<Utc>,
+    pool: &PgPool,
+) -> anyhow::Result<Vec<ChannelRevenueStatsRow>> {
+    let mut _1h_ago = channel_revenue_stats_before(start_at, pool).await?;
+
+    let mut new = list_revenue_by_channel_start_at(start_at, pool).await?;
+
+    let mut results = Vec::with_capacity(channels.len());
+
+    for channel in channels {
+        let mut result = _1h_ago
+            .iter()
+            .position(|r| r.channel_id == channel.channel_id)
+            .map(|i| _1h_ago.swap_remove(i).value)
+            .unwrap_or_default();
+
+        let mut i = 0;
+        while i < new.len() {
+            if new[i].channel_id != channel.channel_id {
+                i += 1;
+                continue;
+            }
+
+            let val = new.swap_remove(i);
+            let amount = val.amount.and_then(|s| s.parse::<f32>().ok());
+            let code = val
+                .symbol
+                .and_then(|s| currency_symbol_to_code(&s).map(|s| s.to_string()));
+
+            if let (Some(amount), Some(code)) = (amount, code) {
+                *result.entry(code).or_default() += amount;
+            }
+        }
+
+        if !result.is_empty() {
+            results.push(ChannelRevenueStatsRow {
+                channel_id: channel.channel_id,
+                value: result,
+            })
+        }
+    }
+
+    Ok(results)
 }
 
 async fn youtube_channels_stats(
@@ -104,7 +170,7 @@ async fn youtube_channels_stats(
             acc
         });
 
-        let response = list_channels(&channel_ids, &client).await?;
+        let response = list_channels(&channel_ids, client).await?;
 
         for item in response.items {
             let channel = chunk.iter().find(|ch| ch.platform_id == item.id);
@@ -116,12 +182,12 @@ async fn youtube_channels_stats(
 
             view_stats.push(AddChannelViewStatsRow {
                 channel_id: channel.channel_id,
-                count: item.statistics.view_count.parse().unwrap_or_default(),
+                value: item.statistics.view_count.parse().unwrap_or_default(),
             });
 
             subscribe_stats.push(AddChannelSubscriberStatsRow {
                 channel_id: channel.channel_id,
-                count: item.statistics.subscriber_count.parse().unwrap_or_default(),
+                value: item.statistics.subscriber_count.parse().unwrap_or_default(),
             });
         }
     }

@@ -1,4 +1,6 @@
-use sqlx::{PgPool, Postgres, QueryBuilder, Result};
+use std::collections::HashMap;
+
+use sqlx::{types::Json, PgPool, Postgres, QueryBuilder, Result};
 
 #[derive(Debug)]
 pub struct ChannelStatsSummary {
@@ -11,6 +13,10 @@ pub struct ChannelStatsSummary {
     pub subscriber_1d_ago: Option<i32>,
     pub subscriber_7d_ago: Option<i32>,
     pub subscriber_30d_ago: Option<i32>,
+    pub revenue: Option<HashMap<String, f32>>,
+    pub revenue_1d_ago: Option<HashMap<String, f32>>,
+    pub revenue_7d_ago: Option<HashMap<String, f32>>,
+    pub revenue_30d_ago: Option<HashMap<String, f32>>,
 }
 
 pub async fn update_channel_stats(
@@ -26,7 +32,11 @@ pub async fn update_channel_stats(
         subscriber = n.subscriber, \
         subscriber_1d_ago = n.subscriber_1d_ago, \
         subscriber_7d_ago = n.subscriber_7d_ago, \
-        subscriber_30d_ago = n.subscriber_30d_ago FROM (",
+        subscriber_30d_ago = n.subscriber_30d_ago, \
+        revenue = n.revenue, \
+        revenue_1d_ago = n.revenue_1d_ago, \
+        revenue_7d_ago = n.revenue_7d_ago, \
+        revenue_30d_ago = n.revenue_30d_ago  FROM (",
     );
 
     query_builder.push_values(iter, |mut b, row| {
@@ -38,7 +48,11 @@ pub async fn update_channel_stats(
             .push_bind(row.subscriber.unwrap_or_default())
             .push_bind(row.subscriber_1d_ago.unwrap_or_default())
             .push_bind(row.subscriber_7d_ago.unwrap_or_default())
-            .push_bind(row.subscriber_30d_ago.unwrap_or_default());
+            .push_bind(row.subscriber_30d_ago.unwrap_or_default())
+            .push_bind(Json(row.revenue.unwrap_or_default()))
+            .push_bind(Json(row.revenue_1d_ago.unwrap_or_default()))
+            .push_bind(Json(row.revenue_7d_ago.unwrap_or_default()))
+            .push_bind(Json(row.revenue_30d_ago.unwrap_or_default()));
     });
 
     query_builder.push(
@@ -51,7 +65,11 @@ pub async fn update_channel_stats(
         subscriber, \
         subscriber_1d_ago, \
         subscriber_7d_ago, \
-        subscriber_30d_ago) \
+        subscriber_30d_ago, \
+        revenue, \
+        revenue_1d_ago, \
+        revenue_7d_ago, \
+        revenue_30d_ago) \
         WHERE c.channel_id = n.channel_id",
     );
 

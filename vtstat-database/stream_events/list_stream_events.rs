@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Result};
 
 use super::StreamEvent;
@@ -7,6 +8,32 @@ pub async fn list_stream_events(stream_id: i32, pool: &PgPool) -> Result<Vec<Str
         r#"SELECT kind, time, value FROM stream_events WHERE stream_id = $1"#,
     )
     .bind(stream_id)
+    .fetch_all(pool);
+
+    crate::otel::instrument("SELECT", "stream_events", query).await
+}
+
+#[derive(Debug)]
+pub struct ChannelRevenue {
+    pub channel_id: i32,
+    pub amount: Option<String>,
+    pub symbol: Option<String>,
+}
+
+pub async fn list_revenue_by_channel_start_at(
+    start_at: DateTime<Utc>,
+    pool: &PgPool,
+) -> Result<Vec<ChannelRevenue>> {
+    let query = sqlx::query_as!(
+        ChannelRevenue,
+        "SELECT channel_id, \
+        (value->>'paid_amount') amount, \
+        (value->>'paid_currency_symbol') symbol \
+        FROM stream_events LEFT JOIN streams ON \
+        streams.stream_id = stream_events.stream_id \
+        WHERE time > $1 AND (kind = 'youtube_super_chat' OR kind = 'youtube_super_sticker')",
+        start_at
+    )
     .fetch_all(pool);
 
     crate::otel::instrument("SELECT", "stream_events", query).await

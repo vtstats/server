@@ -8,7 +8,7 @@ pub struct AddChannelViewStatsQuery<'q> {
 
 pub struct AddChannelViewStatsRow {
     pub channel_id: i32,
-    pub count: i32,
+    pub value: i32,
 }
 
 impl<'q> AddChannelViewStatsQuery<'q> {
@@ -19,7 +19,7 @@ impl<'q> AddChannelViewStatsQuery<'q> {
         query_builder.push_values(self.rows.iter(), |mut b, row| {
             b.push_bind(row.channel_id)
                 .push_bind(self.time)
-                .push_bind(row.count);
+                .push_bind(row.value);
         });
 
         query_builder.push(
@@ -46,15 +46,15 @@ async fn test(pool: PgPool) -> Result<()> {
         rows: &[
             AddChannelViewStatsRow {
                 channel_id: 1,
-                count: 20,
+                value: 20,
             },
             AddChannelViewStatsRow {
                 channel_id: 2,
-                count: 10,
+                value: 10,
             },
             AddChannelViewStatsRow {
                 channel_id: 3,
-                count: 20,
+                value: 20,
             },
         ],
     }
@@ -75,15 +75,15 @@ async fn test(pool: PgPool) -> Result<()> {
         rows: &[
             AddChannelViewStatsRow {
                 channel_id: 2,
-                count: 20,
+                value: 20,
             },
             AddChannelViewStatsRow {
                 channel_id: 3,
-                count: 10,
+                value: 10,
             },
             AddChannelViewStatsRow {
                 channel_id: 4,
-                count: 20,
+                value: 20,
             },
         ],
     }
