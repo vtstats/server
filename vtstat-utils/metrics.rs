@@ -9,10 +9,15 @@ use std::{
 use tracing::{field::Empty, Instrument, Span};
 
 pub fn install() {
-    let mut builder = PrometheusBuilder::new().idle_timeout(
-        MetricKindMask::COUNTER | MetricKindMask::HISTOGRAM,
-        Some(Duration::from_secs(10)),
-    );
+    let mut builder = PrometheusBuilder::new()
+        .idle_timeout(
+            MetricKindMask::COUNTER | MetricKindMask::HISTOGRAM,
+            Some(Duration::from_secs(10)),
+        )
+        .set_buckets(&[
+            0., 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1., 2.5, 5., 7.5, 10.,
+        ])
+        .unwrap();
 
     if let Some(address) = env::var("METRICS_ADDRESS")
         .ok()
@@ -46,7 +51,7 @@ pub async fn instrument_send(
         "http.req.path" = &path,
         "http.req.content_length" = request_content_length,
         "http.res.status_code" = Empty,
-        "http.res.response_content_length" = Empty,
+        "http.res.content_length" = Empty,
     );
 
     async move {
@@ -57,7 +62,7 @@ pub async fn instrument_send(
         if let Ok(res) = &result {
             Span::current()
                 .record("http.res.status_code", res.status().as_u16())
-                .record("http.res.response_content_length", res.content_length());
+                .record("http.res.content_length", res.content_length());
 
             let status_code = res.status().as_str().to_string();
             histogram!(
