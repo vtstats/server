@@ -4,11 +4,13 @@ use vtstat_database::stream_events::StreamEventValue;
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum RefinedStreamEventValue {
+    #[serde(rename_all = "camelCase")]
     YoutubeSuperChat {
         amount: String,
         currency_code: String,
         color: YouTubeChatColor,
     },
+    #[serde(rename_all = "camelCase")]
     YoutubeSuperSticker {
         amount: String,
         currency_code: String,
