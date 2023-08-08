@@ -94,7 +94,7 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
 
     let address = env::var("SERVER_ADDRESS")?.parse::<SocketAddr>()?;
 
-    println!("Server started at {address}");
+    tracing::warn!("Server started at {address}");
 
     let (_, server) = warp::serve(filter).bind_with_graceful_shutdown(address, async {
         shutdown_rx.await.ok();
@@ -102,7 +102,7 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
 
     server.await;
 
-    eprintln!("Shutting down server...");
+    tracing::warn!("Shutting down server...");
 
     Ok(())
 }

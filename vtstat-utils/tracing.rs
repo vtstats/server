@@ -1,8 +1,20 @@
+use serde_json::Value;
+use std::{
+    collections::BTreeMap,
+    io::{self, Write},
+    time::Instant,
+};
+use tracing::{
+    field::{Field, Visit},
+    span::{Attributes, Record},
+    Event, Id, Metadata, Subscriber,
+};
 use tracing_subscriber::{
     filter::{filter_fn, LevelFilter},
-    fmt::format::FmtSpan,
-    layer::SubscriberExt,
+    layer::{Context, SubscriberExt},
     registry,
+    registry::LookupSpan,
+    Layer,
 };
 
 pub fn init() {
@@ -10,19 +22,141 @@ pub fn init() {
         metadata.target().starts_with("vtstat") && metadata.name() != "Ignored"
     });
 
-    let fmt_layer = tracing_subscriber::fmt::layer()
-        .json()
-        .with_level(true)
-        .flatten_event(true)
-        .with_span_events(FmtSpan::CLOSE)
-        .with_current_span(true)
-        .with_span_list(false);
-
     let subscriber = registry()
         .with(LevelFilter::INFO)
         .with(filter_layer)
-        .with(fmt_layer);
+        .with(JsonMessageLayer::new());
 
     tracing::subscriber::set_global_default(subscriber)
         .expect("failed to initialize tracing subscriber");
+}
+
+#[derive(serde::Serialize)]
+struct JsonMessage {
+    target: &'static str,
+    level: &'static str,
+    message: String,
+
+    #[serde(flatten)]
+    fields: BTreeMap<&'static str, Value>,
+
+    #[serde(skip)]
+    file: Option<&'static str>,
+    #[serde(skip)]
+    line: Option<u32>,
+    #[serde(skip)]
+    start: Instant,
+}
+
+impl JsonMessage {
+    fn new(metadata: &Metadata<'static>) -> JsonMessage {
+        JsonMessage {
+            start: Instant::now(),
+            file: metadata.file(),
+            line: metadata.line(),
+            target: metadata.target(),
+            message: metadata.name().into(),
+            level: metadata.level().as_str(),
+            fields: BTreeMap::new(),
+        }
+    }
+
+    fn print(mut self, mut w: &io::Stdout) {
+        if let Some(Value::String(message)) = self.fields.remove("message") {
+            self.message = message;
+        }
+
+        if let (Some(file), Some(line)) = (self.file, self.line) {
+            self.message += &format!(" caller={file}:{line}");
+        }
+
+        let ms = self.start.elapsed().as_millis();
+        if ms > 0 {
+            self.message += &format!(" duration={ms}ms");
+        }
+
+        let _ = serde_json::to_writer_pretty(w, &self);
+        let _ = w.write_all(b"\n");
+    }
+}
+
+pub struct JsonMessageLayer {
+    stdout: io::Stdout,
+}
+
+impl JsonMessageLayer {
+    pub fn new() -> Self {
+        JsonMessageLayer {
+            stdout: io::stdout(),
+        }
+    }
+}
+
+impl<S> Layer<S> for JsonMessageLayer
+where
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+{
+    fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
+        let span = ctx.span(&id).expect("span not found");
+
+        let mut msg = JsonMessage::new(span.metadata());
+
+        attrs.record(&mut msg);
+
+        span.extensions_mut().insert(msg);
+    }
+
+    fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
+        let mut msg = JsonMessage::new(event.metadata());
+
+        event.record(&mut msg);
+
+        msg.print(&self.stdout);
+    }
+
+    fn on_record(&self, id: &Id, values: &Record<'_>, ctx: Context<'_, S>) {
+        let span = ctx.span(&id).expect("span not found");
+        let mut extensions = span.extensions_mut();
+        if let Some(msg) = extensions.get_mut::<JsonMessage>() {
+            values.record(msg);
+        }
+    }
+
+    fn on_close(&self, id: Id, ctx: Context<'_, S>) {
+        let span = ctx.span(&id).expect("span not found");
+        let mut extensions = span.extensions_mut();
+        if let Some(msg) = extensions.remove::<JsonMessage>() {
+            msg.print(&self.stdout);
+        }
+    }
+}
+
+impl Visit for JsonMessage {
+    fn record_f64(&mut self, field: &Field, value: f64) {
+        self.fields.insert(field.name(), Value::from(value));
+    }
+
+    fn record_i64(&mut self, field: &Field, value: i64) {
+        self.fields.insert(field.name(), Value::from(value));
+    }
+
+    fn record_u64(&mut self, field: &Field, value: u64) {
+        self.fields.insert(field.name(), Value::from(value));
+    }
+
+    fn record_bool(&mut self, field: &Field, value: bool) {
+        self.fields.insert(field.name(), Value::from(value));
+    }
+
+    fn record_str(&mut self, field: &Field, value: &str) {
+        self.fields.insert(field.name(), Value::from(value));
+    }
+
+    fn record_error(&mut self, field: &Field, value: &(dyn std::error::Error + 'static)) {
+        self.record_str(field, &format!("{}", value));
+    }
+
+    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
+        self.record_str(field, &format!("{:?}", value));
+    }
 }

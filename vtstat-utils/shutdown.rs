@@ -11,10 +11,10 @@ pub async fn shutdown(tx_iter: impl IntoIterator<Item = Sender<()>>) -> anyhow::
 
     tokio::select! {
         _ = sigint.recv() => {
-            eprintln!("Received SIGINT signal...");
+            tracing::warn!("Received SIGINT signal...");
         },
         _ = sigterm.recv() => {
-            eprintln!("Received SIGTERM signal...");
+            tracing::warn!("Received SIGTERM signal...");
         },
     };
 
