@@ -25,7 +25,8 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
     let (ref mut view_stats, ref mut subscriber_stats) =
         youtube_channels_stats(&youtube_channels, &hub.client).await?;
 
-    let revenue_stats = &mut (channel_revenue_stats(&youtube_channels, now - Duration::hours(1), pool).await?);
+    let revenue_stats =
+        &mut (channel_revenue_stats(&youtube_channels, now - Duration::hours(1), pool).await?);
 
     let (
         ref mut view_stats_1d_ago,

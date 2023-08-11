@@ -1,10 +1,7 @@
 use sqlx::{PgPool, Result};
 
-use crate::SeriesData;
-
-pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<SeriesData>> {
-    let query = sqlx::query_as!(
-        SeriesData,
+pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<(i64, i32)>> {
+    let query = sqlx::query!(
         r#"
  SELECT time ts, count v1
    FROM stream_viewer_stats
@@ -12,6 +9,7 @@ pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<Se
         "#,
         stream_id,
     )
+    .map(|row| (row.ts.timestamp_millis(), row.v1))
     .fetch_all(pool);
 
     crate::otel::instrument("SELECT", "stream_viewer_stats", query).await

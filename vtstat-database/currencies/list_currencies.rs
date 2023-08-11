@@ -6,7 +6,7 @@ pub struct ListCurrenciesQuery;
 #[derive(Serialize)]
 pub struct Currency {
     pub code: String,
-    pub rate: f64,
+    pub rate: f32,
 }
 
 pub async fn list_currencies(pool: &PgPool) -> Result<Vec<Currency>> {

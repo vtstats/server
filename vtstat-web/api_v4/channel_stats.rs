@@ -32,3 +32,11 @@ pub async fn channel_view_stats(query: ReqQuery, pool: PgPool) -> Result<Respons
 
     Ok(warp::reply::json(&res).into_response())
 }
+
+pub async fn channel_revenue_stats(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+    let res = db::channel_revenue_stats(query.channel_id, query.start_at, query.end_at, &pool)
+        .await
+        .map_err(Into::<WarpError>::into)?;
+
+    Ok(warp::reply::json(&res).into_response())
+}

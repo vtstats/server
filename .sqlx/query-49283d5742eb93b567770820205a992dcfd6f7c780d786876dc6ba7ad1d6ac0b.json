@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT channel_id, time, (value->>'paid_amount') amount, (value->>'paid_currency_symbol') symbol FROM stream_events LEFT JOIN streams ON streams.stream_id = stream_events.stream_id WHERE time > $1 AND (kind = 'youtube_super_chat' OR kind = 'youtube_super_sticker')",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "channel_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "amount",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "symbol",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "49283d5742eb93b567770820205a992dcfd6f7c780d786876dc6ba7ad1d6ac0b"
+}

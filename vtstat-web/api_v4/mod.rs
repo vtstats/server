@@ -37,6 +37,11 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(with_pool(pool.clone()))
         .and_then(channel_view_stats);
 
+    let api_channel_revenue_stats = warp::path!("channel_stats" / "revenue")
+        .and(warp::query())
+        .and(with_pool(pool.clone()))
+        .and_then(channel_revenue_stats);
+
     let api_currencies = warp::path!("currencies")
         .and(with_pool(pool.clone()))
         .and_then(list_currencies);
@@ -90,6 +95,7 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
             .or(api_catalog)
             .or(api_channel_subscriber_stats)
             .or(api_channel_view_stats)
+            .or(api_channel_revenue_stats)
             .or(api_currencies)
             .or(api_get_stream)
             .or(api_scheduled_streams)

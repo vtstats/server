@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use sqlx::{types::Json, PgPool, Postgres, QueryBuilder, Result};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ChannelRevenueStatsRow {
     pub channel_id: i32,
     pub value: HashMap<String, f32>,

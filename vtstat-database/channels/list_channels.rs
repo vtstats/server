@@ -46,7 +46,8 @@ pub async fn list_channels_with_stats(
         "SELECT vtuber_id, \
         platform as \"platform: _\", \
         view, view_1d_ago, view_7d_ago, view_30d_ago, \
-        subscriber, subscriber_1d_ago, subscriber_7d_ago, subscriber_30d_ago \
+        subscriber, subscriber_1d_ago, subscriber_7d_ago, subscriber_30d_ago, \
+        revenue, revenue_1d_ago, revenue_7d_ago, revenue_30d_ago \
         FROM channels \
         WHERE vtuber_id = ANY($1) \
         AND platform = $2",

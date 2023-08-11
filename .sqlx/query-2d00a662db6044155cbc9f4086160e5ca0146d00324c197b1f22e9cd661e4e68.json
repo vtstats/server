@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT channel_id, count FROM channel_subscriber_stats WHERE (time, channel_id) IN (SELECT MAX(time), channel_id FROM channel_subscriber_stats WHERE time <= $1 GROUP BY channel_id)",
+  "query": "SELECT channel_id, value FROM channel_revenue_stats WHERE (time, channel_id) IN (SELECT MAX(time), channel_id FROM channel_revenue_stats WHERE time <= $1 GROUP BY channel_id)",
   "describe": {
     "columns": [
       {
@@ -10,8 +10,8 @@
       },
       {
         "ordinal": 1,
-        "name": "count",
-        "type_info": "Int4"
+        "name": "value",
+        "type_info": "Jsonb"
       }
     ],
     "parameters": {
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "b238f7f92b45a46185688668d037e8c490258d0610d4954b0110dee33cf7e9b5"
+  "hash": "2d00a662db6044155cbc9f4086160e5ca0146d00324c197b1f22e9cd661e4e68"
 }
