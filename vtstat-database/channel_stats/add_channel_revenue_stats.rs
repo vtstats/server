@@ -23,7 +23,7 @@ pub async fn add_channel_revenue_stats(
             .push_bind(Json(&row.value));
     });
 
-    query_builder.push("ON CONFLICT (channel_id, time) DO NOTHING");
+    query_builder.push("ON CONFLICT (channel_id, time) DO UPDATE SET value = excluded.value");
 
     let query = query_builder.build().execute(pool);
 
