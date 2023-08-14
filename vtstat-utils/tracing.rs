@@ -75,7 +75,15 @@ impl JsonMessage {
             self.message += &format!(" duration={ms}ms");
         }
 
-        let _ = serde_json::to_writer_pretty(w, &self);
+        if std::env::var("LOG_PRETTY")
+            .map(|c| c == "1" || c == "on" || c == "true")
+            .unwrap_or_default()
+        {
+            let _ = serde_json::to_writer_pretty(w, &self);
+        } else {
+            let _ = serde_json::to_writer(w, &self);
+        }
+
         let _ = w.write_all(b"\n");
     }
 }
@@ -97,7 +105,7 @@ where
     S: Subscriber + for<'lookup> LookupSpan<'lookup>,
 {
     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
-        let span = ctx.span(&id).expect("span not found");
+        let span = ctx.span(id).expect("span not found");
 
         let mut msg = JsonMessage::new(span.metadata());
 
@@ -115,7 +123,7 @@ where
     }
 
     fn on_record(&self, id: &Id, values: &Record<'_>, ctx: Context<'_, S>) {
-        let span = ctx.span(&id).expect("span not found");
+        let span = ctx.span(id).expect("span not found");
         let mut extensions = span.extensions_mut();
         if let Some(msg) = extensions.get_mut::<JsonMessage>() {
             values.record(msg);
