@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, Result};
+use sqlx::{PgExecutor, Result};
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateVTuber {
@@ -12,7 +12,7 @@ pub struct CreateVTuber {
 }
 
 impl CreateVTuber {
-    pub async fn execute(self, pool: &PgPool) -> Result<()> {
+    pub async fn execute(self, executor: impl PgExecutor<'_>) -> Result<()> {
         let query = sqlx::query!(
             "INSERT INTO vtubers (vtuber_id, native_name, english_name, japanese_name, twitter_username, thumbnail_url)
             VALUES ($1, $2, $3, $4, $5, $6)",
@@ -23,7 +23,7 @@ impl CreateVTuber {
             self.twitter_username,
             self.thumbnail_url
         )
-        .execute(pool);
+        .execute(executor);
 
         crate::otel::instrument("INSERT", "vtubers", query).await?;
 

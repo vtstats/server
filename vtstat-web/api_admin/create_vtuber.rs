@@ -49,6 +49,8 @@ pub async fn create_vtuber(
         }
     }
 
+    let mut tx = pool.begin().await.map_err(WarpError::from)?;
+
     CreateVTuber {
         vtuber_id: payload.vtuber_id.clone(),
         native_name: payload.native_name,
@@ -57,18 +59,20 @@ pub async fn create_vtuber(
         twitter_username: payload.twitter_username,
         thumbnail_url,
     }
-    .execute(&pool)
+    .execute(&mut *tx)
     .await
-    .map_err(Into::<WarpError>::into)?;
+    .map_err(WarpError::from)?;
 
     CreateChannel {
         platform: Platform::Youtube,
         platform_id: payload.youtube_channel_id,
         vtuber_id: payload.vtuber_id.clone(),
     }
-    .execute(&pool)
+    .execute(&mut *tx)
     .await
-    .map_err(Into::<WarpError>::into)?;
+    .map_err(WarpError::from)?;
+
+    tx.commit().await.map_err(WarpError::from)?;
 
     Ok(warp::reply::with_status(
         warp::reply::json(&ActionResponse {

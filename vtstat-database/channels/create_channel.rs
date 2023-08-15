@@ -1,4 +1,4 @@
-use sqlx::{PgPool, Result};
+use sqlx::{PgExecutor, Result};
 
 use super::Platform;
 
@@ -9,7 +9,7 @@ pub struct CreateChannel {
 }
 
 impl CreateChannel {
-    pub async fn execute(&self, pool: &PgPool) -> Result<i32> {
+    pub async fn execute(&self, executor: impl PgExecutor<'_>) -> Result<i32> {
         let query = sqlx::query!(
             "INSERT INTO channels (platform, platform_id, vtuber_id, kind) \
             VALUES($1, $2, $3, '') \
@@ -18,7 +18,7 @@ impl CreateChannel {
             self.platform_id,
             self.vtuber_id,
         )
-        .fetch_one(pool);
+        .fetch_one(executor);
 
         let record = crate::otel::instrument("INSERT", "channels", query).await?;
 
