@@ -1,6 +1,6 @@
 use serde_with::{formats::CommaSeparator, serde_as, StringWithSeparator};
 use std::convert::Into;
-use vtstat_database::{channels as db, channels::Platform, PgPool};
+use vtstat_database::{channels as db, PgPool};
 use warp::{reply::Response, Rejection, Reply};
 
 use crate::reject::WarpError;
@@ -9,13 +9,12 @@ use crate::reject::WarpError;
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReqQuery {
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, String>")]
-    vtuber_ids: Vec<String>,
-    platform: Platform,
+    #[serde_as(as = "StringWithSeparator::<CommaSeparator, i32>")]
+    channel_ids: Vec<i32>,
 }
 
-pub async fn list_channels(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
-    let channels = db::list_channels_with_stats(&query.vtuber_ids, query.platform, &pool)
+pub async fn channel_stats_summary(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+    let channels = db::list_channels_with_stats(&query.channel_ids, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 

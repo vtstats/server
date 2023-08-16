@@ -78,7 +78,7 @@ impl Ordering {
 }
 
 pub async fn filter_streams_order_by_schedule_time_asc(
-    vtuber_ids: &[String],
+    channel_ids: &[i32],
     status: StreamStatus,
     start_at: Option<DateTime<Utc>>,
     end_at: Option<DateTime<Utc>>,
@@ -100,13 +100,13 @@ pub async fn filter_streams_order_by_schedule_time_asc(
         updated_at, \
         status as \"status: _\" \
         FROM streams \
-        WHERE vtuber_id = ANY($1) \
+        WHERE channel_id = ANY($1) \
         AND status = $2 \
         AND (schedule_time >= $3 OR $3 IS NULL) \
         AND (schedule_time <= $4 OR $4 IS NULL) \
         ORDER BY schedule_time ASC \
         LIMIT 24",
-        vtuber_ids,
+        channel_ids,
         status as _,
         start_at,
         end_at
@@ -117,7 +117,7 @@ pub async fn filter_streams_order_by_schedule_time_asc(
 }
 
 pub async fn filter_streams_order_by_start_time_desc(
-    vtuber_ids: &[String],
+    channel_ids: &[i32],
     status: StreamStatus,
     start_at: Option<DateTime<Utc>>,
     end_at: Option<DateTime<Utc>>,
@@ -139,13 +139,13 @@ pub async fn filter_streams_order_by_start_time_desc(
         updated_at, \
         status as \"status: _\" \
         FROM streams \
-        WHERE vtuber_id = ANY($1) \
+        WHERE channel_id = ANY($1) \
         AND status = $2 \
         AND (start_time >= $3 OR $3 IS NULL) \
         AND (start_time <= $4 OR $4 IS NULL) \
         ORDER BY start_time DESC \
         LIMIT 24",
-        vtuber_ids,
+        channel_ids,
         status as _,
         start_at,
         end_at

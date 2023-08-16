@@ -16,8 +16,8 @@ use crate::reject::WarpError;
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReqQuery {
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, String>")]
-    pub vtuber_ids: Vec<String>,
+    #[serde_as(as = "StringWithSeparator::<CommaSeparator, i32>")]
+    pub channel_ids: Vec<i32>,
     #[serde(default, with = "ts_milliseconds_option")]
     pub start_at: Option<DateTime<Utc>>,
     #[serde(default, with = "ts_milliseconds_option")]
@@ -44,7 +44,7 @@ pub async fn list_stream_by_platform_id(
 
 pub async fn list_scheduled_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
     let streams = filter_streams_order_by_schedule_time_asc(
-        &query.vtuber_ids,
+        &query.channel_ids,
         StreamStatus::Scheduled,
         query.start_at,
         query.end_at,
@@ -58,7 +58,7 @@ pub async fn list_scheduled_streams(query: ReqQuery, pool: PgPool) -> Result<Res
 
 pub async fn list_live_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
     let streams = filter_streams_order_by_start_time_desc(
-        &query.vtuber_ids,
+        &query.channel_ids,
         StreamStatus::Live,
         query.start_at,
         query.end_at,
@@ -72,7 +72,7 @@ pub async fn list_live_streams(query: ReqQuery, pool: PgPool) -> Result<Response
 
 pub async fn list_ended_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
     let streams = filter_streams_order_by_start_time_desc(
-        &query.vtuber_ids,
+        &query.channel_ids,
         StreamStatus::Ended,
         query.start_at,
         query.end_at,

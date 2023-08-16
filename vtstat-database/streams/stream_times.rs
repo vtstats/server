@@ -2,12 +2,12 @@ use chrono::{DateTime, Duration, Utc};
 use sqlx::{PgPool, Result};
 use std::cmp::{max, min};
 
-pub async fn stream_times(vtuber_id: &str, pool: &PgPool) -> Result<Vec<(i64, i64)>> {
-    stream_times_start_at(vtuber_id, Utc::now() - Duration::weeks(44), pool).await
+pub async fn stream_times(channel_ids: &[i32], pool: &PgPool) -> Result<Vec<(i64, i64)>> {
+    stream_times_start_at(channel_ids, Utc::now() - Duration::weeks(44), pool).await
 }
 
 async fn stream_times_start_at(
-    vtuber_id: &str,
+    channel_ids: &[i32],
     start_at: DateTime<Utc>,
     pool: &PgPool,
 ) -> Result<Vec<(i64, i64)>> {
@@ -15,13 +15,13 @@ async fn stream_times_start_at(
         r#"
   SELECT start_time, end_time
     FROM streams
-   WHERE vtuber_id = $1
+   WHERE channel_id = ANY($1)
      AND start_time > $2
      AND end_time IS NOT NULL
 ORDER BY start_time DESC
         "#,
-        vtuber_id, // $1
-        start_at,  // $2
+        channel_ids, // $1
+        start_at,    // $2
     )
     .fetch_all(pool);
 
@@ -76,13 +76,13 @@ INSERT INTO streams (platform, vtuber_id, platform_id, title, channel_id, schedu
     let big_bang = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc);
 
     {
-        let times = stream_times_start_at("vtuber2", big_bang, &pool).await?;
+        let times = stream_times_start_at(&[2], big_bang, &pool).await?;
 
         assert!(times.is_empty());
     }
 
     {
-        let times = stream_times_start_at("vtuber1", big_bang, &pool).await?;
+        let times = stream_times_start_at(&[1], big_bang, &pool).await?;
 
         assert_eq!(
             times,

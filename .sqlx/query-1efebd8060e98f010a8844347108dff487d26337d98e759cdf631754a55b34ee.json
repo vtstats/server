@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n  SELECT start_time, end_time\n    FROM streams\n   WHERE vtuber_id = $1\n     AND start_time > $2\n     AND end_time IS NOT NULL\nORDER BY start_time DESC\n        ",
+  "query": "\n  SELECT start_time, end_time\n    FROM streams\n   WHERE channel_id = ANY($1)\n     AND start_time > $2\n     AND end_time IS NOT NULL\nORDER BY start_time DESC\n        ",
   "describe": {
     "columns": [
       {
@@ -16,7 +16,7 @@
     ],
     "parameters": {
       "Left": [
-        "Text",
+        "Int4Array",
         "Timestamptz"
       ]
     },
@@ -25,5 +25,5 @@
       true
     ]
   },
-  "hash": "5545addb0ad9053a60f8717e8b2134ec4d028722e7823b70e94aab6289371e74"
+  "hash": "1efebd8060e98f010a8844347108dff487d26337d98e759cdf631754a55b34ee"
 }

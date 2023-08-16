@@ -1,7 +1,6 @@
 mod catalog;
 mod channel_stats;
 mod channels;
-mod currencies;
 mod stream_events;
 mod stream_stats;
 mod stream_times;
@@ -10,7 +9,6 @@ mod streams;
 use catalog::*;
 use channel_stats::*;
 use channels::*;
-use currencies::*;
 use stream_events::*;
 use stream_stats::*;
 use stream_times::*;
@@ -22,29 +20,25 @@ use warp::{Filter, Rejection, Reply};
 use crate::filters::with_pool;
 
 pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let api_channels = warp::path!("channels")
+    let api_channel_stats_summary = warp::path!("channel-stats" / "summary")
         .and(warp::query())
         .and(with_pool(pool.clone()))
-        .and_then(list_channels);
+        .and_then(channel_stats_summary);
 
-    let api_channel_subscriber_stats = warp::path!("channel_stats" / "subscriber")
+    let api_channel_stats_subscriber = warp::path!("channel-stats" / "subscriber")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(channel_subscriber_stats);
 
-    let api_channel_view_stats = warp::path!("channel_stats" / "view")
+    let api_channel_stats_view = warp::path!("channel-stats" / "view")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(channel_view_stats);
 
-    let api_channel_revenue_stats = warp::path!("channel_stats" / "revenue")
+    let api_channel_stats_revenue = warp::path!("channel-stats" / "revenue")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(channel_revenue_stats);
-
-    let api_currencies = warp::path!("currencies")
-        .and(with_pool(pool.clone()))
-        .and_then(list_currencies);
 
     let api_get_stream = warp::path!("streams")
         .and(warp::query())
@@ -66,22 +60,22 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(with_pool(pool.clone()))
         .and_then(list_ended_streams);
 
-    let api_stream_viewer_stats = warp::path!("stream_stats" / "viewer")
+    let api_stream_stats_viewer = warp::path!("stream-stats" / "viewer")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(stream_viewer_stats);
 
-    let api_stream_chat_stats = warp::path!("stream_stats" / "chat")
+    let api_stream_stats_chat = warp::path!("stream-stats" / "chat")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(stream_chat_stats);
 
-    let api_stream_times = warp::path!("stream_times")
+    let api_stream_times = warp::path!("stream-times")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(stream_times);
 
-    let api_stream_stats = warp::path!("stream_events")
+    let api_stream_stats = warp::path!("stream-events")
         .and(warp::query())
         .and(with_pool(pool.clone()))
         .and_then(stream_events);
@@ -91,18 +85,17 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and_then(catalog);
 
     warp::path("v4").and(warp::get()).and(
-        api_channels
+        api_channel_stats_summary
             .or(api_catalog)
-            .or(api_channel_subscriber_stats)
-            .or(api_channel_view_stats)
-            .or(api_channel_revenue_stats)
-            .or(api_currencies)
+            .or(api_channel_stats_subscriber)
+            .or(api_channel_stats_view)
+            .or(api_channel_stats_revenue)
             .or(api_get_stream)
             .or(api_scheduled_streams)
             .or(api_live_streams)
             .or(api_ended_streams)
-            .or(api_stream_viewer_stats)
-            .or(api_stream_chat_stats)
+            .or(api_stream_stats_viewer)
+            .or(api_stream_stats_chat)
             .or(api_stream_times)
             .or(api_stream_stats),
     )

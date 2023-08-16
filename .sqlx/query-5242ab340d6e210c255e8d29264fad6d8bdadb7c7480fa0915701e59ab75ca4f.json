@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT vtuber_id, platform as \"platform: _\", view, view_1d_ago, view_7d_ago, view_30d_ago, subscriber, subscriber_1d_ago, subscriber_7d_ago, subscriber_30d_ago, revenue, revenue_1d_ago, revenue_7d_ago, revenue_30d_ago FROM channels WHERE vtuber_id = ANY($1) AND platform = $2",
+  "query": "SELECT vtuber_id, platform as \"platform: _\", view, view_1d_ago, view_7d_ago, view_30d_ago, subscriber, subscriber_1d_ago, subscriber_7d_ago, subscriber_30d_ago, revenue, revenue_1d_ago, revenue_7d_ago, revenue_30d_ago FROM channels WHERE channel_id = ANY($1)",
   "describe": {
     "columns": [
       {
@@ -87,19 +87,7 @@
     ],
     "parameters": {
       "Left": [
-        "TextArray",
-        {
-          "Custom": {
-            "name": "platform",
-            "kind": {
-              "Enum": [
-                "youtube",
-                "bilibili",
-                "twitch"
-              ]
-            }
-          }
-        }
+        "Int4Array"
       ]
     },
     "nullable": [
@@ -119,5 +107,5 @@
       false
     ]
   },
-  "hash": "b9c8d4ce9678c770a55c19b3a615b24276745b896778ca1f539f7cbfb713f8da"
+  "hash": "5242ab340d6e210c255e8d29264fad6d8bdadb7c7480fa0915701e59ab75ca4f"
 }

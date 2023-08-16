@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT platform_id, stream_id, title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status as \"status: _\" FROM streams WHERE vtuber_id = ANY($1) AND status = $2 AND (start_time >= $3 OR $3 IS NULL) AND (start_time <= $4 OR $4 IS NULL) ORDER BY start_time DESC LIMIT 24",
+  "query": "SELECT platform_id, stream_id, title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status as \"status: _\" FROM streams WHERE channel_id = ANY($1) AND status = $2 AND (schedule_time >= $3 OR $3 IS NULL) AND (schedule_time <= $4 OR $4 IS NULL) ORDER BY schedule_time ASC LIMIT 24",
   "describe": {
     "columns": [
       {
@@ -82,7 +82,7 @@
     ],
     "parameters": {
       "Left": [
-        "TextArray",
+        "Int4Array",
         {
           "Custom": {
             "name": "stream_status",
@@ -115,5 +115,5 @@
       false
     ]
   },
-  "hash": "e7ffc5ce42921a3b04f0ab754d32fe8ca0c322c2843e94b1c1dd57427c206d3d"
+  "hash": "9f1427d95ce098cfd0191557e8471f1a768bf31ebe4e465fad66ff739d0d7206"
 }
