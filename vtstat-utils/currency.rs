@@ -15,7 +15,7 @@ pub fn currency_symbol_to_code(i: &str) -> Option<&str> {
         "NT$" => Some("TWD"),
         "₪" => Some("ILS"),
         "₱" => Some("PHP"),
-        // "F CFA" => Some("CFA"),
+        "F CFA " => Some("XAF"),
         i if i.len() == 3 && i.bytes().all(|c| c.is_ascii_uppercase()) => Some(i),
         _ => None,
     }
