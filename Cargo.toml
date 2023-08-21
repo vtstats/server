@@ -11,7 +11,7 @@ tokio = { version = "1.28.2", features = [
     "macros",
     "signal",
     "sync",
-    "rt-multi-thread"
+    "rt-multi-thread",
 ] }
 vtstat-web = { path = "./vtstat-web" }
 vtstat-worker = { path = "./vtstat-worker" }
@@ -25,6 +25,7 @@ path = "main.rs"
 [workspace]
 members = [
     ".",
+    "integration-bilibili",
     "integration-discord",
     "integration-googleauth",
     "integration-telegram",
@@ -34,7 +35,7 @@ members = [
     "vtstat-request",
     "vtstat-utils",
     "vtstat-web",
-    "vtstat-worker"
+    "vtstat-worker",
 ]
 resolver = "2"
 

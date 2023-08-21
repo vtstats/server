@@ -1,5 +1,4 @@
 use chrono::{DateTime, Duration, DurationRound, Utc};
-use integration_youtube::data_api::channels::list_channels;
 use reqwest::Client;
 use tokio::try_join;
 use vtstat_database::{
@@ -8,25 +7,52 @@ use vtstat_database::{
         channel_view_stats_before, AddChannelSubscriberStatsQuery, AddChannelSubscriberStatsRow,
         AddChannelViewStatsQuery, AddChannelViewStatsRow, ChannelRevenueStatsRow,
     },
-    channels::{list_youtube_channels, update_channel_stats, Channel, ChannelStatsSummary},
+    channels::{
+        list_bilibili_channels, list_youtube_channels, update_channel_stats, Channel,
+        ChannelStatsSummary,
+    },
     stream_events::list_revenue_by_channel_start_at,
     PgPool,
 };
-use vtstat_request::RequestHub;
 use vtstat_utils::currency::currency_symbol_to_code;
 
 use super::JobResult;
 
-pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult> {
     let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
 
     let youtube_channels = list_youtube_channels(pool).await?;
+    let bilibili_channels = list_bilibili_channels(pool).await?;
 
-    let (ref mut view_stats, ref mut subscriber_stats) =
-        youtube_channels_stats(&youtube_channels, &hub.client).await?;
+    let (mut youtube_view_stats, mut youtube_subscriber_stats) =
+        youtube_channels_stats(&youtube_channels, client)
+            .await
+            .unwrap_or_else(|err| {
+                tracing::error!(exception.stacktrace = ?err, message= %err);
+                (vec![], vec![])
+            });
 
-    let revenue_stats =
-        &mut (channel_revenue_stats(&youtube_channels, now - Duration::hours(1), pool).await?);
+    let mut youtube_revenue_stats =
+        channel_revenue_stats(&youtube_channels, now - Duration::hours(1), pool)
+            .await
+            .unwrap_or_else(|err| {
+                tracing::error!(exception.stacktrace = ?err, message= %err);
+                vec![]
+            });
+
+    let (mut bilibili_view_stats, mut bilibili_subscriber_stats) =
+        bilibili_channels_stats(&bilibili_channels, client)
+            .await
+            .unwrap_or_else(|err| {
+                tracing::error!(exception.stacktrace = ?err, message= %err);
+                (vec![], vec![])
+            });
+
+    let view_stats = &mut youtube_view_stats;
+    view_stats.append(&mut bilibili_view_stats);
+    let subscriber_stats = &mut youtube_subscriber_stats;
+    subscriber_stats.append(&mut bilibili_subscriber_stats);
+    let revenue_stats = &mut youtube_revenue_stats;
 
     let (
         ref mut view_stats_1d_ago,
@@ -80,21 +106,24 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         };
     }
 
-    let rows = youtube_channels.into_iter().map(|c| ChannelStatsSummary {
-        channel_id: c.channel_id,
-        view: find_map!(view_stats, c.channel_id),
-        view_1d_ago: find_map!(view_stats_1d_ago, c.channel_id),
-        view_7d_ago: find_map!(view_stats_7d_ago, c.channel_id),
-        view_30d_ago: find_map!(view_stats_30d_ago, c.channel_id),
-        subscriber: find_map!(subscriber_stats, c.channel_id),
-        subscriber_1d_ago: find_map!(subscriber_stats_1d_ago, c.channel_id),
-        subscriber_7d_ago: find_map!(subscriber_stats_7d_ago, c.channel_id),
-        subscriber_30d_ago: find_map!(subscriber_stats_30d_ago, c.channel_id),
-        revenue: find_map!(revenue_stats, c.channel_id),
-        revenue_1d_ago: find_map!(revenue_stats_1d_ago, c.channel_id),
-        revenue_7d_ago: find_map!(revenue_stats_7d_ago, c.channel_id),
-        revenue_30d_ago: find_map!(revenue_stats_30d_ago, c.channel_id),
-    });
+    let rows = youtube_channels
+        .into_iter()
+        .chain(bilibili_channels.into_iter())
+        .map(|c| ChannelStatsSummary {
+            channel_id: c.channel_id,
+            view: find_map!(view_stats, c.channel_id),
+            view_1d_ago: find_map!(view_stats_1d_ago, c.channel_id),
+            view_7d_ago: find_map!(view_stats_7d_ago, c.channel_id),
+            view_30d_ago: find_map!(view_stats_30d_ago, c.channel_id),
+            subscriber: find_map!(subscriber_stats, c.channel_id),
+            subscriber_1d_ago: find_map!(subscriber_stats_1d_ago, c.channel_id),
+            subscriber_7d_ago: find_map!(subscriber_stats_7d_ago, c.channel_id),
+            subscriber_30d_ago: find_map!(subscriber_stats_30d_ago, c.channel_id),
+            revenue: find_map!(revenue_stats, c.channel_id),
+            revenue_1d_ago: find_map!(revenue_stats_1d_ago, c.channel_id),
+            revenue_7d_ago: find_map!(revenue_stats_7d_ago, c.channel_id),
+            revenue_30d_ago: find_map!(revenue_stats_30d_ago, c.channel_id),
+        });
 
     update_channel_stats(rows, pool).await?;
 
@@ -171,7 +200,8 @@ async fn youtube_channels_stats(
             acc
         });
 
-        let response = list_channels(&channel_ids, client).await?;
+        let response =
+            integration_youtube::data_api::channels::list_channels(&channel_ids, client).await?;
 
         for item in response.items {
             let channel = chunk.iter().find(|ch| ch.platform_id == item.id);
@@ -191,6 +221,36 @@ async fn youtube_channels_stats(
                 value: item.statistics.subscriber_count.parse().unwrap_or_default(),
             });
         }
+    }
+
+    Ok((view_stats, subscribe_stats))
+}
+
+async fn bilibili_channels_stats(
+    channels: &[Channel],
+    client: &Client,
+) -> anyhow::Result<(
+    Vec<AddChannelViewStatsRow>,
+    Vec<AddChannelSubscriberStatsRow>,
+)> {
+    let mut view_stats = Vec::with_capacity(channels.len());
+    let mut subscribe_stats = Vec::with_capacity(channels.len());
+
+    for channel in channels {
+        let (subscribers, views) = try_join!(
+            integration_bilibili::channels::channel_subscribers(&channel.platform_id, client),
+            integration_bilibili::channels::channel_views(&channel.platform_id, client),
+        )?;
+
+        view_stats.push(AddChannelViewStatsRow {
+            channel_id: channel.channel_id,
+            value: views,
+        });
+
+        subscribe_stats.push(AddChannelSubscriberStatsRow {
+            channel_id: channel.channel_id,
+            value: subscribers,
+        });
     }
 
     Ok((view_stats, subscribe_stats))

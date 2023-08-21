@@ -1,9 +1,7 @@
-mod channels;
 mod thumbnail;
 
 use reqwest::{Client, ClientBuilder};
 
-pub use channels::*;
 #[derive(Clone)]
 pub struct RequestHub {
     pub client: Client,

@@ -1,12 +1,12 @@
-mod collect_youtube_stream_metadata;
-mod health_check;
-mod install_discord_command;
-mod refresh_youtube_rss;
-mod send_notification;
-mod subscribe_youtube_pubsub;
-mod update_channel_stats;
-mod update_currency_exchange_rate;
-mod upsert_youtube_stream;
+pub mod collect_youtube_stream_metadata;
+pub mod health_check;
+pub mod install_discord_command;
+pub mod refresh_youtube_rss;
+pub mod send_notification;
+pub mod subscribe_youtube_pubsub;
+pub mod update_channel_stats;
+pub mod update_currency_exchange_rate;
+pub mod upsert_youtube_stream;
 
 use chrono::{DateTime, Utc};
 use metrics::{histogram, increment_counter};
@@ -62,7 +62,7 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
             HealthCheck => health_check::execute().await,
             RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, hub).await,
             SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, hub).await,
-            UpdateChannelStats => update_channel_stats::execute(&pool, hub).await,
+            UpdateChannelStats => update_channel_stats::execute(&pool, &hub.client).await,
             // TODO:
             UpdateCurrencyExchangeRate => update_currency_exchange_rate::execute(&pool).await,
             UpsertYoutubeStream(payload) => {

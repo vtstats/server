@@ -11,7 +11,7 @@ use vtstat_database::{
 };
 use vtstat_request::RequestHub;
 
-mod jobs;
+pub mod jobs;
 
 pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
     let (shutdown_complete_tx, mut shutdown_complete_rx) = channel(1);
