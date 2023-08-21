@@ -16,5 +16,5 @@ RUN cargo build --release
 
 FROM gcr.io/distroless/cc-debian11
 WORKDIR app
-COPY --from=builder /app/target/release/vtstat vtstat
-ENTRYPOINT ["./vtstat"]
+COPY --from=builder /app/target/release/vtstats vtstats
+ENTRYPOINT ["./vtstats"]

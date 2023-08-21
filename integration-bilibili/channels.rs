@@ -3,7 +3,7 @@ use reqwest::{header::COOKIE, Client, Url};
 use serde::Deserialize;
 use std::env;
 
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 #[derive(Deserialize)]
 pub struct BilibiliUpstatResponse {

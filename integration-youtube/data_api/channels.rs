@@ -3,7 +3,7 @@ use std::env;
 use chrono::{Timelike, Utc};
 use reqwest::{Client, Url};
 use serde::{Deserialize, Serialize};
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 #[derive(Deserialize, Debug)]
 pub struct YouTubeChannelsListResponse {

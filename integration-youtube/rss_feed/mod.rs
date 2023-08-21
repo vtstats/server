@@ -1,6 +1,6 @@
 use reqwest::{Client, Url};
 use roxmltree::Document;
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 pub struct FetchYouTubeVideosRSS {
     pub channel_id: String,

@@ -23,6 +23,6 @@ serde = { version = "1.0.164", features = ["derive"] }
 serde_json = { version = "1.0.97", features = ["raw_value"] }
 warp = { version = "0.3.5", default-features = false }
 serde_with = "3.0.0"
-vtstat-utils = { path = "../vtstat-utils" }
+vtstats-utils = { path = "../vtstats-utils" }
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }

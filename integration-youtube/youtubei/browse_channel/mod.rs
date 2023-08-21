@@ -9,7 +9,7 @@ use self::request::Request;
 use self::response::Response;
 use super::context::Context;
 
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 pub async fn browse_channel(channel_id: &str, client: &Client) -> anyhow::Result<Response> {
     let url = Url::parse_with_params(

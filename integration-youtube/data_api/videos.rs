@@ -4,8 +4,8 @@ use std::str::FromStr;
 use chrono::{DateTime, Timelike, Utc};
 use reqwest::{Client, Url};
 use serde::Deserialize;
-use vtstat_database::streams::StreamStatus;
-use vtstat_utils::instrument_send;
+use vtstats_database::streams::StreamStatus;
+use vtstats_utils::instrument_send;
 
 #[derive(Deserialize, Debug)]
 pub struct VideosListResponse {

@@ -3,7 +3,7 @@ use std::env;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 #[derive(Serialize)]
 pub struct SendMessageRequestBody {

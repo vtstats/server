@@ -4,7 +4,7 @@ pub mod response;
 
 use anyhow::Result;
 use reqwest::{Client, Url};
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 use self::proto::get_continuation;
 use self::request::Request;

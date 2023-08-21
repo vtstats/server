@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 use reqwest::{Client, Result};
 

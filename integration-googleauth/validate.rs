@@ -7,7 +7,7 @@ use serde::Deserialize;
 use tokio::sync::Mutex;
 use warp::{Filter, Rejection};
 
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 #[derive(Deserialize)]
 struct GoogleCertsKey {

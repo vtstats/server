@@ -1,7 +1,7 @@
 use anyhow::Result;
 use reqwest::{header::CONTENT_TYPE, Client};
 use std::env;
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 pub struct SubscribeYouTubePubsubQuery {
     pub channel_id: String,

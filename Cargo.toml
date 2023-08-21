@@ -1,5 +1,5 @@
 [package]
-name = "vtstat"
+name = "vtstats"
 version = "0.1.0"
 authors = ["PoiScript <poiscript@gmail.com>"]
 edition = "2021"
@@ -13,13 +13,13 @@ tokio = { version = "1.28.2", features = [
     "sync",
     "rt-multi-thread",
 ] }
-vtstat-web = { path = "./vtstat-web" }
-vtstat-worker = { path = "./vtstat-worker" }
-vtstat-database = { path = "./vtstat-database" }
-vtstat-utils = { path = "./vtstat-utils" }
+vtstats-web = { path = "./vtstats-web" }
+vtstats-worker = { path = "./vtstats-worker" }
+vtstats-database = { path = "./vtstats-database" }
+vtstats-utils = { path = "./vtstats-utils" }
 
 [[bin]]
-name = "vtstat"
+name = "vtstats"
 path = "main.rs"
 
 [workspace]
@@ -31,11 +31,11 @@ members = [
     "integration-telegram",
     "integration-youtube",
     "integration-s3",
-    "vtstat-database",
-    "vtstat-request",
-    "vtstat-utils",
-    "vtstat-web",
-    "vtstat-worker",
+    "vtstats-database",
+    "vtstats-request",
+    "vtstats-utils",
+    "vtstats-web",
+    "vtstats-worker",
 ]
 resolver = "2"
 

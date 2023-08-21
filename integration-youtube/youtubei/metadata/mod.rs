@@ -9,7 +9,7 @@ use std::env;
 use self::proto::get_continuation;
 use self::request::Request;
 use self::response::Response;
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 use super::context::Context;
 

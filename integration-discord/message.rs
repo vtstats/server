@@ -2,7 +2,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use vtstat_utils::instrument_send;
+use vtstats_utils::instrument_send;
 
 /// https://discord.com/developers/docs/resources/channel#message-object
 #[derive(Deserialize)]

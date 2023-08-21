@@ -948,7 +948,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tracing",
- "vtstat-utils",
+ "vtstats-utils",
 ]
 
 [[package]]
@@ -967,7 +967,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "tokio",
- "vtstat-utils",
+ "vtstats-utils",
  "warp",
 ]
 
@@ -982,7 +982,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "vtstat-utils",
+ "vtstats-utils",
  "warp",
 ]
 
@@ -996,7 +996,7 @@ dependencies = [
  "hmac",
  "reqwest",
  "sha2",
- "vtstat-utils",
+ "vtstats-utils",
 ]
 
 [[package]]
@@ -1011,7 +1011,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "vtstat-utils",
+ "vtstats-utils",
  "warp",
 ]
 
@@ -1033,8 +1033,8 @@ dependencies = [
  "serde_json",
  "sha-1",
  "tracing",
- "vtstat-database",
- "vtstat-utils",
+ "vtstats-database",
+ "vtstats-utils",
  "warp",
 ]
 
@@ -2520,19 +2520,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
-name = "vtstat"
+name = "vtstats"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "tokio",
- "vtstat-database",
- "vtstat-utils",
- "vtstat-web",
- "vtstat-worker",
+ "vtstats-database",
+ "vtstats-utils",
+ "vtstats-web",
+ "vtstats-worker",
 ]
 
 [[package]]
-name = "vtstat-database"
+name = "vtstats-database"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2548,7 +2548,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "vtstat-request"
+name = "vtstats-request"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2563,11 +2563,11 @@ dependencies = [
  "serde_json",
  "serde_with",
  "tracing",
- "vtstat-utils",
+ "vtstats-utils",
 ]
 
 [[package]]
-name = "vtstat-utils"
+name = "vtstats-utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2584,7 +2584,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "vtstat-web"
+name = "vtstats-web"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2605,13 +2605,13 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-futures",
- "vtstat-database",
- "vtstat-utils",
+ "vtstats-database",
+ "vtstats-utils",
  "warp",
 ]
 
 [[package]]
-name = "vtstat-worker"
+name = "vtstats-worker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2627,9 +2627,9 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
- "vtstat-database",
- "vtstat-request",
- "vtstat-utils",
+ "vtstats-database",
+ "vtstats-request",
+ "vtstats-utils",
 ]
 
 [[package]]
