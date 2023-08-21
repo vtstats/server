@@ -102,8 +102,8 @@ pub async fn filter_streams_order_by_schedule_time_asc(
         FROM streams \
         WHERE channel_id = ANY($1) \
         AND status = $2 \
-        AND (schedule_time >= $3 OR $3 IS NULL) \
-        AND (schedule_time <= $4 OR $4 IS NULL) \
+        AND (schedule_time > $3 OR $3 IS NULL) \
+        AND (schedule_time < $4 OR $4 IS NULL) \
         ORDER BY schedule_time ASC \
         LIMIT 24",
         channel_ids,
@@ -141,8 +141,8 @@ pub async fn filter_streams_order_by_start_time_desc(
         FROM streams \
         WHERE channel_id = ANY($1) \
         AND status = $2 \
-        AND (start_time >= $3 OR $3 IS NULL) \
-        AND (start_time <= $4 OR $4 IS NULL) \
+        AND (start_time > $3 OR $3 IS NULL) \
+        AND (start_time < $4 OR $4 IS NULL) \
         ORDER BY start_time DESC \
         LIMIT 24",
         channel_ids,
