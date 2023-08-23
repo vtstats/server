@@ -1,12 +1,15 @@
+use backon::{ExponentialBuilder, Retryable};
+use futures::TryFutureExt;
 use metrics::{histogram, increment_counter};
 use metrics_exporter_prometheus::PrometheusBuilder;
 use metrics_util::MetricKindMask;
+use reqwest::Request;
 use std::{
     env,
     net::SocketAddr,
     time::{Duration, Instant},
 };
-use tracing::{field::Empty, Instrument, Span};
+use tracing::{field::Empty, Instrument};
 
 pub fn install() {
     let mut builder = PrometheusBuilder::new()
@@ -54,16 +57,42 @@ pub async fn instrument_send(
         "http.res.content_length" = Empty,
     );
 
-    async move {
-        let start = Instant::now();
+    let future_fn = || {
+        let req = req.try_clone().expect("request body must not be stream");
+        execute_with_metrics(req, client)
+    };
 
-        let result = client.execute(req).await;
+    let retry_builder = ExponentialBuilder::default()
+        .with_min_delay(Duration::from_secs(1))
+        .with_factor(1.25)
+        .with_max_times(5);
 
-        if let Ok(res) = &result {
-            Span::current()
-                .record("http.res.status_code", res.status().as_u16())
-                .record("http.res.content_length", res.content_length());
+    future_fn
+        .retry(&retry_builder)
+        // TODO: use `inspect_err` once stable
+        .map_err(|err| {
+            tracing::error!(exception.stacktrace = ?err, message= %err);
+            err
+        })
+        .instrument(span)
+        .await
+}
 
+async fn execute_with_metrics(
+    req: Request,
+    client: &reqwest::Client,
+) -> reqwest::Result<reqwest::Response> {
+    let start = Instant::now();
+    let method = req.method().as_str().to_string();
+    let url = req.url();
+    let path = url.path().to_string();
+    let host = url.domain().map(|h| h.to_string()).unwrap_or_default();
+
+    client
+        .execute(req)
+        .await
+        // TODO: use `inspect` once stable
+        .map(|res| {
             let status_code = res.status().as_str().to_string();
             histogram!(
                 "http_client_requests_elapsed_seconds",
@@ -79,17 +108,7 @@ pub async fn instrument_send(
                 "path" => path,
                 "host" => host,
             );
-        }
-
-        let result = result.and_then(|r| r.error_for_status());
-
-        // TODO: use `inspect_err` once stable
-        if let Err(err) = &result {
-            tracing::error!(exception.stacktrace = ?err, message= %err);
-        }
-
-        result
-    }
-    .instrument(span)
-    .await
+            res
+        })
+        .and_then(|r| r.error_for_status())
 }

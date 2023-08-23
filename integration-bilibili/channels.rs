@@ -35,7 +35,7 @@ pub async fn channel_subscribers(id: &str, client: &Client) -> Result<i32> {
 
     let req = client.get(url).header(COOKIE, env::var("BILIBILI_COOKIE")?);
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: BilibiliStatResponse = res.json().await?;
 
@@ -47,7 +47,7 @@ pub async fn channel_views(id: &str, client: &Client) -> Result<i32> {
 
     let req = client.get(url).header(COOKIE, env::var("BILIBILI_COOKIE")?);
 
-    let res = instrument_send(&client, req).await?;
+    let res = instrument_send(client, req).await?;
 
     let json: BilibiliUpstatResponse = res.json().await?;
 

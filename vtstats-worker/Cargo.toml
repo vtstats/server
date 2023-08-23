@@ -26,6 +26,7 @@ vtstats-request = { path = "../vtstats-request" }
 vtstats-utils = { path = "../vtstats-utils" }
 integration-bilibili = { path = "../integration-bilibili" }
 integration-discord = { path = "../integration-discord" }
+integration-s3 = { path = "../integration-s3" }
 integration-youtube = { path = "../integration-youtube" }
 
 [dev-dependencies]
