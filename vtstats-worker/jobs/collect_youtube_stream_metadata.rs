@@ -176,7 +176,7 @@ async fn collect_donation_and_chat(
             LiveChatMessage::Text {
                 timestamp, badges, ..
             } => {
-                let Some (time)  = parse_timestamp(&timestamp) else {
+                let Some(time) = parse_timestamp(&timestamp) else {
                     tracing::warn!("Failed to parse timestamp: {timestamp:?}.");
                     continue;
                 };

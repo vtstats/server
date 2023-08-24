@@ -5,7 +5,7 @@ pub async fn shutdown(tx_iter: impl IntoIterator<Item = Sender<()>>) -> anyhow::
     let (Ok(mut sigint), Ok(mut sigterm)) = (
         unix::signal(unix::SignalKind::interrupt()),
         unix::signal(unix::SignalKind::terminate()),
-    )  else {
+    ) else {
         anyhow::bail!("Failed to listen unix signal")
     };
 
