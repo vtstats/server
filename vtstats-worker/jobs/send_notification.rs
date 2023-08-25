@@ -1,5 +1,11 @@
 use anyhow::bail;
+use reqwest::Client;
 use std::fmt::Write;
+
+use integration_discord::message::{
+    CreateMessageRequest, EditMessageRequest, Embed, EmbedAuthor, EmbedField, EmbedFooter,
+    EmbedImage, EmbedThumbnail,
+};
 use vtstats_database::{
     jobs::SendNotificationJobPayload,
     streams::{find_stream_by_platform_id, Stream, StreamStatus},
@@ -10,18 +16,12 @@ use vtstats_database::{
     vtubers::find_vtuber,
     PgPool,
 };
-use vtstats_request::RequestHub;
-
-use integration_discord::message::{
-    CreateMessageRequest, EditMessageRequest, Embed, EmbedAuthor, EmbedField, EmbedFooter,
-    EmbedImage, EmbedThumbnail,
-};
 
 use super::JobResult;
 
 pub async fn execute(
     pool: &PgPool,
-    hub: RequestHub,
+    client: Client,
     payload: SendNotificationJobPayload,
 ) -> anyhow::Result<JobResult> {
     let subscriptions = ListDiscordSubscriptionQuery::ByVtuberId(payload.vtuber_id.clone())
@@ -56,7 +56,7 @@ pub async fn execute(
                     message_id: notification.payload.message_id,
                     embeds: embeds.clone(),
                 }
-                .send(&hub.client)
+                .send(&client)
                 .await?;
 
                 UpdateNotificationQuery {
@@ -71,7 +71,7 @@ pub async fn execute(
                     content: String::new(),
                     embeds: embeds.clone(),
                 }
-                .send(&hub.client)
+                .send(&client)
                 .await?;
 
                 InsertNotificationQuery {

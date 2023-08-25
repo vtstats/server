@@ -6,38 +6,46 @@ use vtstats_utils::currency::currency_symbol_to_code;
 #[serde(untagged)]
 pub enum RefinedStreamEventValue {
     #[serde(rename_all = "camelCase")]
-    YoutubeSuperChat {
+    SuperChat {
         amount: String,
         currency_code: String,
         color: YouTubeChatColor,
     },
     #[serde(rename_all = "camelCase")]
-    YoutubeSuperSticker {
+    SuperSticker {
         amount: String,
         currency_code: String,
         color: YouTubeChatColor,
     },
-    YoutubeNewMember,
-    YoutubeMemberMilestone,
+    NewMember,
+    MemberMilestone,
+}
+
+impl RefinedStreamEventValue {
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        matches!(
+            self,
+            RefinedStreamEventValue::MemberMilestone | RefinedStreamEventValue::NewMember
+        )
+    }
 }
 
 pub fn refine(value: StreamEventValue) -> Option<RefinedStreamEventValue> {
     match value {
-        StreamEventValue::YoutubeSuperChat(v) => Some(RefinedStreamEventValue::YoutubeSuperChat {
+        StreamEventValue::YoutubeSuperChat(v) => Some(RefinedStreamEventValue::SuperChat {
             amount: v.paid_amount,
             currency_code: currency_symbol_to_code(&v.paid_currency_symbol)?.into(),
             color: color_hex_to_chat_color(&v.paid_color)?,
         }),
-        StreamEventValue::YoutubeSuperSticker(v) => {
-            Some(RefinedStreamEventValue::YoutubeSuperSticker {
-                amount: v.paid_amount,
-                currency_code: currency_symbol_to_code(&v.paid_currency_symbol)?.into(),
-                color: color_hex_to_chat_color(&v.paid_color)?,
-            })
-        }
-        StreamEventValue::YoutubeNewMember(_) => Some(RefinedStreamEventValue::YoutubeNewMember),
+        StreamEventValue::YoutubeSuperSticker(v) => Some(RefinedStreamEventValue::SuperSticker {
+            amount: v.paid_amount,
+            currency_code: currency_symbol_to_code(&v.paid_currency_symbol)?.into(),
+            color: color_hex_to_chat_color(&v.paid_color)?,
+        }),
+        StreamEventValue::YoutubeNewMember(_) => Some(RefinedStreamEventValue::NewMember),
         StreamEventValue::YoutubeMemberMilestone(_) => {
-            Some(RefinedStreamEventValue::YoutubeMemberMilestone)
+            Some(RefinedStreamEventValue::MemberMilestone)
         }
     }
 }

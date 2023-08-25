@@ -19,10 +19,12 @@ tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"
 reqwest = { version = "0.11.18", default-features = false, features = [
     "json",
-    "rustls-tls"
+    "rustls-tls",
+    "brotli",
+    "deflate",
+    "gzip",
 ] }
 vtstats-database = { path = "../vtstats-database" }
-vtstats-request = { path = "../vtstats-request" }
 vtstats-utils = { path = "../vtstats-utils" }
 integration-bilibili = { path = "../integration-bilibili" }
 integration-discord = { path = "../integration-discord" }

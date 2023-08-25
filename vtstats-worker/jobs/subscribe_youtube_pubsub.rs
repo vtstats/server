@@ -1,15 +1,14 @@
 use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
-
-use vtstats_database::channels::list_youtube_channels;
-use vtstats_database::PgPool;
-use vtstats_request::RequestHub;
+use reqwest::Client;
 
 use integration_youtube::pubsub::SubscribeYouTubePubsubQuery;
+use vtstats_database::channels::list_youtube_channels;
+use vtstats_database::PgPool;
 
 use super::JobResult;
 
-pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult> {
     let next_run = Utc::now().duration_trunc(Duration::days(1)).unwrap() + Duration::days(1);
 
     let channels = list_youtube_channels(pool).await?;
@@ -19,7 +18,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
         let result = SubscribeYouTubePubsubQuery {
             channel_id: channel.platform_id.to_string(),
         }
-        .send(&hub.client)
+        .send(&client)
         .await;
         Some((result, iter))
     })

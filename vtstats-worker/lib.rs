@@ -1,4 +1,5 @@
 use chrono::{DateTime, Duration, TimeZone, Utc};
+use reqwest::ClientBuilder;
 use std::env;
 use tokio::{
     sync::mpsc::{channel, Sender},
@@ -9,7 +10,6 @@ use vtstats_database::{
     jobs::{next_queued, pull_jobs},
     PgListener, PgPool,
 };
-use vtstats_request::RequestHub;
 
 pub mod jobs;
 
@@ -42,7 +42,11 @@ async fn execute(shutdown_complete_tx: Sender<()>) -> anyhow::Result<()> {
 
     listener.listen("vt_new_job_queued").await?;
 
-    let hub = RequestHub::new();
+    let client = ClientBuilder::new()
+        .brotli(true)
+        .deflate(true)
+        .gzip(true)
+        .build()?;
 
     tracing::warn!("Start executing jobs...");
 
@@ -51,7 +55,7 @@ async fn execute(shutdown_complete_tx: Sender<()>) -> anyhow::Result<()> {
             tokio::spawn(jobs::execute(
                 job,
                 pool.clone(),
-                hub.clone(),
+                client.clone(),
                 shutdown_complete_tx.clone(),
             ));
         }

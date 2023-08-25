@@ -10,6 +10,7 @@ pub mod upsert_youtube_stream;
 
 use chrono::{DateTime, Utc};
 use metrics::{histogram, increment_counter};
+use reqwest::Client;
 use std::time::Instant;
 use tokio::sync::mpsc::Sender;
 use tracing::Instrument;
@@ -18,7 +19,6 @@ use vtstats_database::{
     jobs::{Job, JobPayload::*, JobStatus, UpdateJobQuery},
     PgPool,
 };
-use vtstats_request::RequestHub;
 
 pub enum JobResult {
     Completed,
@@ -28,7 +28,7 @@ pub enum JobResult {
     },
 }
 
-pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete_tx: Sender<()>) {
+pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_tx: Sender<()>) {
     let job_id = job.job_id;
     let payload = job.payload;
     let continuation = job.continuation;
@@ -60,19 +60,19 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
 
         let result = match payload {
             HealthCheck => health_check::execute().await,
-            RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, hub).await,
-            SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, hub).await,
-            UpdateChannelStats => update_channel_stats::execute(&pool, &hub.client).await,
+            RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, client).await,
+            SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, client).await,
+            UpdateChannelStats => update_channel_stats::execute(&pool, &client).await,
             // TODO:
             UpdateCurrencyExchangeRate => update_currency_exchange_rate::execute(&pool).await,
             UpsertYoutubeStream(payload) => {
-                upsert_youtube_stream::execute(&pool, hub, payload).await
+                upsert_youtube_stream::execute(&pool, client, payload).await
             }
             CollectYoutubeStreamMetadata(payload) => {
-                collect_youtube_stream_metadata::execute(&pool, hub, continuation, payload).await
+                collect_youtube_stream_metadata::execute(&pool, client, continuation, payload).await
             }
-            SendNotification(payload) => send_notification::execute(&pool, hub, payload).await,
-            InstallDiscordCommands => install_discord_command::execute(&hub.client).await,
+            SendNotification(payload) => send_notification::execute(&pool, client, payload).await,
+            InstallDiscordCommands => install_discord_command::execute(&client).await,
         };
 
         let status = if result.is_ok() { "ok" } else { "err" };
@@ -117,7 +117,7 @@ pub async fn execute(job: Job, pool: PgPool, hub: RequestHub, _shutdown_complete
         };
 
         if let Err(err) = query.execute(&pool).await {
-            eprintln!("[Database Error] {err:?}");
+            tracing::error!("[Database Error] {err:?}");
         }
     }
     .instrument(span)

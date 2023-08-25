@@ -1,5 +1,11 @@
 use chrono::{Duration, DurationRound, Utc};
-use integration_youtube::data_api::videos::{list_videos, Stream};
+use reqwest::Client;
+
+use integration_s3::upload_file;
+use integration_youtube::{
+    data_api::videos::{list_videos, Stream},
+    thumbnail::get_thumbnail,
+};
 use vtstats_database::{
     jobs::{
         queue_collect_youtube_stream_metadata, queue_send_notification,
@@ -8,13 +14,12 @@ use vtstats_database::{
     streams::UpsertYouTubeStreamQuery,
     PgPool,
 };
-use vtstats_request::RequestHub;
 
 use super::JobResult;
 
 pub async fn execute(
     pool: &PgPool,
-    hub: RequestHub,
+    client: Client,
     payload: UpsertYoutubeStreamJobPayload,
 ) -> anyhow::Result<JobResult> {
     let UpsertYoutubeStreamJobPayload {
@@ -23,7 +28,7 @@ pub async fn execute(
         vtuber_id,
     } = payload;
 
-    let mut videos = list_videos(&platform_stream_id, &hub.client).await?;
+    let mut videos = list_videos(&platform_stream_id, &client).await?;
 
     let stream: Option<Stream> = videos.pop().and_then(Into::into);
 
@@ -32,7 +37,21 @@ pub async fn execute(
         return Ok(JobResult::Completed);
     };
 
-    let thumbnail_url = hub.upload_thumbnail(&youtube_stream.id).await;
+    let thumbnail_url = match get_thumbnail(&youtube_stream.id, &client).await {
+        Ok((filename, content_type, bytes)) => {
+            match upload_file(&filename, bytes, &content_type, &client).await {
+                Ok(thumbnail_url) => Some(thumbnail_url),
+                Err(err) => {
+                    tracing::error!(exception.stacktrace = ?err, message= %err);
+                    None
+                }
+            }
+        }
+        Err(err) => {
+            tracing::error!(exception.stacktrace = ?err, message= %err);
+            None
+        }
+    };
 
     let stream_id = UpsertYouTubeStreamQuery {
         vtuber_id: &vtuber_id,

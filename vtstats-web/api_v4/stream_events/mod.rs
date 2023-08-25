@@ -24,6 +24,7 @@ pub struct StreamEvent {
     #[serde(with = "ts_milliseconds")]
     pub time: DateTime<Utc>,
     pub kind: StreamEventKind,
+    #[serde(skip_serializing_if = "RefinedStreamEventValue::is_empty")]
     pub value: RefinedStreamEventValue,
 }
 

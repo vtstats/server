@@ -1,0 +1,35 @@
+{
+  "videoDetails": {
+    "title": "AZKi「エンドロールは終わらない」【Official Music Video】",
+    "channelId": "UC0TXe_LYZ4scaW2XMyi5_kw",
+    "thumbnail": {
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/cQ_3OOspaPY/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBR0AcDL-XPAdl2Wz4YiN7O2i-sZw",
+          "width": 168,
+          "height": 94
+        },
+        {
+          "url": "https://i.ytimg.com/vi/cQ_3OOspaPY/hqdefault.jpg?sqp=-oaymwEbCMQBEG5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBXue1B9Vohsu_pHx80bnOWMATxDQ",
+          "width": 196,
+          "height": 110
+        },
+        {
+          "url": "https://i.ytimg.com/vi/cQ_3OOspaPY/hqdefault.jpg?sqp=-oaymwEcCPYBEIoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDe476W0pbSzP-R2M60XAKj87twdA",
+          "width": 246,
+          "height": 138
+        },
+        {
+          "url": "https://i.ytimg.com/vi/cQ_3OOspaPY/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAGmZEeIAEcPEk0bJy_B71qV81lwg",
+          "width": 336,
+          "height": 188
+        },
+        {
+          "url": "https://i.ytimg.com/vi_webp/cQ_3OOspaPY/maxresdefault.webp?v=649d4b2e",
+          "width": 1920,
+          "height": 1080
+        }
+      ]
+    }
+  }
+}

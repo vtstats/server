@@ -19,6 +19,7 @@ pub struct YouTubeChannel {
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct YouTubeChannelStatistics {
+    #[serde(default)]
     pub view_count: String,
     // according to https://github.com/PoiScript/HoloStats/issues/582
     // subscriber_count may be empty in some cases

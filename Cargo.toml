@@ -32,7 +32,6 @@ members = [
     "integration-youtube",
     "integration-s3",
     "vtstats-database",
-    "vtstats-request",
     "vtstats-utils",
     "vtstats-web",
     "vtstats-worker",

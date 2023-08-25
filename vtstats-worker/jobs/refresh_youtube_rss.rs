@@ -1,20 +1,22 @@
 use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
+use reqwest::Client;
+
+use integration_s3::upload_file;
+use integration_youtube::{
+    data_api::videos::{list_videos, Stream},
+    rss_feed::FetchYouTubeVideosRSS,
+    thumbnail::get_thumbnail,
+};
 use vtstats_database::{
     channels::list_youtube_channels,
     streams::{ListYouTubeStreamsQuery, UpsertYouTubeStreamQuery},
     PgPool,
 };
-use vtstats_request::RequestHub;
-
-use integration_youtube::{
-    data_api::videos::{list_videos, Stream},
-    rss_feed::FetchYouTubeVideosRSS,
-};
 
 use super::JobResult;
 
-pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult> {
+pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult> {
     let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
 
     let now_str = now.to_string();
@@ -27,7 +29,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
             channel_id: channel.platform_id.to_string(),
             ts: now_str.clone(),
         }
-        .execute(&hub.client)
+        .execute(&client)
         .await;
         Some((res, iter))
     })
@@ -65,7 +67,7 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
 
     // youtube limits 50 streams per request
     for chunk in missing.chunks(50) {
-        let videos = list_videos(&chunk.join(","), &hub.client).await?;
+        let videos = list_videos(&chunk.join(","), &client).await?;
         streams.extend(videos.into_iter().filter_map(Into::into));
     }
 
@@ -86,7 +88,21 @@ pub async fn execute(pool: &PgPool, hub: RequestHub) -> anyhow::Result<JobResult
             continue;
         };
 
-        let thumbnail_url = hub.upload_thumbnail(&stream.id).await;
+        let thumbnail_url = match get_thumbnail(&stream.id, &client).await {
+            Ok((filename, content_type, bytes)) => {
+                match upload_file(&filename, bytes, &content_type, &client).await {
+                    Ok(thumbnail_url) => Some(thumbnail_url),
+                    Err(err) => {
+                        tracing::error!(exception.stacktrace = ?err, message= %err);
+                        None
+                    }
+                }
+            }
+            Err(err) => {
+                tracing::error!(exception.stacktrace = ?err, message= %err);
+                None
+            }
+        };
 
         UpsertYouTubeStreamQuery {
             vtuber_id: &channel.vtuber_id,

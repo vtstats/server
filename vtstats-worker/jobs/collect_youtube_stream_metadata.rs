@@ -1,4 +1,6 @@
 use chrono::{DateTime, Duration, DurationRound, NaiveDateTime, Utc};
+use reqwest::Client;
+
 use integration_youtube::{
     data_api::videos::{list_videos, Stream},
     youtubei::{
@@ -20,13 +22,12 @@ use vtstats_database::{
     },
     PgPool,
 };
-use vtstats_request::RequestHub;
 
 use super::JobResult;
 
 pub async fn execute(
     pool: &PgPool,
-    hub: RequestHub,
+    client: Client,
     continuation: Option<String>,
     payload: CollectYoutubeStreamMetadataJobPayload,
 ) -> anyhow::Result<JobResult> {
@@ -45,9 +46,9 @@ pub async fn execute(
         .unwrap_or_default();
 
     let metadata = if !metadata_continuation.is_empty() {
-        updated_metadata_with_continuation(&metadata_continuation, &hub.client).await
+        updated_metadata_with_continuation(&metadata_continuation, &client).await
     } else {
-        updated_metadata(&platform_stream_id, &hub.client).await
+        updated_metadata(&platform_stream_id, &client).await
     }?;
 
     let (mut timeout, next_metadata_continuation) =
@@ -75,9 +76,9 @@ pub async fn execute(
     }
 
     let (messages, next_chat_timeout, next_chat_continuation) = if !chat_continuation.is_empty() {
-        youtube_live_chat_with_continuation(chat_continuation, &hub.client).await
+        youtube_live_chat_with_continuation(chat_continuation, &client).await
     } else {
-        youtube_live_chat(&platform_channel_id, &platform_stream_id, &hub.client).await
+        youtube_live_chat(&platform_channel_id, &platform_stream_id, &client).await
     }
     .map(|(messages, continuation)| {
         match continuation.and_then(|c| c.get_continuation_and_timeout()) {
@@ -107,7 +108,7 @@ pub async fn execute(
             return Ok(JobResult::Completed);
         }
 
-        let mut videos = list_videos(&platform_stream_id, &hub.client).await?;
+        let mut videos = list_videos(&platform_stream_id, &client).await?;
         let stream: Option<Stream> = videos.pop().and_then(Into::into);
 
         end_stream_with_values(
