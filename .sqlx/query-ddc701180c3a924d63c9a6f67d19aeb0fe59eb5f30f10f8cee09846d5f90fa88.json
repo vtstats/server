@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO vtubers AS v (vtuber_id, native_name, english_name, japanese_name, twitter_username, thumbnail_url) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (vtuber_id) DO UPDATE SET native_name = COALESCE($2, v.native_name), english_name = COALESCE($3, v.english_name), japanese_name = COALESCE($4, v.japanese_name), twitter_username = COALESCE($5, v.twitter_username),thumbnail_url = COALESCE($6, v.thumbnail_url)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ddc701180c3a924d63c9a6f67d19aeb0fe59eb5f30f10f8cee09846d5f90fa88"
+}

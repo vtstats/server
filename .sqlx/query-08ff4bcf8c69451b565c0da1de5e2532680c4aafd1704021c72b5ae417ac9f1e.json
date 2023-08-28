@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE streams SET vtuber_id = $1 WHERE vtuber_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "08ff4bcf8c69451b565c0da1de5e2532680c4aafd1704021c72b5ae417ac9f1e"
+}

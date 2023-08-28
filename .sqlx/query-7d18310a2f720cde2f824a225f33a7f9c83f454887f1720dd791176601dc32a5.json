@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO vtubers (vtuber_id, native_name, english_name, japanese_name, twitter_username, thumbnail_url) SELECT $1, native_name, english_name, japanese_name, twitter_username, thumbnail_url FROM vtubers WHERE vtuber_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7d18310a2f720cde2f824a225f33a7f9c83f454887f1720dd791176601dc32a5"
+}

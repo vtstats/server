@@ -1,6 +1,8 @@
 mod create_job;
 mod create_vtuber;
 mod re_run_job;
+mod rename_vtuber_id;
+mod update_vtuber;
 
 use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -71,10 +73,24 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
 
     let create_vtuber_api = warp::path!("vtuber")
         .and(warp::put())
+        .and(validate(certs.clone()))
+        .and(with_pool(pool.clone()))
+        .and(warp::body::json())
+        .and_then(create_vtuber::create_vtuber);
+
+    let update_vtuber_api = warp::path!("vtuber")
+        .and(warp::post())
+        .and(validate(certs.clone()))
+        .and(with_pool(pool.clone()))
+        .and(warp::body::json())
+        .and_then(update_vtuber::update_vtuber);
+
+    let rename_vtuber_id_api = warp::path!("vtuber" / "rename")
+        .and(warp::post())
         .and(validate(certs))
         .and(with_pool(pool))
         .and(warp::body::json())
-        .and_then(create_vtuber::create_vtuber);
+        .and_then(rename_vtuber_id::rename_vtuber_id);
 
     warp::path("admin").and(
         jobs_api
@@ -85,7 +101,9 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
             .or(channels_api)
             .or(create_job_api)
             .or(re_run_job_api)
-            .or(create_vtuber_api),
+            .or(create_vtuber_api)
+            .or(update_vtuber_api)
+            .or(rename_vtuber_id_api),
     )
 }
 

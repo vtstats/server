@@ -6,7 +6,7 @@ use integration_s3::upload_file;
 use integration_youtube::youtubei;
 use vtstats_database::{
     channels::{CreateChannel, Platform},
-    vtubers::CreateVTuber,
+    vtubers::UpsertVTuber,
     PgPool,
 };
 use vtstats_utils::instrument_send;
@@ -16,6 +16,7 @@ use crate::reject::WarpError;
 use super::ActionResponse;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateVTuberPayload {
     pub vtuber_id: String,
     pub native_name: String,
@@ -51,7 +52,7 @@ pub async fn create_vtuber(
 
     let mut tx = pool.begin().await.map_err(WarpError::from)?;
 
-    CreateVTuber {
+    UpsertVTuber {
         vtuber_id: payload.vtuber_id.clone(),
         native_name: payload.native_name,
         english_name: payload.english_name,

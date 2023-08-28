@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE channels SET vtuber_id = $1 WHERE vtuber_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e21e6b602949991220d73e7a19389c6c7703a63b71e995b359b89780ba0b7cdc"
+}
