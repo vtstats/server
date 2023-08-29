@@ -2,6 +2,7 @@ mod create_job;
 mod create_vtuber;
 mod re_run_job;
 mod rename_vtuber_id;
+mod update_groups;
 mod update_vtuber;
 
 use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
@@ -65,11 +66,25 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
         .and(warp::body::json())
         .and_then(create_job::create_job);
 
-    let re_run_job_api = warp::path!("jobs" / i32 / "re_run")
+    let re_run_job_api = warp::path!("jobs" / "re-run")
         .and(warp::post())
         .and(validate(certs.clone()))
         .and(with_pool(pool.clone()))
+        .and(warp::body::json())
         .and_then(re_run_job::re_run_job);
+
+    let groups_api = warp::path!("groups")
+        .and(warp::get())
+        .and(validate(certs.clone()))
+        .and(with_pool(pool.clone()))
+        .and_then(list_groups);
+
+    let update_groups_api = warp::path!("groups")
+        .and(warp::post())
+        .and(validate(certs.clone()))
+        .and(with_pool(pool.clone()))
+        .and(warp::body::json())
+        .and_then(update_groups::update_groups);
 
     let create_vtuber_api = warp::path!("vtuber")
         .and(warp::put())
@@ -101,6 +116,8 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply, Error = R
             .or(channels_api)
             .or(create_job_api)
             .or(re_run_job_api)
+            .or(groups_api)
+            .or(update_groups_api)
             .or(create_vtuber_api)
             .or(update_vtuber_api)
             .or(rename_vtuber_id_api),
@@ -113,6 +130,14 @@ pub struct ListParameter {
     end_at: Option<DateTime<Utc>>,
 
     status: Option<String>,
+}
+
+async fn list_groups(pool: PgPool) -> Result<Response, Rejection> {
+    let groups = vtstats_database::groups::list_groups(&pool)
+        .await
+        .map_err(Into::<WarpError>::into)?;
+
+    Ok(warp::reply::json(&groups).into_response())
 }
 
 async fn list_jobs(pool: PgPool, parameter: ListParameter) -> Result<Response, Rejection> {

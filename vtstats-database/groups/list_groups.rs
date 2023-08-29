@@ -1,15 +1,15 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Result};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Group {
-    group_id: String,
-    root: bool,
-    native_name: String,
-    english_name: Option<String>,
-    japanese_name: Option<String>,
-    children: Vec<String>,
+    pub group_id: String,
+    pub root: bool,
+    pub native_name: String,
+    pub english_name: Option<String>,
+    pub japanese_name: Option<String>,
+    pub children: Vec<String>,
 }
 
 pub async fn list_groups(pool: &PgPool) -> Result<Vec<Group>> {
