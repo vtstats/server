@@ -5,9 +5,12 @@ use sqlx::{PgPool, Result};
 #[serde(rename_all = "camelCase")]
 pub struct Group {
     pub group_id: String,
+    #[serde(default)]
     pub root: bool,
     pub native_name: String,
+    #[serde(default)]
     pub english_name: Option<String>,
+    #[serde(default)]
     pub japanese_name: Option<String>,
     pub children: Vec<String>,
 }

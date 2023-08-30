@@ -13,8 +13,11 @@ use super::ActionResponse;
 pub struct UpdateVTuberPayload {
     pub vtuber_id: String,
     pub native_name: String,
+    #[serde(default)]
     pub english_name: Option<String>,
+    #[serde(default)]
     pub japanese_name: Option<String>,
+    #[serde(default)]
     pub twitter_username: Option<String>,
 }
 

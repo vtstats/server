@@ -15,10 +15,10 @@ impl UpsertVTuber {
             "INSERT INTO vtubers AS v (vtuber_id, native_name, english_name, japanese_name, twitter_username, thumbnail_url) \
             VALUES ($1, $2, $3, $4, $5, $6) \
             ON CONFLICT (vtuber_id) DO UPDATE \
-            SET native_name = COALESCE($2, v.native_name), \
-            english_name = COALESCE($3, v.english_name), \
-            japanese_name = COALESCE($4, v.japanese_name), \
-            twitter_username = COALESCE($5, v.twitter_username),\
+            SET native_name = $2, \
+            english_name = $3, \
+            japanese_name = $4, \
+            twitter_username = $5, \
             thumbnail_url = COALESCE($6, v.thumbnail_url)",
             self.vtuber_id,
             self.native_name,
