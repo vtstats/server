@@ -52,7 +52,7 @@ impl ListNotificationsQuery {
         .bind(self.stream_id)
         .fetch_optional(pool);
 
-        crate::otel::instrument("SELECT", "notifications", query).await
+        crate::otel::execute_query!("SELECT", "notifications", query)
     }
 }
 
@@ -66,5 +66,5 @@ pub async fn list(end_at: Option<DateTime<Utc>>, pool: &PgPool) -> Result<Vec<No
     .bind(end_at)
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "notifications", query).await
+    crate::otel::execute_query!("SELECT", "notifications", query)
 }

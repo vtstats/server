@@ -10,7 +10,7 @@ pub async fn list_stream_events(stream_id: i32, pool: &PgPool) -> Result<Vec<Str
     .bind(stream_id)
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "stream_events", query).await
+    crate::otel::execute_query!("SELECT", "stream_events", query)
 }
 
 #[derive(Debug)]
@@ -37,7 +37,7 @@ pub async fn list_revenue_by_channel_start_at(
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "stream_events", query).await
+    crate::otel::execute_query!("SELECT", "stream_events", query)
 }
 
 pub async fn list_revenue_by_channel_end_at(
@@ -56,5 +56,5 @@ pub async fn list_revenue_by_channel_end_at(
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "stream_events", query).await
+    crate::otel::execute_query!("SELECT", "stream_events", query)
 }

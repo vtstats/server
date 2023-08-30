@@ -30,7 +30,7 @@ pub async fn channel_revenue_stats(
     })
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channel_revenue_stats", query).await
+    crate::otel::execute_query!("SELECT", "channel_revenue_stats", query)
 }
 
 pub async fn channel_revenue_stats_before(
@@ -53,5 +53,5 @@ pub async fn channel_revenue_stats_before(
     })
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channel_revenue_stats", query).await
+    crate::otel::execute_query!("SELECT", "channel_revenue_stats", query)
 }

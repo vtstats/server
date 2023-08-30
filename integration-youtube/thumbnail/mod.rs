@@ -1,5 +1,5 @@
 use reqwest::Client;
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 use crate::youtubei::player::player;
 
@@ -12,7 +12,7 @@ pub async fn get_thumbnail(
     if let Some(url) = response.get_thumbnail_url() {
         let req = client.get(url);
 
-        let res = instrument_send(client, req).await?;
+        let res = send_request!(req)?;
 
         let (filename, content_type) = if url.contains("vi_webp") {
             (format!("{video_id}.webp"), "image/webp".into())

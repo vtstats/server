@@ -25,7 +25,7 @@ ORDER BY start_time DESC
     )
     .fetch_all(pool);
 
-    let records = crate::otel::instrument("SELECT", "streams", query).await?;
+    let records = crate::otel::execute_query!("SELECT", "streams", query)?;
 
     let mut result = Vec::<(i64, i64)>::new();
 

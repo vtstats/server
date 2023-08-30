@@ -78,7 +78,7 @@ impl ListTelegramSubscriptionQuery {
         }
         .fetch_all(pool);
 
-        crate::otel::instrument("SELECT", "subscriptions", query).await
+        crate::otel::execute_query!("SELECT", "subscriptions", query)
     }
 }
 
@@ -114,7 +114,7 @@ impl ListDiscordSubscriptionQuery {
         }
         .fetch_all(pool);
 
-        crate::otel::instrument("SELECT", "subscriptions", query).await
+        crate::otel::execute_query!("SELECT", "subscriptions", query)
     }
 }
 
@@ -138,7 +138,7 @@ impl RemoveDiscordSubscriptionQuery {
         )
         .fetch_optional(pool);
 
-        let row = crate::otel::instrument("SELECT", "subscriptions", query).await?;
+        let row = crate::otel::execute_query!("SELECT", "subscriptions", query)?;
 
         let Some(subscription_id) = row.map(|r| r.subscription_id) else {
             anyhow::bail!(
@@ -183,7 +183,7 @@ impl CreateDiscordSubscriptionQuery {
         )
         .fetch_one(pool);
 
-        let row = crate::otel::instrument("SELECT", "vtubers", query).await?;
+        let row = crate::otel::execute_query!("SELECT", "vtubers", query)?;
 
         anyhow::ensure!(
             matches!(row.count, Some(c) if c > 0),
@@ -200,7 +200,7 @@ impl CreateDiscordSubscriptionQuery {
         )
         .fetch_optional(pool);
 
-        let record = crate::otel::instrument("INSERT", "subscriptions", query).await?;
+        let record = crate::otel::execute_query!("INSERT", "subscriptions", query)?;
 
         let Some(record) = record else {
             anyhow::bail!("subscription `{}` already exists.", self.payload.vtuber_id)
@@ -220,5 +220,5 @@ pub async fn list_subscriptions(
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "subscriptions", query).await
+    crate::otel::execute_query!("SELECT", "subscriptions", query)
 }

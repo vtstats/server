@@ -33,7 +33,7 @@ impl AddStreamChatStatsQuery {
 
         let query = query_builder.build().execute(pool);
 
-        crate::otel::instrument("INSERT", "stream_chat_stats", query).await
+        crate::otel::execute_query!("INSERT", "stream_chat_stats", query)
     }
 }
 

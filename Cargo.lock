@@ -997,6 +997,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "tokio",
+ "tracing",
  "vtstats-utils",
  "warp",
 ]
@@ -1012,6 +1013,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "tracing",
  "vtstats-utils",
  "warp",
 ]
@@ -1026,6 +1028,7 @@ dependencies = [
  "hmac",
  "reqwest",
  "sha2",
+ "tracing",
  "vtstats-utils",
 ]
 
@@ -1041,6 +1044,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "tracing",
  "vtstats-utils",
  "warp",
 ]

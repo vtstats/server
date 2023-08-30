@@ -27,7 +27,7 @@ pub async fn add_channel_revenue_stats(
 
     let query = query_builder.build().execute(pool);
 
-    crate::otel::instrument("INSERT", "channel_revenue_stats", query).await?;
+    crate::otel::execute_query!("INSERT", "channel_revenue_stats", query)?;
 
     Ok(())
 }

@@ -3,7 +3,7 @@ use reqwest::{header::COOKIE, Client, Url};
 use serde::Deserialize;
 use std::env;
 
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 #[derive(Deserialize)]
 pub struct BilibiliUpstatResponse {
@@ -35,7 +35,7 @@ pub async fn channel_subscribers(id: &str, client: &Client) -> Result<i32> {
 
     let req = client.get(url).header(COOKIE, env::var("BILIBILI_COOKIE")?);
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: BilibiliStatResponse = res.json().await?;
 
@@ -47,7 +47,7 @@ pub async fn channel_views(id: &str, client: &Client) -> Result<i32> {
 
     let req = client.get(url).header(COOKIE, env::var("BILIBILI_COOKIE")?);
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: BilibiliUpstatResponse = res.json().await?;
 

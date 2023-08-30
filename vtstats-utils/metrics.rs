@@ -9,7 +9,8 @@ use std::{
     net::SocketAddr,
     time::{Duration, Instant},
 };
-use tracing::{field::Empty, Instrument};
+
+pub use tracing;
 
 pub fn install() {
     let mut builder = PrometheusBuilder::new()
@@ -32,31 +33,39 @@ pub fn install() {
     builder.install().expect("failed to install recorder");
 }
 
+#[macro_export]
+macro_rules! send_request {
+    ($req:expr) => {{
+        use ::vtstats_utils::metrics::instrument_send;
+        use tracing::{field::Empty, Instrument};
+
+        let (client, req) = $req.build_split();
+        let req = req?;
+        let method = req.method().as_str();
+        let path = req.url().path();
+        let request_content_length = req.body().and_then(|b| b.as_bytes()).map(|b| b.len());
+
+        let span = tracing::info_span!(
+            "Http Client",
+            "message" = format!("{method} {path}"),
+            "span.kind" = "client",
+            "http.req.method" = method,
+            "http.req.host" = req.url().domain(),
+            "http.req.path" = path,
+            "http.req.content_length" = request_content_length,
+            "http.res.status_code" = Empty,
+            "http.res.content_length" = Empty,
+        );
+
+        instrument_send(&client, req).instrument(span).await
+    }};
+}
+
+#[inline(always)]
 pub async fn instrument_send(
     client: &reqwest::Client,
-    req: reqwest::RequestBuilder,
+    req: Request,
 ) -> reqwest::Result<reqwest::Response> {
-    let req = req.build()?;
-
-    let method = req.method().as_str().to_string();
-    let url = req.url();
-    let path = url.path().to_string();
-    let host = url.domain().map(|h| h.to_string()).unwrap_or_default();
-    let request_content_length = req.body().and_then(|b| b.as_bytes()).map(|b| b.len());
-    let name = format!("{method} {path}");
-
-    let span = tracing::info_span!(
-        "Http Client",
-        "message" = name,
-        "span.kind" = "client",
-        "http.req.method" = &method,
-        "http.req.host" = &host,
-        "http.req.path" = &path,
-        "http.req.content_length" = request_content_length,
-        "http.res.status_code" = Empty,
-        "http.res.content_length" = Empty,
-    );
-
     let future_fn = || {
         let req = req.try_clone().expect("request body must not be stream");
         execute_with_metrics(req, client)
@@ -74,7 +83,6 @@ pub async fn instrument_send(
             tracing::error!(exception.stacktrace = ?err, message= %err);
             err
         })
-        .instrument(span)
         .await
 }
 

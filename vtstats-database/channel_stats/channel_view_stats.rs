@@ -24,7 +24,7 @@ pub async fn channel_view_stats(
     .map(|row| (row.ts.timestamp_millis(), row.v1))
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channel_view_stats", query).await
+    crate::otel::execute_query!("SELECT", "channel_view_stats", query)
 }
 
 pub async fn channel_view_stats_before(
@@ -39,7 +39,7 @@ pub async fn channel_view_stats_before(
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channel_view_stats", query).await
+    crate::otel::execute_query!("SELECT", "channel_view_stats", query)
 }
 
 // TODO: add unit tests

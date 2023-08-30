@@ -21,7 +21,7 @@ RETURNING *
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("UPDATE", "jobs", query).await
+    crate::otel::execute_query!("UPDATE", "jobs", query)
 }
 
 #[cfg(test)]

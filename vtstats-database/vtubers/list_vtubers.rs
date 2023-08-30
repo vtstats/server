@@ -23,17 +23,17 @@ impl ListVtubersQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<Vec<VTuber>> {
         let query = sqlx::query_as!(VTuber, "SELECT * FROM vtubers").fetch_all(pool);
 
-        crate::otel::instrument("SELECT", "vtubers", query).await
+        crate::otel::execute_query!("SELECT", "vtubers", query)
     }
 }
 
 pub async fn list_vtubers(pool: &PgPool) -> Result<Vec<VTuber>> {
     let query = sqlx::query_as!(VTuber, "SELECT * FROM vtubers").fetch_all(pool);
-    crate::otel::instrument("SELECT", "vtubers", query).await
+    crate::otel::execute_query!("SELECT", "vtubers", query)
 }
 
 pub async fn find_vtuber(id: &str, pool: &PgPool) -> Result<Option<VTuber>> {
     let query = sqlx::query_as!(VTuber, "SELECT * FROM vtubers WHERE vtuber_id = $1", id)
         .fetch_optional(pool);
-    crate::otel::instrument("SELECT", "vtubers", query).await
+    crate::otel::execute_query!("SELECT", "vtubers", query)
 }

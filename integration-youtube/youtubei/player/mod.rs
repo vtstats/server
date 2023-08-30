@@ -3,7 +3,7 @@ mod response;
 
 use reqwest::{Client, Url};
 use std::env;
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 use crate::youtubei::context::Context;
 use request::Request;
@@ -23,7 +23,7 @@ pub async fn player(video_id: &str, client: &Client) -> anyhow::Result<Response>
         video_id,
     });
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json = res.json::<Response>().await?;
 

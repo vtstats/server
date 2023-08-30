@@ -1,7 +1,7 @@
 use anyhow::Result;
 use reqwest::{header::CONTENT_TYPE, Client};
 use std::env;
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 pub struct SubscribeYouTubePubsubQuery {
     pub channel_id: String,
@@ -24,7 +24,7 @@ impl SubscribeYouTubePubsubQuery {
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(body);
 
-        let _res = instrument_send(client, req).await?;
+        let _res = send_request!(req)?;
 
         Ok(())
     }

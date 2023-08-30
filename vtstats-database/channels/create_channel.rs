@@ -20,7 +20,7 @@ impl CreateChannel {
         )
         .fetch_one(executor);
 
-        let record = crate::otel::instrument("INSERT", "channels", query).await?;
+        let record = crate::otel::execute_query!("INSERT", "channels", query)?;
 
         Ok(record.channel_id)
     }

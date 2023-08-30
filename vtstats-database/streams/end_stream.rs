@@ -8,7 +8,7 @@ pub async fn end_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
     )
     .execute(pool);
 
-    crate::otel::instrument("UPDATE", "streams", query).await?;
+    crate::otel::execute_query!("UPDATE", "streams", query)?;
 
     Ok(())
 }
@@ -43,7 +43,7 @@ pub async fn end_stream_with_values(
     )
     .execute(pool);
 
-    crate::otel::instrument("UPDATE", "streams", query).await?;
+    crate::otel::execute_query!("UPDATE", "streams", query)?;
 
     Ok(())
 }

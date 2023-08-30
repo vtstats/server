@@ -5,7 +5,7 @@ use chrono::{DateTime, Timelike, Utc};
 use reqwest::{Client, Url};
 use serde::Deserialize;
 use vtstats_database::streams::StreamStatus;
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 #[derive(Deserialize, Debug)]
 pub struct VideosListResponse {
@@ -61,7 +61,7 @@ pub async fn list_videos(id: &str, client: &Client) -> anyhow::Result<Vec<Video>
 
     let req = client.get(url);
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: VideosListResponse = res.json().await?;
 

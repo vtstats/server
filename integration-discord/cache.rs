@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 use reqwest::{Client, Result};
 
@@ -60,7 +60,7 @@ impl DiscordApiCache {
                 format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
             );
 
-            let res = instrument_send(&self.client, req).await?;
+            let res = send_request!(req)?;
 
             let guild: Guild = res.json().await?;
 
@@ -86,7 +86,7 @@ impl DiscordApiCache {
                 format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
             );
 
-            let res = instrument_send(&self.client, req).await?;
+            let res = send_request!(req)?;
 
             let roles: Vec<Role> = res.json().await?;
 

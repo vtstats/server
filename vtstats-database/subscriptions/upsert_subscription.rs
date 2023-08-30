@@ -20,7 +20,7 @@ impl UpsertSubscriptionQuery {
                 )
                 .execute(pool);
 
-                crate::otel::instrument("UPDATE", "subscriptions", query).await
+                crate::otel::execute_query!("UPDATE", "subscriptions", query)
             }
             None => {
                 let query = sqlx::query!(
@@ -30,7 +30,7 @@ impl UpsertSubscriptionQuery {
                 )
                 .execute(pool);
 
-                crate::otel::instrument("INSERT INTO", "subscriptions", query).await
+                crate::otel::execute_query!("INSERT INTO", "subscriptions", query)
             }
         }
     }

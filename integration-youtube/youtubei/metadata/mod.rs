@@ -9,7 +9,7 @@ use std::env;
 use self::proto::get_continuation;
 use self::request::Request;
 use self::response::Response;
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 use super::context::Context;
 
@@ -38,7 +38,7 @@ pub async fn updated_metadata_with_continuation(
         continuation,
     });
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: Response = res.json().await?;
 

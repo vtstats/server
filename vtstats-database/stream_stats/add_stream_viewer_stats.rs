@@ -22,7 +22,7 @@ ON CONFLICT (stream_id, time) DO UPDATE
         )
         .execute(pool);
 
-        crate::otel::instrument("INSERT", "stream_viewer_stats", query).await?;
+        crate::otel::execute_query!("INSERT", "stream_viewer_stats", query)?;
 
         let query = sqlx::query!(
             r#"
@@ -38,7 +38,7 @@ ON CONFLICT (stream_id, time) DO UPDATE
         )
         .execute(pool);
 
-        crate::otel::instrument("UPDATE", "streams", query).await?;
+        crate::otel::execute_query!("UPDATE", "streams", query)?;
 
         Ok(())
     }

@@ -14,6 +14,6 @@ impl UpdateNotificationQuery {
         )
         .execute(pool);
 
-        crate::otel::instrument("UPDATE", "notifications", query).await
+        crate::otel::execute_query!("UPDATE", "notifications", query)
     }
 }

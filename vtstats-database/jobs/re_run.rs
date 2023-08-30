@@ -11,7 +11,7 @@ pub async fn re_run_job(job_id: i32, pool: &PgPool) -> Result<()> {
     )
     .execute(pool);
 
-    crate::otel::instrument("UPDATE", "jobs", query).await?;
+    crate::otel::execute_query!("UPDATE", "jobs", query)?;
 
     let _ = sqlx::query!("SELECT pg_notify('vt_new_job_queued', '10000000000000')")
         .execute(pool)

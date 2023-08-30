@@ -9,7 +9,7 @@ use self::request::Request;
 use self::response::Response;
 use super::context::Context;
 
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 pub async fn browse_channel(channel_id: &str, client: &Client) -> anyhow::Result<Response> {
     let url = Url::parse_with_params(
@@ -25,7 +25,7 @@ pub async fn browse_channel(channel_id: &str, client: &Client) -> anyhow::Result
         browse_id: channel_id,
     });
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json = res.json::<Response>().await?;
 

@@ -4,7 +4,7 @@ pub mod response;
 
 use anyhow::Result;
 use reqwest::{Client, Url};
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 use self::proto::get_continuation;
 use self::request::Request;
@@ -40,7 +40,7 @@ pub async fn youtube_live_chat_with_continuation(
         continuation: &continuation,
     });
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: Response = res.json().await?;
 

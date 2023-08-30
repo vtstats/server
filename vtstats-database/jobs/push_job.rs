@@ -42,7 +42,7 @@ ON CONFLICT (kind, payload) DO UPDATE
         )
         .fetch_one(pool);
 
-        let record = crate::otel::instrument("INSERT", "jobs", query).await?;
+        let record = crate::otel::execute_query!("INSERT", "jobs", query)?;
 
         if let Some(next_run) = self.next_run {
             let _ = sqlx::query!(

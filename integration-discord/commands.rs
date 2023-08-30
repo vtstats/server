@@ -1,7 +1,7 @@
 use reqwest::{Client, Result};
 use serde::{Deserialize, Serialize};
 
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 #[derive(Deserialize)]
 pub struct Command {
@@ -59,7 +59,7 @@ impl CreateCommand {
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
-        let res = instrument_send(client, req).await?;
+        let res = send_request!(req)?;
 
         let json: Command = res.json().await?;
 

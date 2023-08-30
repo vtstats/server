@@ -27,7 +27,7 @@ pub async fn list_jobs_order_by_updated_at(
     .bind(end_at)
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "jobs", query).await
+    crate::otel::execute_query!("SELECT", "jobs", query)
 }
 
 // TODO add unit tests

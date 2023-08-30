@@ -5,7 +5,7 @@ pub async fn next_queued(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
     let query =
         sqlx::query!("SELECT min(next_run) FROM jobs WHERE status = 'queued'").fetch_one(pool);
 
-    let record = crate::otel::instrument("SELECT", "jobs", query).await?;
+    let record = crate::otel::execute_query!("SELECT", "jobs", query)?;
 
     Ok(record.min)
 }

@@ -16,7 +16,7 @@ pub async fn update_groups(pool: PgPool, groups: Vec<Group>) -> Result<Response,
 
     Ok(warp::reply::with_status(
         warp::reply::json(&ActionResponse {
-            msg: format!("Groups was updated."),
+            msg: "Groups was updated.".to_string(),
         }),
         StatusCode::OK,
     )

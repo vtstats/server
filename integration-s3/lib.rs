@@ -8,7 +8,7 @@ use reqwest::{
 use sha2::{Digest, Sha256};
 use std::env;
 
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 pub async fn upload_file<T>(
     filename: &str,
@@ -98,7 +98,7 @@ host;x-amz-content-sha256;x-amz-date
         .header(AUTHORIZATION, authorization)
         .body(data);
 
-    let _res = instrument_send(client, req).await?.error_for_status()?;
+    send_request!(req)?;
 
     Ok(format!("{s3_public_url}/{filename}"))
 }

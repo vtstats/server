@@ -25,7 +25,7 @@ pub async fn start_stream(
     )
     .execute(pool);
 
-    crate::otel::instrument("UPDATE", "streams", query).await
+    crate::otel::execute_query!("UPDATE", "streams", query)
 }
 
 #[cfg(test)]

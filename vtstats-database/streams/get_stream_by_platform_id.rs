@@ -31,5 +31,5 @@ pub async fn get_stream_by_platform_id(
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "streams", query).await
+    crate::otel::execute_query!("SELECT", "streams", query)
 }

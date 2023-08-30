@@ -57,7 +57,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
         )
         .fetch_one(pool);
 
-        let record = crate::otel::instrument("INSERT", "streams", query).await?;
+        let record = crate::otel::execute_query!("INSERT", "streams", query)?;
 
         Ok(record.stream_id)
     }

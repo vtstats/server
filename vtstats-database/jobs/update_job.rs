@@ -32,7 +32,7 @@ impl UpdateJobQuery {
         .bind(self.last_run) // $5
         .fetch_one(pool);
 
-        let job = crate::otel::instrument("UPDATE", "jobs", query).await?;
+        let job = crate::otel::execute_query!("UPDATE", "jobs", query)?;
 
         if let (JobStatus::Queued, Some(next_run)) = (self.status, self.next_run) {
             let _ = sqlx::query!(

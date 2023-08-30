@@ -12,7 +12,7 @@ pub async fn stream_viewer_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<(i
     .map(|row| (row.ts.timestamp_millis(), row.v1))
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "stream_viewer_stats", query).await
+    crate::otel::execute_query!("SELECT", "stream_viewer_stats", query)
 }
 
 // TODO add unit tests

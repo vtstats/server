@@ -17,5 +17,5 @@ pub async fn find_stream(stream_id: i32, pool: &PgPool) -> Result<Option<FindStr
     )
     .fetch_optional(pool);
 
-    crate::otel::instrument("SELECT", "streams", query).await
+    crate::otel::execute_query!("SELECT", "streams", query)
 }

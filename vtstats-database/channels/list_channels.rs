@@ -12,7 +12,7 @@ pub async fn list_youtube_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channels", query).await
+    crate::otel::execute_query!("SELECT", "channels", query)
 }
 
 pub async fn list_bilibili_channels(pool: &PgPool) -> Result<Vec<Channel>> {
@@ -23,7 +23,7 @@ pub async fn list_bilibili_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channels", query).await
+    crate::otel::execute_query!("SELECT", "channels", query)
 }
 
 pub async fn list_channels(pool: &PgPool) -> Result<Vec<Channel>> {
@@ -33,7 +33,7 @@ pub async fn list_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channels", query).await
+    crate::otel::execute_query!("SELECT", "channels", query)
 }
 
 pub async fn list_channels_with_stats(
@@ -52,5 +52,5 @@ pub async fn list_channels_with_stats(
     )
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "channels", query).await
+    crate::otel::execute_query!("SELECT", "channels", query)
 }

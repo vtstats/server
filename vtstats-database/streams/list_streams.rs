@@ -113,7 +113,7 @@ pub async fn filter_streams_order_by_schedule_time_asc(
     )
     .fetch_all(&pool);
 
-    crate::otel::instrument("SELECT", "streams", query).await
+    crate::otel::execute_query!("SELECT", "streams", query)
 }
 
 pub async fn filter_streams_order_by_start_time_desc(
@@ -152,7 +152,7 @@ pub async fn filter_streams_order_by_start_time_desc(
     )
     .fetch_all(&pool);
 
-    crate::otel::instrument("SELECT", "streams", query).await
+    crate::otel::execute_query!("SELECT", "streams", query)
 }
 
 pub async fn find_stream_by_platform_id(
@@ -180,7 +180,7 @@ pub async fn find_stream_by_platform_id(
     )
     .fetch_optional(pool);
 
-    crate::otel::instrument("SELECT", "streams", query).await
+    crate::otel::execute_query!("SELECT", "streams", query)
 }
 
 pub struct ListYouTubeStreamsQuery<'q> {
@@ -218,7 +218,7 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
 
         let query = query_builder.build_query_as::<Stream>().fetch_all(pool);
 
-        crate::otel::instrument("SELECT", "youtube_streams", query).await
+        crate::otel::execute_query!("SELECT", "youtube_streams", query)
     }
 
     pub fn into_query_builder(self) -> QueryBuilder<'q, Postgres> {

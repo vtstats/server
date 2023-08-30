@@ -26,3 +26,4 @@ serde_with = "3.0.0"
 vtstats-utils = { path = "../vtstats-utils" }
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
+tracing = "0.1.37"

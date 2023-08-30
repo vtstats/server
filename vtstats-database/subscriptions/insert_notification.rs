@@ -18,6 +18,6 @@ impl InsertNotificationQuery {
         )
         .execute(pool);
 
-        crate::otel::instrument("INSERT INTO", "notifications", query).await
+        crate::otel::execute_query!("INSERT INTO", "notifications", query)
     }
 }

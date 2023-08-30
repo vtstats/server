@@ -29,7 +29,7 @@ impl<'q> AddChannelViewStatsQuery<'q> {
 
         let query = query_builder.build().execute(pool);
 
-        crate::otel::instrument("INSERT", "channel_view_stats", query).await
+        crate::otel::execute_query!("INSERT", "channel_view_stats", query)
     }
 }
 

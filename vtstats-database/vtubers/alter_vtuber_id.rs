@@ -11,7 +11,7 @@ pub async fn alert_vtuber_id<'a>(before: &str, after: &str, pool: PgPool) -> Res
         before
     ).execute(&mut *tx);
 
-    let result = crate::otel::instrument("INSERT", "vtubers", query).await?;
+    let result = crate::otel::execute_query!("INSERT", "vtubers", query)?;
 
     if result.rows_affected() == 0 {
         tracing::warn!("VTuber id {before:?} not found");
@@ -25,7 +25,7 @@ pub async fn alert_vtuber_id<'a>(before: &str, after: &str, pool: PgPool) -> Res
     )
     .execute(&mut *tx);
 
-    crate::otel::instrument("UPDATE", "vtubers", query).await?;
+    crate::otel::execute_query!("UPDATE", "vtubers", query)?;
 
     let query = sqlx::query!(
         "UPDATE streams SET vtuber_id = $1 WHERE vtuber_id = $2",
@@ -34,7 +34,7 @@ pub async fn alert_vtuber_id<'a>(before: &str, after: &str, pool: PgPool) -> Res
     )
     .execute(&mut *tx);
 
-    crate::otel::instrument("UPDATE", "vtubers", query).await?;
+    crate::otel::execute_query!("UPDATE", "vtubers", query)?;
 
     let query = sqlx::query!(
         "UPDATE jobs SET payload = jsonb_set(payload, '{vtuber_id}', $1) WHERE (payload->>'vtuber_id') = $2",
@@ -43,11 +43,11 @@ pub async fn alert_vtuber_id<'a>(before: &str, after: &str, pool: PgPool) -> Res
     )
     .execute(&mut *tx);
 
-    crate::otel::instrument("UPDATE", "jobs", query).await?;
+    crate::otel::execute_query!("UPDATE", "jobs", query)?;
 
     let query = sqlx::query!("DELETE FROM vtubers WHERE vtuber_id = $1", before).execute(&mut *tx);
 
-    crate::otel::instrument("DELETE", "vtubers", query).await?;
+    crate::otel::execute_query!("DELETE", "vtubers", query)?;
 
     tx.commit().await
 }

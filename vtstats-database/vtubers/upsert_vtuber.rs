@@ -29,7 +29,7 @@ impl UpsertVTuber {
         )
         .execute(executor);
 
-        crate::otel::instrument("INSERT", "vtubers", query).await?;
+        crate::otel::execute_query!("INSERT", "vtubers", query)?;
 
         Ok(())
     }

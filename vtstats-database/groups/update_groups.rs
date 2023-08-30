@@ -33,18 +33,18 @@ pub async fn update_groups(groups: Vec<Group>, pool: PgPool) -> Result<()> {
 
     let query = query_builder.build().execute(&mut *tx);
 
-    crate::otel::instrument("INSERT", "groups", query).await?;
+    crate::otel::execute_query!("INSERT", "groups", query)?;
 
     let delete: Vec<_> = groups
         .into_iter()
-        .filter_map(|g| g.children.is_empty().then(|| g.group_id))
+        .filter_map(|g| g.children.is_empty().then_some(g.group_id))
         .collect();
 
     if !delete.is_empty() {
         let query =
             sqlx::query!("DELETE FROM groups WHERE group_id = ANY($1)", &delete).execute(&mut *tx);
 
-        crate::otel::instrument("DELETE", "groups", query).await?;
+        crate::otel::execute_query!("DELETE", "groups", query)?;
     }
 
     tx.commit().await

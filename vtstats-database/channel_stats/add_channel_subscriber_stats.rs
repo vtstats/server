@@ -30,7 +30,7 @@ impl<'q> AddChannelSubscriberStatsQuery<'q> {
 
         let query = query_builder.build().execute(pool);
 
-        crate::otel::instrument("INSERT", "channel_subscriber_stats", query).await
+        crate::otel::execute_query!("INSERT", "channel_subscriber_stats", query)
     }
 }
 

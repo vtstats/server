@@ -22,7 +22,7 @@ pub async fn list_groups(pool: &PgPool) -> Result<Vec<Group>> {
     )
     .fetch_all(pool);
 
-    let res = crate::otel::instrument("SELECT", "groups", query).await?;
+    let res = crate::otel::execute_query!("SELECT", "groups", query)?;
 
     Ok(res)
 }

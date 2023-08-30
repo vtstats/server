@@ -3,7 +3,7 @@ use std::env;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 #[derive(Serialize)]
 pub struct SendMessageRequestBody {
@@ -63,7 +63,7 @@ pub async fn send_message(
 
     let req = client.post(url).form(&message);
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: MessageResponse = res.json().await?;
 
@@ -81,7 +81,7 @@ pub async fn edit_message(
 
     let req = client.post(url).form(&message);
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: MessageResponse = res.json().await?;
 

@@ -9,7 +9,7 @@ use vtstats_database::{
     vtubers::UpsertVTuber,
     PgPool,
 };
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 use crate::reject::WarpError;
 
@@ -90,7 +90,7 @@ pub async fn create_vtuber(
 async fn upload_thumbnail(url: &str, id: &str, client: &Client) -> anyhow::Result<String> {
     let req = client.get(url);
 
-    let res = instrument_send(client, req).await?.error_for_status()?;
+    let res = send_request!(req)?;
 
     let file = res.bytes().await?;
 

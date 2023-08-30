@@ -19,7 +19,8 @@ use tracing_subscriber::{
 
 pub fn init() {
     let filter_layer = filter_fn(|metadata| {
-        metadata.target().starts_with("vtstat") && metadata.name() != "Ignored"
+        (metadata.target().starts_with("vtstat") || metadata.target().starts_with("integration"))
+            && metadata.name() != "Ignored"
     });
 
     let subscriber = registry()

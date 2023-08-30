@@ -29,7 +29,7 @@ pub async fn add_stream_events(
 
     let query = query_builder.build().execute(pool);
 
-    crate::otel::instrument("INSERT", "stream_events", query).await
+    crate::otel::execute_query!("INSERT", "stream_events", query)
 }
 
 // TODO: add unit tests

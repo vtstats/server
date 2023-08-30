@@ -75,7 +75,7 @@ pub async fn update_channel_stats(
 
     let query = query_builder.build().execute(pool);
 
-    crate::otel::instrument("UPDATE", "channels", query).await?;
+    crate::otel::execute_query!("UPDATE", "channels", query)?;
 
     Ok(())
 }

@@ -3,7 +3,7 @@ use std::env;
 use chrono::{Timelike, Utc};
 use reqwest::{Client, Url};
 use serde::{Deserialize, Serialize};
-use vtstats_utils::instrument_send;
+use vtstats_utils::send_request;
 
 #[derive(Deserialize, Debug)]
 pub struct YouTubeChannelsListResponse {
@@ -48,7 +48,7 @@ pub async fn list_channels(
 
     let req = client.get(url);
 
-    let res = instrument_send(client, req).await?;
+    let res = send_request!(req)?;
 
     let json: YouTubeChannelsListResponse = res.json().await?;
 

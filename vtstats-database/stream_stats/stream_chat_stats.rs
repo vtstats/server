@@ -12,7 +12,7 @@ pub async fn stream_chat_stats(stream_id: i32, pool: &PgPool) -> Result<Vec<(i64
     .map(|row| (row.ts.timestamp_millis(), row.v1, row.v2))
     .fetch_all(pool);
 
-    crate::otel::instrument("SELECT", "stream_chat_stats", query).await
+    crate::otel::execute_query!("SELECT", "stream_chat_stats", query)
 }
 
 // TODO: add unit tests
