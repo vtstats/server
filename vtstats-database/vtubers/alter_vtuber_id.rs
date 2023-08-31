@@ -1,4 +1,4 @@
-use sqlx::{types::JsonValue, PgPool, Result};
+use sqlx::{PgPool, Result};
 
 pub async fn alert_vtuber_id<'a>(before: &str, after: &str, pool: PgPool) -> Result<()> {
     let mut tx = pool.begin().await?;
@@ -36,14 +36,34 @@ pub async fn alert_vtuber_id<'a>(before: &str, after: &str, pool: PgPool) -> Res
 
     crate::otel::execute_query!("UPDATE", "vtubers", query)?;
 
+    let value = serde_json::json!({"vtuber_id": after});
+
     let query = sqlx::query!(
-        "UPDATE jobs SET payload = jsonb_set(payload, '{vtuber_id}', $1) WHERE (payload->>'vtuber_id') = $2",
-        JsonValue::String(after.into()),
+        "UPDATE jobs SET payload = payload || $1 WHERE (payload->>'vtuber_id') = $2",
+        value,
         before
     )
     .execute(&mut *tx);
 
     crate::otel::execute_query!("UPDATE", "jobs", query)?;
+
+    let query = sqlx::query!(
+        "UPDATE subscriptions SET payload = payload || $1 WHERE (payload->>'vtuber_id') = $2",
+        value,
+        before
+    )
+    .execute(&mut *tx);
+
+    crate::otel::execute_query!("UPDATE", "subscriptions", query)?;
+
+    let query = sqlx::query!(
+        "UPDATE notifications SET payload = payload || $1 WHERE (payload->>'vtuber_id') = $2",
+        value,
+        before
+    )
+    .execute(&mut *tx);
+
+    crate::otel::execute_query!("UPDATE", "notifications", query)?;
 
     let query = sqlx::query!("DELETE FROM vtubers WHERE vtuber_id = $1", before).execute(&mut *tx);
 

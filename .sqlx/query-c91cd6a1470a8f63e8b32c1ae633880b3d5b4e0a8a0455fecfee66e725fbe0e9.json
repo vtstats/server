@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs SET payload = payload || $1 WHERE (payload->>'vtuber_id') = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Jsonb",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c91cd6a1470a8f63e8b32c1ae633880b3d5b4e0a8a0455fecfee66e725fbe0e9"
+}
