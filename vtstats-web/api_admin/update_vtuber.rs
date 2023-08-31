@@ -1,3 +1,4 @@
+use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use reqwest::StatusCode;
 use serde::Deserialize;
 use warp::{reply::Response, Rejection, Reply};
@@ -19,6 +20,8 @@ pub struct UpdateVTuberPayload {
     pub japanese_name: Option<String>,
     #[serde(default)]
     pub twitter_username: Option<String>,
+    #[serde(default, with = "ts_milliseconds_option")]
+    pub retired_at: Option<DateTime<Utc>>,
 }
 
 pub async fn update_vtuber(
@@ -31,6 +34,7 @@ pub async fn update_vtuber(
         english_name: payload.english_name,
         japanese_name: payload.japanese_name,
         twitter_username: payload.twitter_username,
+        retired_at: payload.retired_at,
         thumbnail_url: None,
     }
     .execute(&pool)

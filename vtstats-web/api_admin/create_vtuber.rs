@@ -1,3 +1,4 @@
+use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 use warp::{reply::Response, Rejection, Reply};
@@ -27,6 +28,8 @@ pub struct CreateVTuberPayload {
     #[serde(default)]
     pub twitter_username: Option<String>,
     pub youtube_channel_id: String,
+    #[serde(default, with = "ts_milliseconds_option")]
+    pub retired_at: Option<DateTime<Utc>>,
 }
 
 pub async fn create_vtuber(
@@ -62,6 +65,7 @@ pub async fn create_vtuber(
         japanese_name: payload.japanese_name,
         twitter_username: payload.twitter_username,
         thumbnail_url,
+        retired_at: payload.retired_at,
     }
     .execute(&mut *tx)
     .await
