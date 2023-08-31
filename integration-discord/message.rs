@@ -66,10 +66,17 @@ pub struct EmbedField {
 pub struct CreateMessageRequest {
     #[serde(skip)]
     pub channel_id: String,
-
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_reference: Option<MessageReference>,
     pub content: String,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub embeds: Vec<Embed>,
+}
+
+#[derive(Serialize, Clone)]
+pub struct MessageReference {
+    pub message_id: String,
+    pub fail_if_not_exists: bool,
 }
 
 impl CreateMessageRequest {

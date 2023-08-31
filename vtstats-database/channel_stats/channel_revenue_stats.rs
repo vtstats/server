@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Result};
 
+use crate::json::decode_json_value;
+
 use super::ChannelRevenueStatsRow;
 
 pub async fn channel_revenue_stats(
@@ -23,11 +25,7 @@ pub async fn channel_revenue_stats(
         start_at,   // $2
         end_at,     // $3
     )
-    .try_map(|r| {
-        let ts = r.ts.timestamp_millis();
-        let map = serde_json::from_value(r.v1).map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-        Ok((ts, map))
-    })
+    .try_map(|r| Ok((r.ts.timestamp_millis(), decode_json_value(r.v1)?)))
     .fetch_all(pool);
 
     crate::otel::execute_query!("SELECT", "channel_revenue_stats", query)
@@ -43,13 +41,10 @@ pub async fn channel_revenue_stats_before(
         before
     )
     .try_map(|r| {
-        let map = serde_json::from_value(r.value).map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-        Ok(
-            ChannelRevenueStatsRow {
-                channel_id: r.channel_id,
-                value: map,
-            }
-        )
+        Ok(ChannelRevenueStatsRow {
+            channel_id: r.channel_id,
+            value: decode_json_value(r.value)?,
+        })
     })
     .fetch_all(pool);
 

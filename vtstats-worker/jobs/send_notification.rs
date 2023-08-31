@@ -1,17 +1,17 @@
 use anyhow::bail;
 use reqwest::Client;
-use std::fmt::Write;
+use std::{fmt::Write, vec};
 
 use integration_discord::message::{
     CreateMessageRequest, EditMessageRequest, Embed, EmbedAuthor, EmbedField, EmbedFooter,
-    EmbedImage, EmbedThumbnail,
+    EmbedImage, EmbedThumbnail, MessageReference,
 };
 use vtstats_database::{
     jobs::SendNotificationJobPayload,
     streams::{find_stream_by_platform_id, Stream, StreamStatus},
     subscriptions::{
-        InsertNotificationQuery, ListDiscordSubscriptionQuery, ListNotificationsQuery,
-        NotificationPayload, UpdateNotificationQuery,
+        list_discord_subscription_and_notification_by_vtuber_id, update_discord_notification,
+        DiscordSubscriptionAndNotification, InsertNotificationQuery, NotificationPayload,
     },
     vtubers::find_vtuber,
     PgPool,
@@ -24,76 +24,140 @@ pub async fn execute(
     client: Client,
     payload: SendNotificationJobPayload,
 ) -> anyhow::Result<JobResult> {
-    let subscriptions = ListDiscordSubscriptionQuery::ByVtuberId(payload.vtuber_id.clone())
-        .execute(pool)
-        .await?;
+    let stream = find_stream_by_platform_id(&payload.stream_platform_id, pool).await?;
+
+    let Some(stream) = stream else {
+        tracing::warn!(
+            "Can't find stream with platform id: {}",
+            payload.stream_platform_id
+        );
+        return Ok(JobResult::Completed);
+    };
+
+    let subscriptions = list_discord_subscription_and_notification_by_vtuber_id(
+        payload.vtuber_id.clone(),
+        stream.stream_id,
+        pool,
+    )
+    .await?;
 
     if subscriptions.is_empty() {
         return Ok(JobResult::Completed);
     }
 
-    let stream = find_stream_by_platform_id(&payload.stream_platform_id, pool).await?;
-
-    let Some(stream) = stream else {
-        return Ok(JobResult::Completed);
-    };
-
     let embeds = vec![build_discord_embed(&stream, &payload.vtuber_id, pool).await?];
 
-    for subscription in subscriptions {
-        let previous_notification = ListNotificationsQuery {
-            subscription_id: subscription.subscription_id,
-            stream_id: stream.stream_id,
-        }
-        .execute(pool)
-        .await?;
-
-        match previous_notification {
-            Some(notification) => {
-                EditMessageRequest {
-                    channel_id: subscription.payload.channel_id,
-                    content: String::new(),
-                    message_id: notification.payload.message_id,
-                    embeds: embeds.clone(),
-                }
-                .send(&client)
-                .await?;
-
-                UpdateNotificationQuery {
-                    notification_id: notification.notification_id,
-                }
-                .execute(pool)
-                .await?;
-            }
-            None => {
-                let msg_id = CreateMessageRequest {
-                    channel_id: subscription.payload.channel_id,
-                    content: String::new(),
-                    embeds: embeds.clone(),
-                }
-                .send(&client)
-                .await?;
-
-                InsertNotificationQuery {
-                    subscription_id: subscription.subscription_id,
-                    payload: NotificationPayload {
-                        vtuber_id: payload.vtuber_id.clone(),
-                        stream_id: stream.stream_id,
-                        message_id: msg_id,
-                        start_message_id: None,
-                        end_message_id: None,
-                    },
-                }
-                .execute(pool)
-                .await?;
-            }
+    for item in subscriptions {
+        let result = send_discord_notification(&item, &stream, embeds.clone(), pool, &client).await;
+        if let Err(err) = result {
+            tracing::error!(
+                "Failed to send discord notification guild_id={} vtuber_id={} channel_id={} stream_id={}",
+                item.subscription_payload.guild_id,
+                item.subscription_payload.vtuber_id,
+                item.subscription_payload.channel_id,
+                stream.stream_id,
+            );
+            tracing::error!("Error: {:?}", err);
         }
     }
 
     Ok(JobResult::Completed)
 }
 
-pub async fn build_discord_embed(
+async fn send_discord_notification(
+    item: &DiscordSubscriptionAndNotification,
+    stream: &Stream,
+    embeds: Vec<Embed>,
+    pool: &PgPool,
+    client: &Client,
+) -> anyhow::Result<()> {
+    let subscription = &item.subscription_payload;
+    let subscription_id = item.subscription_id;
+    let notification = &item.notification_payload;
+    let notification_id = item.notification_id;
+
+    match (notification, notification_id) {
+        (Some(notification), Some(notification_id)) => {
+            EditMessageRequest {
+                channel_id: subscription.channel_id.clone(),
+                content: String::new(),
+                message_id: notification.message_id.clone(),
+                embeds,
+            }
+            .send(client)
+            .await?;
+
+            let mut start_message_id = notification.start_message_id.clone();
+            let mut end_message_id = notification.end_message_id.clone();
+
+            if stream.status == StreamStatus::Live && start_message_id.is_none() {
+                let message_id = CreateMessageRequest {
+                    channel_id: subscription.channel_id.clone(),
+                    content: "Stream has started".into(),
+                    embeds: vec![],
+                    message_reference: Some(MessageReference {
+                        message_id: notification.message_id.clone(),
+                        fail_if_not_exists: false,
+                    }),
+                }
+                .send(client)
+                .await?;
+                start_message_id = Some(message_id);
+            }
+
+            if stream.status == StreamStatus::Ended && end_message_id.is_none() {
+                let message_id = CreateMessageRequest {
+                    channel_id: subscription.channel_id.clone(),
+                    content: "Stream has ended".into(),
+                    embeds: vec![],
+                    message_reference: Some(MessageReference {
+                        message_id: notification.message_id.clone(),
+                        fail_if_not_exists: false,
+                    }),
+                }
+                .send(client)
+                .await?;
+                end_message_id = Some(message_id);
+            }
+
+            update_discord_notification(
+                notification_id,
+                notification.message_id.clone(),
+                start_message_id,
+                end_message_id,
+                pool,
+            )
+            .await?;
+        }
+        _ => {
+            let message_id = CreateMessageRequest {
+                channel_id: subscription.channel_id.clone(),
+                content: String::new(),
+                embeds: embeds.clone(),
+                message_reference: None,
+            }
+            .send(client)
+            .await?;
+
+            InsertNotificationQuery {
+                subscription_id,
+                payload: NotificationPayload {
+                    vtuber_id: stream.vtuber_id.clone(),
+                    stream_id: stream.stream_id,
+                    message_id,
+                    start_message_id: None,
+                    end_message_id: None,
+                },
+            }
+            .execute(pool)
+            .await?;
+        }
+    }
+
+    Ok(())
+}
+
+async fn build_discord_embed(
     stream: &Stream,
     vtuber_id: &str,
     pool: &PgPool,
@@ -130,7 +194,7 @@ pub async fn build_discord_embed(
 
         EmbedAuthor {
             name,
-            url: format!("https://holo.poi.cat/vtuber/{vtuber_id}"),
+            url: format!("https://vt.poi.cat/vtuber/{vtuber_id}"),
         }
     });
 

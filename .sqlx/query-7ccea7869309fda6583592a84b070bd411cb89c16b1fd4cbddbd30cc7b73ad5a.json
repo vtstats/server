@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT s.subscription_id id1, s.payload p1, n.payload as \"p2?\", n.notification_id as \"id2?\" FROM subscriptions s LEFT JOIN notifications n ON s.subscription_id = n.subscription_id AND (n.payload->>'stream_id')::int = $1 WHERE s.kind = 'discord_stream_update' AND (s.payload->>'vtuber_id') = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id1",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "p1",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 2,
+        "name": "p2?",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "id2?",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "7ccea7869309fda6583592a84b070bd411cb89c16b1fd4cbddbd30cc7b73ad5a"
+}

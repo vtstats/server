@@ -4,6 +4,10 @@ use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sqlx::{postgres::PgRow, types::Json, FromRow, PgPool, Result, Row};
 
+use crate::json::decode_json_value;
+
+use super::NotificationPayload;
+
 pub enum ListTelegramSubscriptionQuery {
     ByVtuberId(String),
     ByChatId(i64),
@@ -116,6 +120,42 @@ impl ListDiscordSubscriptionQuery {
 
         crate::otel::execute_query!("SELECT", "subscriptions", query)
     }
+}
+
+pub struct DiscordSubscriptionAndNotification {
+    pub subscription_id: i32,
+    pub subscription_payload: DiscordSubscriptionPayload,
+    pub notification_id: Option<i32>,
+    pub notification_payload: Option<NotificationPayload>,
+}
+
+pub async fn list_discord_subscription_and_notification_by_vtuber_id(
+    vtuber_id: String,
+    stream_id: i32,
+    pool: &PgPool,
+) -> Result<Vec<DiscordSubscriptionAndNotification>> {
+    let query = sqlx::query!(
+        "SELECT s.subscription_id id1, s.payload p1, n.payload as \"p2?\", n.notification_id as \"id2?\" \
+        FROM subscriptions s \
+        LEFT JOIN notifications n \
+        ON s.subscription_id = n.subscription_id \
+        AND (n.payload->>'stream_id')::int = $1 \
+        WHERE s.kind = 'discord_stream_update' \
+        AND (s.payload->>'vtuber_id') = $2",
+        stream_id,
+        vtuber_id,
+    )
+    .try_map(|r| {
+        Ok(DiscordSubscriptionAndNotification {
+            subscription_id: r.id1,
+            subscription_payload: decode_json_value(r.p1)?,
+            notification_id: r.id2,
+            notification_payload: r.p2.map(decode_json_value).transpose()?,
+        })
+    })
+    .fetch_all(pool);
+
+    crate::otel::execute_query!("SELECT", "subscriptions", query)
 }
 
 pub struct RemoveDiscordSubscriptionQuery {
