@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE platform = 'youtube'",
+  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE platform = 'bilibili' AND vtuber_id IN (SELECT vtuber_id FROM vtubers WHERE retired_at IS NULL OR retired_at + '2 week' >= NOW())",
   "describe": {
     "columns": [
       {
@@ -45,5 +45,5 @@
       false
     ]
   },
-  "hash": "7b1877732b1d9484b4c4537a4f2e0620fc33b7795eca22d3ca54f26fc251bb1c"
+  "hash": "50557fbb81552464606132644c3eb45adca708a2ac3a1afb104e9fd5feeebeeb"
 }

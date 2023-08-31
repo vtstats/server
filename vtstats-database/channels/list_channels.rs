@@ -4,22 +4,26 @@ use crate::channels::ChannelWithStats;
 
 use super::Channel;
 
+/// list all bilibili channels but excluding retired
 pub async fn list_youtube_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     let query = sqlx::query_as!(
         Channel,
         "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" \
-        FROM channels WHERE platform = 'youtube'"
+        FROM channels WHERE platform = 'youtube' AND vtuber_id IN \
+        (SELECT vtuber_id FROM vtubers WHERE retired_at IS NULL OR retired_at + '2 week' >= NOW())"
     )
     .fetch_all(pool);
 
     crate::otel::execute_query!("SELECT", "channels", query)
 }
 
+/// list all bilibili channels but excluding retired
 pub async fn list_bilibili_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     let query = sqlx::query_as!(
         Channel,
         "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" \
-        FROM channels WHERE platform = 'bilibili'"
+        FROM channels WHERE platform = 'bilibili' AND vtuber_id IN \
+        (SELECT vtuber_id FROM vtubers WHERE retired_at IS NULL OR retired_at + '2 week' >= NOW())"
     )
     .fetch_all(pool);
 
