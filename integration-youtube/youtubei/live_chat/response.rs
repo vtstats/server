@@ -125,6 +125,8 @@ pub struct Action {
     pub update_live_chat_poll_action: IgnoredAny,
     #[serde(default)]
     pub replace_chat_item_action: IgnoredAny,
+    #[serde(default)]
+    pub remove_chat_item_action: IgnoredAny,
 
     #[serde(default)]
     pub click_tracking_params: IgnoredAny,
@@ -160,6 +162,8 @@ pub struct ChatItem {
     pub live_chat_placeholder_item_renderer: IgnoredAny,
     #[serde(default)]
     pub live_chat_mode_change_message_renderer: IgnoredAny,
+    #[serde(default)]
+    pub live_chat_sponsorships_gift_redemption_announcement_renderer: IgnoredAny,
 
     #[serde(flatten)]
     pub unknown: HashMap<String, IgnoredAny>,
