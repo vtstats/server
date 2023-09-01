@@ -101,14 +101,14 @@ async fn check_permission(
     let guild = cache.get_guild(guild_id).await?;
 
     let Some(guild) = guild else {
-        anyhow::bail!("Can't get guild info of `{guild_id}`");
+        anyhow::bail!("can't get guild info of `{guild_id}`");
     };
 
     if guild.owner_id != member.user.id {
         let roles = cache.get_guild_role(guild_id).await?;
 
         let Some(roles) = roles else {
-            anyhow::bail!("Can't get roles info of `{guild_id}`");
+            anyhow::bail!("can't get roles info of `{guild_id}`");
         };
 
         if !roles
@@ -146,7 +146,7 @@ async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> anyhow::Resu
         .await?;
 
     if subscriptions.is_empty() {
-        return Ok("No subscription found in this server, use /add to create one.".to_string());
+        return Ok("no subscription found in this server, use /add to create one.".to_string());
     }
 
     subscriptions.sort_by(|a, b| a.created_at.cmp(&b.created_at));
@@ -157,10 +157,10 @@ async fn list_all_subscriptions(pool: &PgPool, guild_id: String) -> anyhow::Resu
     );
     for sub in subscriptions {
         s += &format!(
-            "- *vtuber:* `{vtuber}` *channel:* <#{channel}> *created:* <t:{ts}>\n",
-            vtuber = sub.payload.vtuber_id,
-            channel = sub.payload.channel_id,
-            ts = sub.created_at.timestamp()
+            "- vtuber: `{}` channel: <#{}> created: <t:{}>\n",
+            sub.payload.vtuber_id,
+            sub.payload.channel_id,
+            sub.created_at.timestamp()
         );
     }
 
@@ -180,7 +180,7 @@ async fn list_subscriptions(
     .await?;
 
     if subscriptions.is_empty() {
-        return Ok("No subscription found in this channel, use /add to create one.".to_string());
+        return Ok("no subscription found in this channel, use /add to create one.".to_string());
     }
 
     subscriptions.sort_by(|a, b| a.created_at.cmp(&b.created_at));
