@@ -1,0 +1,105 @@
+{
+  "videoDetails": {
+    "videoId": "aMJeB0whE94",
+    "title": "*. 新衣装お披露目┊ あまみやこころサマー2023🌻 #あまみゃ新衣装 ˎˊ˗（　天宮こころ / にじさんじ　）",
+    "lengthSeconds": "6100",
+    "keywords": [
+      "天宮こころ",
+      "あまみやこころ",
+      "amamiyakokoro",
+      "にじさんじ",
+      "nijisanji",
+      "Vtuber",
+      "anime",
+      "アニメ",
+      "japan",
+      "切り抜き",
+      "雑談",
+      "game",
+      "ゲーム",
+      "実況"
+    ],
+    "channelId": "UCkIimWZ9gBJRamKF0rmPU8w",
+    "isOwnerViewing": false,
+    "shortDescription": "",
+    "isCrawlable": true,
+    "thumbnail": {
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/aMJeB0whE94/hqdefault.jpg",
+          "width": 168,
+          "height": 94
+        },
+        {
+          "url": "https://i.ytimg.com/vi/aMJeB0whE94/hqdefault.jpg",
+          "width": 196,
+          "height": 110
+        },
+        {
+          "url": "https://i.ytimg.com/vi/aMJeB0whE94/hqdefault.jpg",
+          "width": 246,
+          "height": 138
+        },
+        {
+          "url": "https://i.ytimg.com/vi/aMJeB0whE94/hqdefault.jpg",
+          "width": 336,
+          "height": 188
+        },
+        {
+          "url": "https://i.ytimg.com/vi/aMJeB0whE94/maxresdefault.jpg",
+          "width": 1920,
+          "height": 1080
+        }
+      ]
+    },
+    "allowRatings": true,
+    "viewCount": "166022",
+    "author": "天宮 こころ / Amamya Ch.",
+    "isLowLatencyLiveStream": true,
+    "isPrivate": false,
+    "isUnpluggedCorpus": false,
+    "latencyClass": "MDE_STREAM_OPTIMIZATIONS_RENDERER_LATENCY_LOW",
+    "isLiveContent": true
+  },
+  "microformat": {
+    "playerMicroformatRenderer": {
+      "thumbnail": {
+        "thumbnails": [
+          {
+            "url": "https://i.ytimg.com/vi/aMJeB0whE94/maxresdefault.jp",
+            "width": 1280,
+            "height": 720
+          }
+        ]
+      },
+      "embed": {
+        "iframeUrl": "https://www.youtube.com/embed/aMJeB0whE94?start=2557",
+        "width": 1280,
+        "height": 720
+      },
+      "title": {
+        "simpleText": "*. 新衣装お披露目┊ あまみやこころサマー2023🌻 #あまみゃ新衣装 ˎˊ˗（　天宮こころ / にじさんじ　）"
+      },
+      "description": {
+        "simpleText": ""
+      },
+      "lengthSeconds": "6100",
+      "ownerProfileUrl": "http://www.youtube.com/@AmamiyaKokoro",
+      "externalChannelId": "UCkIimWZ9gBJRamKF0rmPU8w",
+      "isFamilySafe": true,
+      "availableCountries": [],
+      "isUnlisted": false,
+      "hasYpcMetadata": false,
+      "viewCount": "166022",
+      "category": "Entertainment",
+      "publishDate": "2023-08-10",
+      "ownerChannelName": "天宮 こころ / Amamya Ch.",
+      "liveBroadcastDetails": {
+        "isLiveNow": false,
+        "startTimestamp": "2023-08-10T11:08:18+00:00",
+        "endTimestamp": "2023-08-10T12:49:48+00:00"
+      },
+      "uploadDate": "2023-08-10"
+    }
+  }
+}

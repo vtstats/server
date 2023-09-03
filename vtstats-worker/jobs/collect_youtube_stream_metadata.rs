@@ -159,7 +159,7 @@ pub async fn execute(
     })
 }
 
-async fn collect_donation_and_chat(
+pub async fn collect_donation_and_chat(
     stream_id: i32,
     messages: Vec<LiveChatMessage>,
     pool: &PgPool,

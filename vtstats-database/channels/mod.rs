@@ -37,7 +37,7 @@ pub struct ChannelWithStats {
     pub revenue_30d_ago: Json<JsonValue>,
 }
 
-#[derive(sqlx::Type, Serialize, Deserialize, Clone, Copy)]
+#[derive(sqlx::Type, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[sqlx(type_name = "platform", rename_all = "snake_case")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Platform {

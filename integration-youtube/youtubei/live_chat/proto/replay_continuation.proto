@@ -1,0 +1,81 @@
+// Run `pb-rs holostats-live-chat/continuation/continuation.proto` to generate rust code
+
+// 156074452 {      <- ContinuationA
+//   3: "CikqJwoYVUNrSWltV1o5Z0JKUmFtS0Ywcm1QVTh3EgthTUplQjB3aEU5NBoT6qjduQENCgthTUplQjB3aEU5NCABMAA%3D"
+//   8: 1
+//   10 {           <- ContinuationB
+//     4: 0
+//     22: 0
+//     31: 0
+//   }              
+//   14 {           <- ContinuationC
+//     1: 1
+//     3: 1
+//     4: 0
+//   }
+// }
+
+// 1 {              <- VideoA
+//   5 {            <- VideoB
+//     1: "UCkIimWZ9gBJRamKF0rmPU8w"
+//     2: "aMJeB0whE94"
+//   }
+// }
+// 3 {              <- VideoC
+//   48687757 {     <- VideoD
+//     1: "aMJeB0whE94"
+//   }
+// }
+// 4: 1
+// 6: 0
+
+syntax = "proto3";
+
+package replay_continuation;
+
+message Continuation {
+    ContinuationA f156074452 = 156074452;
+}
+
+message ContinuationA {
+    string f3 = 3;
+    int32 f8 = 8;
+    ContinuationB f10 = 10;
+    ContinuationC f14 = 14;
+}
+
+message ContinuationB {
+    int32 f4 = 4;
+    int32 f22 = 22;
+    int32 f31 = 31;
+}
+
+message ContinuationC {
+    int32 f1 = 1;
+    int32 f3 = 3;
+    int32 f4 = 4;
+}
+
+message Video {
+    VideoA f1 = 1;
+    VideoC f3 = 3;
+    int32 f4 = 4;
+    int32 f6 = 6;
+}
+
+message VideoA {
+    VideoB f5 = 5;
+}
+
+message VideoB {
+    string f1 = 1;
+    string f2 = 2;
+}
+
+message VideoC {
+    VideoD f48687757 = 48687757;
+}
+
+message VideoD {
+    string f1 = 1;
+}

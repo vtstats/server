@@ -19,7 +19,7 @@ pub struct ContinuationContents {
 pub struct LiveChatContinuation {
     pub continuations: Vec<Continuation>,
     #[serde(default)]
-    pub actions: Vec<Action>,
+    pub actions: Vec<LiveChatAction>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -28,6 +28,7 @@ pub struct Continuation {
     pub timed_continuation_data: Option<TimedContinuationData>,
     pub invalidation_continuation_data: Option<InvalidationContinuationData>,
     pub reload_continuation_data: Option<ReloadContinuationData>,
+    pub live_chat_replay_continuation_data: Option<LiveChatReplayContinuationData>,
 }
 
 impl Continuation {
@@ -38,39 +39,31 @@ impl Continuation {
             Some((Duration::from_millis(data.timeout_ms), data.continuation))
         } else if let Some(data) = self.reload_continuation_data {
             Some((Duration::default(), data.continuation))
+        } else if let Some(data) = self.live_chat_replay_continuation_data {
+            Some((Duration::default(), data.continuation))
         } else {
             None
         }
     }
 
     pub fn get_timeout(&self) -> Option<Duration> {
-        let Continuation {
-            timed_continuation_data,
-            invalidation_continuation_data,
-            reload_continuation_data: _,
-        } = self;
-
-        if let Some(data) = timed_continuation_data {
+        if let Some(data) = &self.timed_continuation_data {
             Some(Duration::from_millis(data.timeout_ms))
         } else {
-            invalidation_continuation_data
+            self.invalidation_continuation_data
                 .as_ref()
                 .map(|data| Duration::from_millis(data.timeout_ms))
         }
     }
 
     pub fn get_next_continuation(self) -> Option<String> {
-        let Continuation {
-            timed_continuation_data,
-            invalidation_continuation_data,
-            reload_continuation_data,
-        } = self;
-
-        if let Some(data) = timed_continuation_data {
+        if let Some(data) = self.timed_continuation_data {
             Some(data.continuation)
-        } else if let Some(data) = invalidation_continuation_data {
+        } else if let Some(data) = self.invalidation_continuation_data {
             Some(data.continuation)
-        } else if let Some(data) = reload_continuation_data {
+        } else if let Some(data) = self.reload_continuation_data {
+            Some(data.continuation)
+        } else if let Some(data) = self.live_chat_replay_continuation_data {
             Some(data.continuation)
         } else {
             None
@@ -91,6 +84,11 @@ pub struct ReloadContinuationData {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct LiveChatReplayContinuationData {
+    pub continuation: String,
+}
+
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct TimedContinuationData {
     pub timeout_ms: u64,
@@ -99,12 +97,12 @@ pub struct TimedContinuationData {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Action {
+pub struct LiveChatAction {
     #[serde(default)]
     pub add_chat_item_action: Option<AddChatItemAction>,
 
     #[serde(default)]
-    pub replay_chat_item_action: IgnoredAny,
+    pub replay_chat_item_action: Option<ReplayChatItemAction>,
     #[serde(default)]
     pub add_live_chat_ticker_item_action: IgnoredAny,
     #[serde(default)]
@@ -127,12 +125,19 @@ pub struct Action {
     pub replace_chat_item_action: IgnoredAny,
     #[serde(default)]
     pub remove_chat_item_action: IgnoredAny,
+    #[serde(default)]
+    pub remove_chat_item_by_author_action: IgnoredAny,
 
     #[serde(default)]
     pub click_tracking_params: IgnoredAny,
 
     #[serde(flatten)]
     pub unknown: HashMap<String, IgnoredAny>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ReplayChatItemAction {
+    actions: Vec<LiveChatAction>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -164,6 +169,8 @@ pub struct ChatItem {
     pub live_chat_mode_change_message_renderer: IgnoredAny,
     #[serde(default)]
     pub live_chat_sponsorships_gift_redemption_announcement_renderer: IgnoredAny,
+    #[serde(default)]
+    pub live_chat_sponsorships_gift_purchase_announcement_renderer: IgnoredAny,
 
     #[serde(flatten)]
     pub unknown: HashMap<String, IgnoredAny>,
@@ -280,12 +287,12 @@ pub struct Message {
 #[serde(rename_all = "camelCase")]
 pub struct MessageRun {
     text: Option<String>,
-    emoji: Option<EmojiMesssageRun>,
+    emoji: Option<EmojiMessageRun>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct EmojiMesssageRun {
+pub struct EmojiMessageRun {
     emoji_id: String,
     #[serde(default)]
     shortcuts: Vec<String>,
@@ -410,46 +417,56 @@ fn get_color(color: u64) -> String {
 
 impl LiveChatMessage {
     pub fn from_response(res: Response) -> Vec<LiveChatMessage> {
-        res.continuation_contents
-            .map(|c| {
-                c.live_chat_continuation
-                    .actions
-                    .into_iter()
-                    .filter_map(LiveChatMessage::from_action)
-                    .collect()
-            })
-            .unwrap_or_default()
+        let mut vec = vec![];
+
+        if let Some(contents) = res.continuation_contents {
+            for action in contents.live_chat_continuation.actions {
+                LiveChatMessage::from_action(action, &mut vec);
+            }
+        }
+
+        vec
     }
 
-    pub fn from_action(action: Action) -> Option<LiveChatMessage> {
-        let Action {
+    pub fn from_action(action: LiveChatAction, messages: &mut Vec<LiveChatMessage>) {
+        let LiveChatAction {
             add_chat_item_action,
+            replay_chat_item_action,
             unknown,
             ..
         } = action;
 
-        if let Some(AddChatItemAction {
-            item:
-                ChatItem {
-                    live_chat_text_message_renderer,
-                    live_chat_paid_message_renderer,
-                    live_chat_membership_item_renderer,
-                    live_chat_paid_sticker_renderer,
-                    unknown,
-                    ..
-                },
-        }) = add_chat_item_action
-        {
+        if let Some(replay_chat_item_action) = replay_chat_item_action {
+            for action in replay_chat_item_action.actions {
+                LiveChatMessage::from_action(action, messages);
+            }
+        }
+
+        if let Some(add_chat_item_action) = add_chat_item_action {
+            let AddChatItemAction {
+                item:
+                    ChatItem {
+                        live_chat_text_message_renderer,
+                        live_chat_paid_message_renderer,
+                        live_chat_membership_item_renderer,
+                        live_chat_paid_sticker_renderer,
+                        unknown,
+                        ..
+                    },
+            } = add_chat_item_action;
+
             if let Some(msg) = live_chat_text_message_renderer {
-                Some(LiveChatMessage::Text {
+                messages.push(LiveChatMessage::Text {
                     author_name: msg.author_name.simple_text,
                     author_channel_id: msg.author_external_channel_id,
                     timestamp: msg.timestamp_usec,
                     badges: flatten_badges(msg.author_badges),
                     text: concat_message(msg.message),
-                })
-            } else if let Some(msg) = live_chat_paid_message_renderer {
-                Some(LiveChatMessage::Paid {
+                });
+            }
+
+            if let Some(msg) = live_chat_paid_message_renderer {
+                messages.push(LiveChatMessage::Paid {
                     ty: PaidMessageType::SuperChat,
                     author_name: msg.author_name.simple_text,
                     author_channel_id: msg.author_external_channel_id,
@@ -458,33 +475,37 @@ impl LiveChatMessage {
                     text: concat_message(msg.message),
                     amount: msg.purchase_amount_text.simple_text,
                     color: get_color(msg.color),
-                })
-            } else if let Some(msg) = live_chat_membership_item_renderer {
+                });
+            }
+
+            if let Some(msg) = live_chat_membership_item_renderer {
                 let message_is_empty = msg.message.is_none();
                 let text = concat_message(msg.header_subtext.or(msg.message));
                 let badges = flatten_badges(msg.author_badges);
 
                 if message_is_empty && text.starts_with("Welcome to") {
-                    Some(LiveChatMessage::Member {
+                    messages.push(LiveChatMessage::Member {
                         ty: MemberMessageType::New,
                         author_name: msg.author_name.simple_text,
                         author_channel_id: msg.author_external_channel_id,
                         timestamp: msg.timestamp_usec,
                         badges,
                         text,
-                    })
+                    });
                 } else {
-                    Some(LiveChatMessage::Member {
+                    messages.push(LiveChatMessage::Member {
                         ty: MemberMessageType::Milestone,
                         author_name: msg.author_name.simple_text,
                         author_channel_id: msg.author_external_channel_id,
                         timestamp: msg.timestamp_usec,
                         badges,
                         text,
-                    })
+                    });
                 }
-            } else if let Some(msg) = live_chat_paid_sticker_renderer {
-                Some(LiveChatMessage::Paid {
+            }
+
+            if let Some(msg) = live_chat_paid_sticker_renderer {
+                messages.push(LiveChatMessage::Paid {
                     ty: PaidMessageType::SuperSticker,
                     text: get_accessibility_label(msg.sticker.accessibility),
                     author_name: msg.author_name.simple_text,
@@ -493,24 +514,20 @@ impl LiveChatMessage {
                     badges: flatten_badges(msg.author_badges),
                     amount: msg.purchase_amount_text.simple_text,
                     color: get_color(msg.color),
-                })
-            } else {
-                let mut keys: Vec<_> = unknown.keys().collect();
-                keys.dedup();
-                for key in keys {
-                    tracing::warn!("Unknown AddChatItemAction item: {key}");
-                }
-
-                None
+                });
             }
-        } else {
+
             let mut keys: Vec<_> = unknown.keys().collect();
             keys.dedup();
             for key in keys {
-                tracing::warn!("Unknown action: {key}");
+                tracing::warn!("Unknown AddChatItemAction item: {key}");
             }
+        }
 
-            None
+        let mut keys: Vec<_> = unknown.keys().collect();
+        keys.dedup();
+        for key in keys {
+            tracing::warn!("Unknown action: {key}");
         }
     }
 }
@@ -531,6 +548,9 @@ fn de() {
         include_str!("./testdata/timed6.json"),
         include_str!("./testdata/timed7.json"),
         include_str!("./testdata/unavailable.json"),
+        include_str!("./testdata/replay0.json"),
+        include_str!("./testdata/replay1.json"),
+        include_str!("./testdata/replay2.json"),
     ] {
         LiveChatMessage::from_response(from_str(json).unwrap());
     }

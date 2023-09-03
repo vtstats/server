@@ -1,9 +1,13 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use vtstats_database::streams::{Stream, StreamStatus};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub video_details: VideoDetails,
+    #[serde(default)]
+    pub microformat: Option<Microformat>,
 }
 
 impl Response {
@@ -22,12 +26,32 @@ impl Response {
             })
             .map(|t| t.url.as_str())
     }
+
+    pub fn to_stream(&self) -> Option<Stream> {
+        let format = self.microformat.clone()?.player_microformat_renderer;
+        Some(Stream {
+            title: format.title.simple_text,
+            platform_id: self.video_details.video_id.clone(),
+            status: StreamStatus::Ended,
+            start_time: Some(format.live_broadcast_details.start_timestamp),
+            end_time: Some(format.live_broadcast_details.end_timestamp),
+            schedule_time: None,
+            like_max: None,
+            updated_at: Utc::now(),
+            stream_id: 0,
+            thumbnail_url: None,
+            vtuber_id: "".into(),
+            viewer_avg: None,
+            viewer_max: None,
+        })
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoDetails {
     pub title: String,
+    pub video_id: String,
     pub channel_id: String,
     pub thumbnail: Thumbnail,
 }
@@ -46,6 +70,34 @@ pub struct ThumbnailUrl {
     pub height: i64,
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Microformat {
+    pub player_microformat_renderer: PlayerMicroformatRenderer,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayerMicroformatRenderer {
+    pub title: Title,
+    pub view_count: String,
+    pub owner_channel_name: String,
+    pub live_broadcast_details: LiveBroadcastDetails,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Title {
+    pub simple_text: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveBroadcastDetails {
+    pub start_timestamp: DateTime<Utc>,
+    pub end_timestamp: DateTime<Utc>,
+}
+
 #[test]
 fn test() {
     let res = serde_json::from_str::<Response>(include_str!("./testdata/player.0.json")).unwrap();
@@ -59,4 +111,6 @@ fn test() {
         res.get_thumbnail_url(),
         Some("https://i.ytimg.com/vi/g2wDT7eMY-4/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAUOIU-UTxNZSxWeKHgWgURJlYoWA")
     );
+
+    serde_json::from_str::<Response>(include_str!("./testdata/player.2.json")).unwrap();
 }
