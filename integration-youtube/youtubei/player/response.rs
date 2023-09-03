@@ -35,6 +35,7 @@ impl Response {
             status: StreamStatus::Ended,
             start_time: Some(format.live_broadcast_details.start_timestamp),
             end_time: Some(format.live_broadcast_details.end_timestamp),
+            highlighted_title: None,
             schedule_time: None,
             like_max: None,
             updated_at: Utc::now(),

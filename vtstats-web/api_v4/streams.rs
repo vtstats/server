@@ -22,6 +22,8 @@ pub struct ReqQuery {
     pub start_at: Option<DateTime<Utc>>,
     #[serde(default, with = "ts_milliseconds_option")]
     pub end_at: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub keyword: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -62,6 +64,11 @@ pub async fn list_live_streams(query: ReqQuery, pool: PgPool) -> Result<Response
         StreamStatus::Live,
         query.start_at,
         query.end_at,
+        query
+            .keyword
+            .as_ref()
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty()),
         pool,
     )
     .await
@@ -76,6 +83,11 @@ pub async fn list_ended_streams(query: ReqQuery, pool: PgPool) -> Result<Respons
         StreamStatus::Ended,
         query.start_at,
         query.end_at,
+        query
+            .keyword
+            .as_ref()
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty()),
         pool,
     )
     .await

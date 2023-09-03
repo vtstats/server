@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pgroonga_query_expand('pgroonga_synonyms', 'term', 'synonyms', $1) as expended",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "expended",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d28eb94222bdb10df060419958533e3957f46c177d868f20c571a18e1521cbe7"
+}

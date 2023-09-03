@@ -14,6 +14,7 @@ pub async fn get_stream_by_platform_id(
         "SELECT platform_id, \
         stream_id, \
         title, \
+        null as highlighted_title, \
         vtuber_id, \
         thumbnail_url, \
         schedule_time, \

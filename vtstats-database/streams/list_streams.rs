@@ -14,6 +14,7 @@ pub struct Stream {
     pub platform_id: String,
     pub stream_id: i32,
     pub title: String,
+    pub highlighted_title: Option<String>,
     pub vtuber_id: String,
     pub thumbnail_url: Option<String>,
     #[serde(with = "ts_milliseconds_option")]
@@ -89,6 +90,7 @@ pub async fn filter_streams_order_by_schedule_time_asc(
         "SELECT platform_id, \
         stream_id, \
         title, \
+        null as highlighted_title, \
         vtuber_id, \
         thumbnail_url, \
         schedule_time, \
@@ -121,38 +123,88 @@ pub async fn filter_streams_order_by_start_time_desc(
     status: StreamStatus,
     start_at: Option<DateTime<Utc>>,
     end_at: Option<DateTime<Utc>>,
+    keyword: Option<&str>,
     pool: PgPool,
 ) -> Result<Vec<Stream>> {
-    let query = sqlx::query_as!(
-        Stream,
-        "SELECT platform_id, \
-        stream_id, \
-        title, \
-        vtuber_id, \
-        thumbnail_url, \
-        schedule_time, \
-        start_time, \
-        end_time, \
-        viewer_max, \
-        viewer_avg, \
-        like_max, \
-        updated_at, \
-        status as \"status: _\" \
-        FROM streams \
-        WHERE channel_id = ANY($1) \
-        AND status = $2 \
-        AND (start_time > $3 OR $3 IS NULL) \
-        AND (start_time < $4 OR $4 IS NULL) \
-        ORDER BY start_time DESC \
-        LIMIT 24",
-        channel_ids,
-        status as _,
-        start_at,
-        end_at
-    )
-    .fetch_all(&pool);
+    if let Some(keyword) = keyword {
+        let query = sqlx::query!(
+            "SELECT pgroonga_query_expand('pgroonga_synonyms', 'term', 'synonyms', $1) as expended",
+            keyword
+        )
+        .fetch_one(&pool);
 
-    crate::otel::execute_query!("SELECT", "streams", query)
+        let expended = crate::otel::execute_query!("SELECT", "pgroonga_query_expand", query)?;
+
+        let keyword = expended.expended.as_deref().unwrap_or(keyword);
+
+        let query = sqlx::query_as!(
+            Stream,
+            "SELECT platform_id, \
+            stream_id, \
+            title, \
+            pgroonga_highlight_html(\
+                title, pgroonga_query_extract_keywords($5)\
+            ) as highlighted_title, \
+            vtuber_id, \
+            thumbnail_url, \
+            schedule_time, \
+            start_time, \
+            end_time, \
+            viewer_max, \
+            viewer_avg, \
+            like_max, \
+            updated_at, \
+            status as \"status: _\" \
+            FROM streams \
+            WHERE channel_id = ANY($1) \
+            AND status = $2 \
+            AND (start_time > $3 OR $3 IS NULL) \
+            AND (start_time < $4 OR $4 IS NULL) \
+            AND title &@~ $5 \
+            ORDER BY start_time DESC \
+            LIMIT 24",
+            channel_ids,
+            status as _,
+            start_at,
+            end_at,
+            keyword
+        )
+        .fetch_all(&pool);
+
+        crate::otel::execute_query!("SELECT", "streams", query)
+    } else {
+        let query = sqlx::query_as!(
+            Stream,
+            "SELECT platform_id, \
+            stream_id, \
+            title, \
+            null as highlighted_title, \
+            vtuber_id, \
+            thumbnail_url, \
+            schedule_time, \
+            start_time, \
+            end_time, \
+            viewer_max, \
+            viewer_avg, \
+            like_max, \
+            updated_at, \
+            status as \"status: _\" \
+            FROM streams \
+            WHERE channel_id = ANY($1) \
+            AND status = $2 \
+            AND (start_time > $3 OR $3 IS NULL) \
+            AND (start_time < $4 OR $4 IS NULL) \
+            ORDER BY start_time DESC \
+            LIMIT 24",
+            channel_ids,
+            status as _,
+            start_at,
+            end_at
+        )
+        .fetch_all(&pool);
+
+        crate::otel::execute_query!("SELECT", "streams", query)
+    }
 }
 
 pub async fn find_stream_by_platform_id(
@@ -164,6 +216,7 @@ pub async fn find_stream_by_platform_id(
         "SELECT platform_id, \
         stream_id, \
         title, \
+        null as highlighted_title, \
         vtuber_id, \
         thumbnail_url, \
         schedule_time, \
@@ -226,6 +279,7 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
        SELECT platform_id, \
               stream_id, \
               title, \
+              null as highlighted_title, \
               vtuber_id, \
               thumbnail_url, \
               schedule_time, \
