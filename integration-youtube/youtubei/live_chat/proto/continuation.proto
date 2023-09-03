@@ -27,43 +27,43 @@
 // }
 // 4: 1
 
-syntax = "proto3";
+syntax = "proto2";
 
 package continuation;
 
 message A {
-    int32 f1 = 1;
+    required int32 f1 = 1;
 }
 
 message B {
-    string video = 3;
-    int32 f6 = 6;
-    A a = 16;
+    required string video = 3;
+    required int32 f6 = 6;
+    required A a = 16;
 }
 
 message Continuation {
-    B b = 119693434;
+    required B b = 119693434;
 }
 
 message C {
-    string channel_id = 1;
-    string video_id = 2;
+    required string channel_id = 1;
+    required string video_id = 2;
 }
 
 message D {
-    C c = 5;
+    required C c = 5;
 }
 
 message E {
-    string video_id = 1;
+    required string video_id = 1;
 }
 
 message F {
-    E e = 48687757;
+    required E e = 48687757;
 }
 
 message Video {
-    D d = 1;
-    F f = 3;
-    int64 s4 = 4;
+    required D d = 1;
+    required F f = 3;
+    required int64 s4 = 4;
 }

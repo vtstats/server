@@ -12,17 +12,17 @@
 //  8: 1                <- f8
 // }
 
-syntax = "proto3";
+syntax = "proto2";
 
 package continuation;
 
 message Continuation {
-    A a = 112707711;
+    required A a = 112707711;
 }
 
 message A {
-    string  video       = 3;
-    int64   timestamp   = 4;
-    int32   f7          = 7;
-    int32   f8          = 8;
+    required string  video       = 3;
+    required int64   timestamp   = 4;
+    required int32   f7          = 7;
+    required int32   f8          = 8;
 }

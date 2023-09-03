@@ -29,53 +29,53 @@
 // 4: 1
 // 6: 0
 
-syntax = "proto3";
+syntax = "proto2";
 
 package replay_continuation;
 
 message Continuation {
-    ContinuationA f156074452 = 156074452;
+    required ContinuationA f156074452 = 156074452;
 }
 
 message ContinuationA {
-    string f3 = 3;
-    int32 f8 = 8;
-    ContinuationB f10 = 10;
-    ContinuationC f14 = 14;
+    required string f3 = 3;
+    required int32 f8 = 8;
+    required ContinuationB f10 = 10;
+    required ContinuationC f14 = 14;
 }
 
 message ContinuationB {
-    int32 f4 = 4;
-    int32 f22 = 22;
-    int32 f31 = 31;
+    required int32 f4 = 4;
+    required int32 f22 = 22;
+    required int32 f31 = 31;
 }
 
 message ContinuationC {
-    int32 f1 = 1;
-    int32 f3 = 3;
-    int32 f4 = 4;
+    required int32 f1 = 1;
+    required int32 f3 = 3;
+    required int32 f4 = 4;
 }
 
 message Video {
-    VideoA f1 = 1;
-    VideoC f3 = 3;
-    int32 f4 = 4;
-    int32 f6 = 6;
+    required VideoA f1 = 1;
+    required VideoC f3 = 3;
+    required int32 f4 = 4;
+    required int32 f6 = 6;
 }
 
 message VideoA {
-    VideoB f5 = 5;
+    required VideoB f5 = 5;
 }
 
 message VideoB {
-    string f1 = 1;
-    string f2 = 2;
+    required string f1 = 1;
+    required string f2 = 2;
 }
 
 message VideoC {
-    VideoD f48687757 = 48687757;
+    required VideoD f48687757 = 48687757;
 }
 
 message VideoD {
-    string f1 = 1;
+    required string f1 = 1;
 }

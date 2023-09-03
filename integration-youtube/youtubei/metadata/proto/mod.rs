@@ -6,12 +6,12 @@ pub fn get_continuation(video_id: &str, timestamp: i64) -> Result<String> {
     let mut out = Vec::new();
 
     Continuation {
-        a: Some(A {
+        a: A {
             video: video_id.into(),
             timestamp,
             f7: 1,
             f8: 1,
-        }),
+        },
     }
     .write_message(&mut Writer::new(&mut out))?;
 

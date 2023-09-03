@@ -10,13 +10,14 @@
 
 
 use std::borrow::Cow;
-use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
+use quick_protobuf::{MessageInfo, MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Continuation<'a> {
-    pub a: Option<continuation::A<'a>>,
+    pub a: continuation::A<'a>,
 }
 
 impl<'a> MessageRead<'a> for Continuation<'a> {
@@ -24,7 +25,7 @@ impl<'a> MessageRead<'a> for Continuation<'a> {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(901661690) => msg.a = Some(r.read_message::<continuation::A>(bytes)?),
+                Ok(901661690) => msg.a = r.read_message::<continuation::A>(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -36,15 +37,16 @@ impl<'a> MessageRead<'a> for Continuation<'a> {
 impl<'a> MessageWrite for Continuation<'a> {
     fn get_size(&self) -> usize {
         0
-        + self.a.as_ref().map_or(0, |m| 5 + sizeof_len((m).get_size()))
+        + 5 + sizeof_len((&self.a).get_size())
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        if let Some(ref s) = self.a { w.write_with_tag(901661690, |w| w.write_message(s))?; }
+        w.write_with_tag(901661690, |w| w.write_message(&self.a))?;
         Ok(())
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct A<'a> {
     pub video: Cow<'a, str>,
@@ -73,17 +75,17 @@ impl<'a> MessageRead<'a> for A<'a> {
 impl<'a> MessageWrite for A<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.video == "" { 0 } else { 1 + sizeof_len((&self.video).len()) }
-        + if self.timestamp == 0i64 { 0 } else { 1 + sizeof_varint(*(&self.timestamp) as u64) }
-        + if self.f7 == 0i32 { 0 } else { 1 + sizeof_varint(*(&self.f7) as u64) }
-        + if self.f8 == 0i32 { 0 } else { 1 + sizeof_varint(*(&self.f8) as u64) }
+        + 1 + sizeof_len((&self.video).len())
+        + 1 + sizeof_varint(*(&self.timestamp) as u64)
+        + 1 + sizeof_varint(*(&self.f7) as u64)
+        + 1 + sizeof_varint(*(&self.f8) as u64)
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.video != "" { w.write_with_tag(26, |w| w.write_string(&**&self.video))?; }
-        if self.timestamp != 0i64 { w.write_with_tag(32, |w| w.write_int64(*&self.timestamp))?; }
-        if self.f7 != 0i32 { w.write_with_tag(56, |w| w.write_int32(*&self.f7))?; }
-        if self.f8 != 0i32 { w.write_with_tag(64, |w| w.write_int32(*&self.f8))?; }
+        w.write_with_tag(26, |w| w.write_string(&**&self.video))?;
+        w.write_with_tag(32, |w| w.write_int64(*&self.timestamp))?;
+        w.write_with_tag(56, |w| w.write_int32(*&self.f7))?;
+        w.write_with_tag(64, |w| w.write_int32(*&self.f8))?;
         Ok(())
     }
 }

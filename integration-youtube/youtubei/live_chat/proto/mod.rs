@@ -1,7 +1,7 @@
 mod continuation;
 mod replay_continuation;
 
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::{engine::general_purpose::URL_SAFE, Engine};
 use quick_protobuf::{MessageWrite, Result, Writer};
 
 pub fn get_continuation(channel_id: &str, stream_id: &str) -> Result<String> {
@@ -10,35 +10,35 @@ pub fn get_continuation(channel_id: &str, stream_id: &str) -> Result<String> {
     let mut out = Vec::new();
 
     Continuation {
-        b: Some(B {
+        b: B {
             video: {
                 let mut out = Vec::new();
 
                 Video {
-                    d: Some(D {
-                        c: Some(C {
+                    d: D {
+                        c: C {
                             channel_id: channel_id.into(),
                             video_id: stream_id.into(),
-                        }),
-                    }),
-                    f: Some(F {
-                        e: Some(E {
+                        },
+                    },
+                    f: F {
+                        e: E {
                             video_id: stream_id.into(),
-                        }),
-                    }),
+                        },
+                    },
                     s4: 1,
                 }
                 .write_message(&mut Writer::new(&mut out))?;
 
-                STANDARD.encode(&out).into()
+                URL_SAFE.encode(&out).into()
             },
             f6: 1,
-            a: Some(A { f1: 1 }),
-        }),
+            a: A { f1: 1 },
+        },
     }
     .write_message(&mut Writer::new(&mut out))?;
 
-    Ok(STANDARD.encode(&out))
+    Ok(URL_SAFE.encode(&out))
 }
 
 pub fn get_replay_continuation(channel_id: &str, stream_id: &str) -> Result<String> {
@@ -50,45 +50,45 @@ pub fn get_replay_continuation(channel_id: &str, stream_id: &str) -> Result<Stri
     let mut out = Vec::new();
 
     Continuation {
-        f156074452: Some(ContinuationA {
+        f156074452: ContinuationA {
             f3: {
                 let mut out = Vec::new();
 
                 Video {
-                    f1: Some(VideoA {
-                        f5: Some(VideoB {
+                    f1: VideoA {
+                        f5: VideoB {
                             f1: channel_id.into(),
                             f2: stream_id.into(),
-                        }),
-                    }),
-                    f3: Some(VideoC {
-                        f48687757: Some(VideoD {
+                        },
+                    },
+                    f3: VideoC {
+                        f48687757: VideoD {
                             f1: stream_id.into(),
-                        }),
-                    }),
+                        },
+                    },
                     f4: 1,
                     f6: 0,
                 }
                 .write_message(&mut Writer::new(&mut out))?;
 
-                STANDARD.encode(&out).into()
+                URL_SAFE.encode(&out).into()
             },
             f8: 1,
-            f10: Some(ContinuationB {
+            f10: ContinuationB {
                 f4: 0,
                 f22: 0,
                 f31: 0,
-            }),
-            f14: Some(ContinuationC {
+            },
+            f14: ContinuationC {
                 f1: 1,
                 f3: 1,
                 f4: 0,
-            }),
-        }),
+            },
+        },
     }
     .write_message(&mut Writer::new(&mut out))?;
 
-    Ok(STANDARD.encode(&out))
+    Ok(URL_SAFE.encode(&out))
 }
 
 #[test]
@@ -98,6 +98,14 @@ fn test() {
         get_continuation(
             "UCqm3BQLlJfvkTsX_hvm0UmA",
             "qNeJhJVDOS8",
+        ).unwrap()
+    );
+
+    assert_eq!(
+        "op2w0wRyGlxDaWtxSndvWVZVTnJTV2x0VjFvNVowSktVbUZ0UzBZd2NtMVFWVGgzRWd0aFRVcGxRakIzYUVVNU5Cb1Q2cWpkdVFFTkNndGhUVXBsUWpCM2FFVTVOQ0FCTUFBPUABUgggALABAPgBAHIGCAEYASAA",
+        get_replay_continuation(
+            "UCkIimWZ9gBJRamKF0rmPU8w",
+            "aMJeB0whE94",
         ).unwrap()
     );
 }
