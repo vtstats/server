@@ -1,5 +1,5 @@
 use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
-use reqwest::{Client, StatusCode};
+use reqwest::{Client, ClientBuilder, StatusCode};
 use serde::Deserialize;
 use warp::{reply::Response, Rejection, Reply};
 
@@ -36,7 +36,13 @@ pub async fn create_vtuber(
     pool: PgPool,
     payload: CreateVTuberPayload,
 ) -> Result<Response, Rejection> {
-    let client = Client::new();
+    let client = ClientBuilder::new()
+        .http1_only()
+        .brotli(true)
+        .deflate(true)
+        .gzip(true)
+        .build()
+        .map_err(|err| WarpError(err.into()))?;
 
     let mut channel = youtubei::browse_channel(&payload.youtube_channel_id, &client)
         .await

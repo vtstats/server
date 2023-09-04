@@ -2,7 +2,7 @@ use std::{env, sync::Arc};
 
 use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
-use reqwest::{header::HeaderValue, Client};
+use reqwest::{header::HeaderValue, Client, ClientBuilder};
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use warp::{Filter, Rejection};
@@ -38,7 +38,13 @@ impl GoogleCerts {
         Arc::new(Mutex::new(GoogleCerts {
             keys: vec![],
             expire: Utc::now(),
-            client: Client::new(),
+            client: ClientBuilder::new()
+                .http1_only()
+                .brotli(true)
+                .deflate(true)
+                .gzip(true)
+                .build()
+                .expect("create http client"),
         }))
     }
 

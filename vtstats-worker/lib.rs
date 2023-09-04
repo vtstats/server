@@ -43,6 +43,7 @@ async fn execute(shutdown_complete_tx: Sender<()>) -> anyhow::Result<()> {
     listener.listen("vt_new_job_queued").await?;
 
     let client = ClientBuilder::new()
+        .http1_only()
         .brotli(true)
         .deflate(true)
         .gzip(true)

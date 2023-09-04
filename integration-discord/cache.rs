@@ -5,7 +5,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use vtstats_utils::send_request;
 
-use reqwest::{Client, Result};
+use reqwest::{Client, ClientBuilder, Result};
 
 pub struct DiscordApiCache {
     client: Client,
@@ -45,7 +45,13 @@ pub struct Guild {
 impl DiscordApiCache {
     pub fn new() -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(DiscordApiCache {
-            client: Client::new(),
+            client: ClientBuilder::new()
+                .http1_only()
+                .brotli(true)
+                .deflate(true)
+                .gzip(true)
+                .build()
+                .expect("create http client"),
             guild_roles: HashMap::with_capacity(10),
             guilds: HashMap::with_capacity(10),
         }))
