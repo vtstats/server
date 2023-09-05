@@ -29,14 +29,29 @@ impl Response {
 
     pub fn to_stream(&self) -> Option<Stream> {
         let format = self.microformat.clone()?.player_microformat_renderer;
+        let status = if format.live_broadcast_details.end_timestamp.is_some() {
+            StreamStatus::Ended
+        } else if format.live_broadcast_details.is_live_now {
+            StreamStatus::Live
+        } else {
+            StreamStatus::Scheduled
+        };
         Some(Stream {
             title: format.title.simple_text,
             platform_id: self.video_details.video_id.clone(),
-            status: StreamStatus::Ended,
-            start_time: Some(format.live_broadcast_details.start_timestamp),
-            end_time: Some(format.live_broadcast_details.end_timestamp),
+            start_time: if status != StreamStatus::Scheduled {
+                format.live_broadcast_details.start_timestamp
+            } else {
+                None
+            },
+            schedule_time: if status == StreamStatus::Scheduled {
+                format.live_broadcast_details.start_timestamp
+            } else {
+                None
+            },
+            end_time: format.live_broadcast_details.end_timestamp,
+            status,
             highlighted_title: None,
-            schedule_time: None,
             like_max: None,
             updated_at: Utc::now(),
             stream_id: 0,
@@ -95,8 +110,11 @@ pub struct Title {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LiveBroadcastDetails {
-    pub start_timestamp: DateTime<Utc>,
-    pub end_timestamp: DateTime<Utc>,
+    pub is_live_now: bool,
+    #[serde(default)]
+    pub start_timestamp: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub end_timestamp: Option<DateTime<Utc>>,
 }
 
 #[test]
@@ -113,5 +131,24 @@ fn test() {
         Some("https://i.ytimg.com/vi/g2wDT7eMY-4/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAUOIU-UTxNZSxWeKHgWgURJlYoWA")
     );
 
-    serde_json::from_str::<Response>(include_str!("./testdata/player.2.json")).unwrap();
+    let res = serde_json::from_str::<Response>(include_str!("./testdata/player.2.json")).unwrap();
+    let stream = res.to_stream().unwrap();
+    assert_eq!(stream.status, StreamStatus::Ended);
+    assert!(
+        stream.schedule_time.is_none() && stream.start_time.is_some() && stream.end_time.is_some()
+    );
+
+    let res = serde_json::from_str::<Response>(include_str!("./testdata/player.3.json")).unwrap();
+    let stream = res.to_stream().unwrap();
+    assert_eq!(stream.status, StreamStatus::Scheduled);
+    assert!(
+        stream.schedule_time.is_some() && stream.start_time.is_none() && stream.end_time.is_none()
+    );
+
+    let res = serde_json::from_str::<Response>(include_str!("./testdata/player.4.json")).unwrap();
+    let stream = res.to_stream().unwrap();
+    assert_eq!(stream.status, StreamStatus::Live);
+    assert!(
+        stream.schedule_time.is_none() && stream.start_time.is_some() && stream.end_time.is_none()
+    );
 }

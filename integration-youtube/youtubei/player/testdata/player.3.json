@@ -1,0 +1,75 @@
+{
+  "videoDetails": {
+    "videoId": "DkdOJBF8V6E",
+    "title": "【】ダンジョンに出会いを求めるのは間違っているのだろうか～バトルクロニクル～ プレイしてみるしゅば！！！！！！【ホロライブ/大空スバル】",
+    "lengthSeconds": "0",
+    "keywords": [],
+    "channelId": "UCvzGlP9oQwU--Y0r9id_jnA",
+    "isOwnerViewing": false,
+    "thumbnail": {
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/DkdOJBF8V6E/hqdefault_live.jpg?sqp=CIT82qcG-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLBTq18dLdf9fOp4Yr9yXABIM_IDEQ",
+          "width": 168,
+          "height": 94
+        },
+        {
+          "url": "https://i.ytimg.com/vi/DkdOJBF8V6E/hqdefault_live.jpg?sqp=CIT82qcG-oaymwEbCMQBEG5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLA4UlfyqeEsJQdclpJjv0iXWLVNyQ",
+          "width": 196,
+          "height": 110
+        },
+        {
+          "url": "https://i.ytimg.com/vi/DkdOJBF8V6E/hqdefault_live.jpg?sqp=CIT82qcG-oaymwEcCPYBEIoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDohq3oHoaeUrwhWjBEYltGVF-mow",
+          "width": 246,
+          "height": 138
+        },
+        {
+          "url": "https://i.ytimg.com/vi/DkdOJBF8V6E/hqdefault_live.jpg?sqp=CIT82qcG-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB7J4T4CT9_vYCd3y354lGWt9KN1A",
+          "width": 336,
+          "height": 188
+        },
+        {
+          "url": "https://i.ytimg.com/vi/DkdOJBF8V6E/maxresdefault_live.jpg",
+          "width": 1920,
+          "height": 1080
+        }
+      ]
+    },
+    "isUpcoming": true,
+    "allowRatings": true,
+    "viewCount": "0",
+    "author": "Subaru Ch. 大空スバル",
+    "isLowLatencyLiveStream": false,
+    "isPrivate": false,
+    "isUnpluggedCorpus": false,
+    "latencyClass": "MDE_STREAM_OPTIMIZATIONS_RENDERER_LATENCY_NORMAL",
+    "isLiveContent": true
+  },
+  "microformat": {
+    "playerMicroformatRenderer": {
+      "thumbnail": {
+        "thumbnails": [
+          {
+            "url": "https://i.ytimg.com/vi/DkdOJBF8V6E/maxresdefault_live.jpg",
+            "width": 1280,
+            "height": 720
+          }
+        ]
+      },
+      "title": {
+        "simpleText": "【】ダンジョンに出会いを求めるのは間違っているのだろうか～バトルクロニクル～ プレイしてみるしゅば！！！！！！【ホロライブ/大空スバル】"
+      },
+      "isUnlisted": false,
+      "hasYpcMetadata": false,
+      "viewCount": "0",
+      "category": "Gaming",
+      "publishDate": "2023-09-04",
+      "ownerChannelName": "Subaru Ch. 大空スバル",
+      "liveBroadcastDetails": {
+        "isLiveNow": false,
+        "startTimestamp": "2023-09-05T10:00:00+00:00"
+      },
+      "uploadDate": "2023-09-04"
+    }
+  }
+}
