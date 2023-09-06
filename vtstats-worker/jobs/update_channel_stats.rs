@@ -237,20 +237,29 @@ async fn bilibili_channels_stats(
     let mut subscribe_stats = Vec::with_capacity(channels.len());
 
     for channel in channels {
-        let (subscribers, views) = try_join!(
+        match try_join!(
             integration_bilibili::channels::channel_subscribers(&channel.platform_id, client),
             integration_bilibili::channels::channel_views(&channel.platform_id, client),
-        )?;
+        ) {
+            Ok((subscribers, views)) => {
+                view_stats.push(AddChannelViewStatsRow {
+                    channel_id: channel.channel_id,
+                    value: views,
+                });
 
-        view_stats.push(AddChannelViewStatsRow {
-            channel_id: channel.channel_id,
-            value: views,
-        });
-
-        subscribe_stats.push(AddChannelSubscriberStatsRow {
-            channel_id: channel.channel_id,
-            value: subscribers,
-        });
+                subscribe_stats.push(AddChannelSubscriberStatsRow {
+                    channel_id: channel.channel_id,
+                    value: subscribers,
+                });
+            }
+            Err(err) => {
+                tracing::warn!(
+                    "Failed to get channel stats vtuber_id={} platform=bilibili platform_id={}: {err}",
+                    channel.vtuber_id,
+                    channel.platform_id
+                );
+            }
+        }
     }
 
     Ok((view_stats, subscribe_stats))
