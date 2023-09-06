@@ -3,6 +3,7 @@ mod request;
 pub mod response;
 
 use anyhow::Result;
+use chrono::Duration;
 use reqwest::{Client, Url};
 use std::env;
 use vtstats_utils::send_request;
@@ -12,6 +13,8 @@ use request::Request;
 use response::*;
 
 pub use response::{LiveChatMessage, MemberMessageType, PaidMessageType};
+
+use self::request::CurrentPlayerState;
 
 use super::context::Context;
 
@@ -23,6 +26,7 @@ pub async fn youtube_live_chat(
     send_live_chat_request(
         "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat",
         get_continuation(channel_id, stream_id)?,
+        None,
         client,
     )
     .await
@@ -35,6 +39,7 @@ pub async fn youtube_live_chat_with_continuation(
     send_live_chat_request(
         "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat",
         continuation,
+        None,
         client,
     )
     .await
@@ -43,11 +48,13 @@ pub async fn youtube_live_chat_with_continuation(
 pub async fn replay_live_chat(
     channel_id: &str,
     stream_id: &str,
+    offset: Option<Duration>,
     client: &Client,
 ) -> Result<(Vec<LiveChatMessage>, Option<Continuation>)> {
     send_live_chat_request(
         "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat_replay",
         get_replay_continuation(channel_id, stream_id)?,
+        offset,
         client,
     )
     .await
@@ -60,6 +67,7 @@ pub async fn replay_live_chat_with_continuation(
     send_live_chat_request(
         "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat_replay",
         continuation,
+        None,
         client,
     )
     .await
@@ -68,6 +76,7 @@ pub async fn replay_live_chat_with_continuation(
 async fn send_live_chat_request(
     url: &str,
     continuation: String,
+    offset: Option<Duration>,
     client: &Client,
 ) -> Result<(Vec<LiveChatMessage>, Option<Continuation>)> {
     let url = Url::parse_with_params(
@@ -81,6 +90,9 @@ async fn send_live_chat_request(
     let req = client.post(url).json(&Request {
         context: Context::new()?,
         continuation: &continuation,
+        current_player_state: offset.map(|s| CurrentPlayerState {
+            player_offset_ms: s.num_milliseconds().to_string(),
+        }),
     });
 
     let res = send_request!(req)?;

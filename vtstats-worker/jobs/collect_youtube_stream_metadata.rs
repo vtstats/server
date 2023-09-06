@@ -304,7 +304,7 @@ pub async fn collect_donation_and_chat(
     Ok(())
 }
 
-fn parse_timestamp(string: &str) -> Option<DateTime<Utc>> {
+pub fn parse_timestamp(string: &str) -> Option<DateTime<Utc>> {
     if string.len() <= 6 {
         return None;
     }

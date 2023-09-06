@@ -31,7 +31,7 @@ pub struct Stream {
     pub status: StreamStatus,
 }
 
-#[derive(Debug, sqlx::Type, Serialize, PartialEq, Eq)]
+#[derive(Debug, sqlx::Type, Serialize, PartialEq, Eq, Clone, Copy)]
 #[sqlx(type_name = "stream_status", rename_all = "lowercase")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[derive(Default)]

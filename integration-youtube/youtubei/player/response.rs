@@ -5,29 +5,34 @@ use vtstats_database::streams::{Stream, StreamStatus};
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub video_details: VideoDetails,
+    pub video_details: Option<VideoDetails>,
     #[serde(default)]
     pub microformat: Option<Microformat>,
 }
 
 impl Response {
     pub fn get_thumbnail_url(&self) -> Option<&str> {
-        self.video_details
-            .thumbnail
-            .thumbnails
-            .iter()
-            .max_by_key(|t| {
-                // prefer webp format
-                if t.url.contains("vi_webp") {
-                    t.width + 1
-                } else {
-                    t.width
-                }
-            })
-            .map(|t| t.url.as_str())
+        Some(
+            self.video_details
+                .as_ref()?
+                .thumbnail
+                .thumbnails
+                .iter()
+                .max_by_key(|t| {
+                    // prefer webp format
+                    if t.url.contains("vi_webp") {
+                        t.width + 1
+                    } else {
+                        t.width
+                    }
+                })?
+                .url
+                .as_str(),
+        )
     }
 
     pub fn to_stream(&self) -> Option<Stream> {
+        let video_id = &self.video_details.as_ref()?.video_id;
         let format = self.microformat.clone()?.player_microformat_renderer;
         let status = if format.live_broadcast_details.end_timestamp.is_some() {
             StreamStatus::Ended
@@ -38,7 +43,7 @@ impl Response {
         };
         Some(Stream {
             title: format.title.simple_text,
-            platform_id: self.video_details.video_id.clone(),
+            platform_id: video_id.clone(),
             start_time: if status != StreamStatus::Scheduled {
                 format.live_broadcast_details.start_timestamp
             } else {
@@ -96,8 +101,6 @@ pub struct Microformat {
 #[serde(rename_all = "camelCase")]
 pub struct PlayerMicroformatRenderer {
     pub title: Title,
-    pub view_count: String,
-    pub owner_channel_name: String,
     pub live_broadcast_details: LiveBroadcastDetails,
 }
 
