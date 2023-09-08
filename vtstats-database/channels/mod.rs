@@ -9,7 +9,7 @@ pub use update_channel_stats::*;
 use serde::{Deserialize, Serialize};
 use sqlx::{types::Json, types::JsonValue};
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Channel {
     pub channel_id: i32,
@@ -37,10 +37,11 @@ pub struct ChannelWithStats {
     pub revenue_30d_ago: Json<JsonValue>,
 }
 
-#[derive(sqlx::Type, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[derive(sqlx::Type, Serialize, Debug, Deserialize, Clone, Copy, PartialEq, Default)]
 #[sqlx(type_name = "platform", rename_all = "snake_case")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Platform {
+    #[default]
     Youtube,
     Bilibili,
     Twitch,

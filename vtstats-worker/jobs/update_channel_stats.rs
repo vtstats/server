@@ -1,4 +1,5 @@
 use chrono::{DateTime, Duration, DurationRound, Utc};
+use futures::TryFutureExt;
 use reqwest::Client;
 use tokio::try_join;
 use vtstats_database::{
@@ -8,8 +9,8 @@ use vtstats_database::{
         AddChannelViewStatsQuery, AddChannelViewStatsRow, ChannelRevenueStatsRow,
     },
     channels::{
-        list_bilibili_channels, list_youtube_channels, update_channel_stats, Channel,
-        ChannelStatsSummary,
+        list_bilibili_channels, list_twitch_channels, list_youtube_channels, update_channel_stats,
+        Channel, ChannelStatsSummary,
     },
     stream_events::list_revenue_by_channel_start_at,
     PgPool,
@@ -23,6 +24,7 @@ pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult
 
     let youtube_channels = list_youtube_channels(pool).await?;
     let bilibili_channels = list_bilibili_channels(pool).await?;
+    let twitch_channels = list_twitch_channels(pool).await?;
 
     let (mut youtube_view_stats, mut youtube_subscriber_stats) =
         youtube_channels_stats(&youtube_channels, client)
@@ -48,9 +50,17 @@ pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult
                 (vec![], vec![])
             });
 
+    let mut twitch_subscriber_stats = twitch_channels_stats(&twitch_channels, client)
+        .await
+        .unwrap_or_else(|err| {
+            tracing::error!(exception.stacktrace = ?err, message= %err);
+            vec![]
+        });
+
     let view_stats = &mut youtube_view_stats;
     view_stats.append(&mut bilibili_view_stats);
     let subscriber_stats = &mut youtube_subscriber_stats;
+    subscriber_stats.append(&mut twitch_subscriber_stats);
     subscriber_stats.append(&mut bilibili_subscriber_stats);
     let revenue_stats = &mut youtube_revenue_stats;
 
@@ -109,6 +119,7 @@ pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult
     let rows = youtube_channels
         .into_iter()
         .chain(bilibili_channels.into_iter())
+        .chain(twitch_channels.into_iter())
         .map(|c| ChannelStatsSummary {
             channel_id: c.channel_id,
             view: find_map!(view_stats, c.channel_id),
@@ -263,4 +274,34 @@ async fn bilibili_channels_stats(
     }
 
     Ok((view_stats, subscribe_stats))
+}
+
+async fn twitch_channels_stats(
+    channels: &[Channel],
+    client: &Client,
+) -> anyhow::Result<Vec<AddChannelSubscriberStatsRow>> {
+    let mut subscribe_stats = Vec::with_capacity(channels.len());
+
+    for channel in channels {
+        match integration_twitch::gql::channel_panels(&channel.platform_id, client)
+            .and_then(|res| integration_twitch::gql::channel_avatar(res.data.user.login, client))
+            .await
+        {
+            Ok(res) => {
+                subscribe_stats.push(AddChannelSubscriberStatsRow {
+                    channel_id: channel.channel_id,
+                    value: res.data.user.followers.total_count,
+                });
+            }
+            Err(err) => {
+                tracing::warn!(
+                    "Failed to get channel stats vtuber_id={} platform=twitch platform_id={}: {err}",
+                    channel.vtuber_id,
+                    channel.platform_id
+                );
+            }
+        }
+    }
+
+    Ok(subscribe_stats)
 }

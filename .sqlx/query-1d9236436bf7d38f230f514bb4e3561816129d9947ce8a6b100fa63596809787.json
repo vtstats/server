@@ -28,7 +28,8 @@
                 "collect_youtube_stream_live_chat",
                 "update_upcoming_stream",
                 "install_discord_commands",
-                "send_notification"
+                "send_notification",
+                "collect_twitch_stream_metadata"
               ]
             }
           }

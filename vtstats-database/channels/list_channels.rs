@@ -30,6 +30,19 @@ pub async fn list_bilibili_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     crate::otel::execute_query!("SELECT", "channels", query)
 }
 
+/// list all twitch channels but excluding retired
+pub async fn list_twitch_channels(pool: &PgPool) -> Result<Vec<Channel>> {
+    let query = sqlx::query_as!(
+        Channel,
+        "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" \
+        FROM channels WHERE platform = 'twitch' AND vtuber_id IN \
+        (SELECT vtuber_id FROM vtubers WHERE retired_at IS NULL OR retired_at + '2 week' >= NOW())"
+    )
+    .fetch_all(pool);
+
+    crate::otel::execute_query!("SELECT", "channels", query)
+}
+
 pub async fn list_channels(pool: &PgPool) -> Result<Vec<Channel>> {
     let query = sqlx::query_as!(
         Channel,

@@ -14,6 +14,7 @@ mod api_admin;
 mod api_discord;
 mod api_pubsub;
 mod api_sitemap;
+mod api_twitch;
 mod api_v4;
 // mod api_telegram;
 
@@ -28,7 +29,8 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
             .or(api_v4::routes(pool.clone()))
             .or(api_discord::routes(pool.clone()))
             .or(api_admin::routes(pool.clone()))
-            .or(api_pubsub::routes(pool)),
+            .or(api_pubsub::routes(pool.clone()))
+            .or(api_twitch::routes(pool)),
     );
 
     let filter = routes

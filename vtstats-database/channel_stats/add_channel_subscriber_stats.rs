@@ -6,6 +6,7 @@ pub struct AddChannelSubscriberStatsQuery<'q> {
     pub rows: &'q [AddChannelSubscriberStatsRow],
 }
 
+#[derive(Debug)]
 pub struct AddChannelSubscriberStatsRow {
     pub channel_id: i32,
     pub value: i32,

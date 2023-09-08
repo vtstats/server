@@ -1,3 +1,4 @@
+pub mod collect_twitch_stream;
 pub mod collect_youtube_stream_metadata;
 pub mod health_check;
 pub mod install_discord_command;
@@ -32,18 +33,7 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
     let job_id = job.job_id;
     let payload = job.payload;
     let continuation = job.continuation;
-
-    let job_type = match &payload {
-        HealthCheck => "health_check",
-        RefreshYoutubeRss => "refresh_youtube_rss",
-        SubscribeYoutubePubsub => "subscribe_youtube_pubsub",
-        UpdateChannelStats => "update_channel_stats",
-        UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
-        UpsertYoutubeStream(_) => "upsert_youtube_stream",
-        CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
-        SendNotification(_) => "send_notification",
-        InstallDiscordCommands => "install_discord_commands",
-    };
+    let job_type = payload.kind_str();
 
     let span = match &payload {
         HealthCheck => tracing::trace_span!("Ignored"),
@@ -70,6 +60,9 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             }
             CollectYoutubeStreamMetadata(payload) => {
                 collect_youtube_stream_metadata::execute(&pool, client, continuation, payload).await
+            }
+            CollectTwitchStreamMetadata(payload) => {
+                collect_twitch_stream::execute(&pool, client, payload).await
             }
             SendNotification(payload) => send_notification::execute(&pool, client, payload).await,
             InstallDiscordCommands => install_discord_command::execute(&client).await,

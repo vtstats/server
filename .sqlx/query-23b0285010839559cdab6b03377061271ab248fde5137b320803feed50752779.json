@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nINSERT INTO streams AS t (\n                platform,\n                platform_id,\n                channel_id,\n                title,\n                status,\n                thumbnail_url,\n                schedule_time,\n                start_time,\n                end_time,\n                vtuber_id\n            )\n     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)\nON CONFLICT (platform, platform_id) DO UPDATE\n        SET title          = COALESCE($4, t.title),\n            status         = COALESCE($5, t.status),\n            thumbnail_url  = COALESCE($6, t.thumbnail_url),\n            schedule_time  = COALESCE($7, t.schedule_time),\n            start_time     = COALESCE($8, t.start_time),\n            end_time       = COALESCE($9, t.end_time)\n  RETURNING stream_id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stream_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        },
+        "Text",
+        "Int4",
+        "Text",
+        {
+          "Custom": {
+            "name": "stream_status",
+            "kind": {
+              "Enum": [
+                "scheduled",
+                "live",
+                "ended"
+              ]
+            }
+          }
+        },
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "23b0285010839559cdab6b03377061271ab248fde5137b320803feed50752779"
+}

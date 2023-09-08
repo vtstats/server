@@ -12,18 +12,6 @@ pub struct PushJobQuery {
 
 impl PushJobQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<i32> {
-        let kind = match self.payload {
-            JobPayload::HealthCheck => JobKind::HealthCheck,
-            JobPayload::RefreshYoutubeRss => JobKind::RefreshYoutubeRss,
-            JobPayload::SubscribeYoutubePubsub => JobKind::SubscribeYoutubePubsub,
-            JobPayload::UpdateChannelStats => JobKind::UpdateChannelStats,
-            JobPayload::UpdateCurrencyExchangeRate => JobKind::UpdateCurrencyExchangeRate,
-            JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
-            JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
-            JobPayload::SendNotification(_) => JobKind::SendNotification,
-            JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,
-        };
-
         let query = sqlx::query!(
             r#"
 INSERT INTO jobs (kind, payload, status, next_run, continuation)
@@ -35,10 +23,10 @@ ON CONFLICT (kind, payload) DO UPDATE
             updated_at   = NOW()
   RETURNING job_id
             "#,
-            kind as _,               // $1
-            Json(self.payload) as _, // $2
-            self.next_run,           // $3
-            self.continuation,       // $4
+            self.payload.kind() as _, // $1
+            Json(self.payload) as _,  // $2
+            self.next_run,            // $3
+            self.continuation,        // $4
         )
         .fetch_one(pool);
 
@@ -94,6 +82,28 @@ pub async fn queue_collect_youtube_stream_metadata(
             stream_id,
             platform_stream_id,
             platform_channel_id,
+        }),
+    }
+    .execute(pool)
+    .await
+}
+
+pub async fn queue_collect_twitch_stream_metadata(
+    time: DateTime<Utc>,
+    stream_id: i32,
+    platform_stream_id: String,
+    platform_channel_id: String,
+    platform_channel_login: String,
+    pool: &PgPool,
+) -> Result<i32> {
+    PushJobQuery {
+        continuation: None,
+        next_run: Some(time),
+        payload: JobPayload::CollectTwitchStreamMetadata(CollectTwitchStreamMetadataJobPayload {
+            stream_id,
+            platform_stream_id,
+            platform_channel_id,
+            platform_channel_login,
         }),
     }
     .execute(pool)

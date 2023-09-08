@@ -9,8 +9,8 @@ use integration_youtube::{
     thumbnail::get_thumbnail,
 };
 use vtstats_database::{
-    channels::list_youtube_channels,
-    streams::{ListYouTubeStreamsQuery, UpsertYouTubeStreamQuery},
+    channels::{list_youtube_channels, Platform},
+    streams::{ListYouTubeStreamsQuery, UpsertStreamQuery},
     PgPool,
 };
 
@@ -104,7 +104,8 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
             }
         };
 
-        UpsertYouTubeStreamQuery {
+        UpsertStreamQuery {
+            platform: Platform::Youtube,
             vtuber_id: &channel.vtuber_id,
             platform_stream_id: &stream.id,
             channel_id: channel.channel_id,

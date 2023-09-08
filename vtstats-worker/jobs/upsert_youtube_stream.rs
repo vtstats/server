@@ -7,11 +7,12 @@ use integration_youtube::{
     thumbnail::get_thumbnail,
 };
 use vtstats_database::{
+    channels::Platform,
     jobs::{
         queue_collect_youtube_stream_metadata, queue_send_notification,
         UpsertYoutubeStreamJobPayload,
     },
-    streams::UpsertYouTubeStreamQuery,
+    streams::UpsertStreamQuery,
     PgPool,
 };
 
@@ -53,7 +54,8 @@ pub async fn execute(
         }
     };
 
-    let stream_id = UpsertYouTubeStreamQuery {
+    let stream_id = UpsertStreamQuery {
+        platform: Platform::Youtube,
         vtuber_id: &vtuber_id,
         platform_stream_id: &youtube_stream.id,
         channel_id,

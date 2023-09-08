@@ -1050,6 +1050,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "integration-twitch"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "chrono",
+ "hex",
+ "hmac",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+ "tracing",
+ "twitch_message",
+ "vtstats-database",
+ "vtstats-utils",
+ "warp",
+]
+
+[[package]]
 name = "integration-youtube"
 version = "0.1.0"
 dependencies = [
@@ -2477,6 +2498,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 
 [[package]]
+name = "twitch_message"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ae3a0cc08be3b531530a925c57217836a2f6ef8db4526efeeab11e380e27945"
+
+[[package]]
 name = "typenum"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2612,6 +2639,7 @@ dependencies = [
  "integration-discord",
  "integration-googleauth",
  "integration-s3",
+ "integration-twitch",
  "integration-youtube",
  "metrics",
  "pretty_assertions",
@@ -2637,6 +2665,7 @@ dependencies = [
  "integration-bilibili",
  "integration-discord",
  "integration-s3",
+ "integration-twitch",
  "integration-youtube",
  "metrics",
  "pretty_assertions",

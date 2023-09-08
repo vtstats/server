@@ -27,8 +27,8 @@ impl AddStreamChatStatsQuery {
 
         query_builder.push(
             "ON CONFLICT (stream_id, time) DO UPDATE \
-            SET count = GREATEST(excluded.count, s.count), \
-            from_member_count = GREATEST(excluded.from_member_count, s.from_member_count)",
+            SET count = excluded.count + s.count, \
+            from_member_count = excluded.from_member_count + s.from_member_count",
         );
 
         let query = query_builder.build().execute(pool);
@@ -49,18 +49,18 @@ async fn test(pool: PgPool) -> Result<()> {
         rows: vec![
             AddStreamChatStatsRow {
                 time,
-                count: 40,
-                from_member_count: 20,
+                count: 70,
+                from_member_count: 30,
             },
             AddStreamChatStatsRow {
                 time: time + Duration::seconds(15),
                 count: 40,
-                from_member_count: 0,
+                from_member_count: 20,
             },
             AddStreamChatStatsRow {
                 time: time + Duration::seconds(30),
-                count: 30,
-                from_member_count: 20,
+                count: 35,
+                from_member_count: 15,
             },
         ],
     }
@@ -80,30 +80,25 @@ async fn test(pool: PgPool) -> Result<()> {
             AddStreamChatStatsRow {
                 time: time + Duration::seconds(15),
                 count: 30,
-                from_member_count: 20,
-            },
-            AddStreamChatStatsRow {
-                time: time + Duration::seconds(30),
-                count: 40,
                 from_member_count: 10,
             },
             AddStreamChatStatsRow {
-                time: time + Duration::seconds(45),
-                count: 40,
-                from_member_count: 20,
+                time: time + Duration::seconds(30),
+                count: 35,
+                from_member_count: 15,
             },
         ],
     }
     .execute(&pool)
     .await?;
 
-    assert_eq!(result.rows_affected(), 3);
+    assert_eq!(result.rows_affected(), 2);
     let stats = sqlx::query!("SELECT * FROM stream_chat_stats")
         .fetch_all(&pool)
         .await?;
-    assert_eq!(stats.len(), 4);
-    assert!(stats.iter().all(|s| s.count == 40));
-    assert!(stats.iter().all(|s| s.from_member_count == 20));
+    assert_eq!(stats.len(), 3);
+    assert!(stats.iter().all(|s| s.count == 70));
+    assert!(stats.iter().all(|s| s.from_member_count == 30));
     assert!(stats.iter().all(|s| s.time >= time));
 
     Ok(())

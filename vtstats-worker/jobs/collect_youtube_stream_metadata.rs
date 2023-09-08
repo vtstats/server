@@ -168,7 +168,7 @@ pub async fn collect_donation_and_chat(
         return Ok(());
     }
 
-    let mut donation_rows = Vec::<(DateTime<Utc>, StreamEventValue)>::new();
+    let mut stream_event_rows = Vec::<(DateTime<Utc>, StreamEventValue)>::new();
 
     let mut chat_stats_rows = Vec::<AddStreamChatStatsRow>::new();
 
@@ -233,7 +233,7 @@ pub async fn collect_donation_and_chat(
                     ),
                 };
 
-                donation_rows.push((time, value))
+                stream_event_rows.push((time, value))
             }
 
             LiveChatMessage::Paid {
@@ -283,7 +283,7 @@ pub async fn collect_donation_and_chat(
                     }
                 };
 
-                donation_rows.push((time, value))
+                stream_event_rows.push((time, value))
             }
         }
     }
@@ -297,8 +297,8 @@ pub async fn collect_donation_and_chat(
         .await?;
     }
 
-    if !donation_rows.is_empty() {
-        add_stream_events(stream_id, donation_rows, pool).await?;
+    if !stream_event_rows.is_empty() {
+        add_stream_events(stream_id, stream_event_rows, pool).await?;
     }
 
     Ok(())

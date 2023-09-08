@@ -1,13 +1,15 @@
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Result};
 
+use crate::channels::Platform;
+
 use super::StreamStatus;
 
 /// insert or update a stream row
 #[derive(Default)]
-pub struct UpsertYouTubeStreamQuery<'q> {
+pub struct UpsertStreamQuery<'q> {
     pub vtuber_id: &'q str,
-    // TODO: add platform field
+    pub platform: Platform,
     pub platform_stream_id: &'q str,
     pub channel_id: i32,
     pub title: &'q str,
@@ -19,7 +21,7 @@ pub struct UpsertYouTubeStreamQuery<'q> {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl<'q> UpsertYouTubeStreamQuery<'q> {
+impl<'q> UpsertStreamQuery<'q> {
     pub async fn execute(self, pool: &PgPool) -> Result<i32> {
         let query = sqlx::query!(
             r#"
@@ -35,25 +37,26 @@ INSERT INTO streams AS t (
                 end_time,
                 vtuber_id
             )
-     VALUES ('youtube', $1, $2, $3, $4, $5, $6, $7, $8, $9)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 ON CONFLICT (platform, platform_id) DO UPDATE
-        SET title          = COALESCE($3, t.title),
-            status         = COALESCE($4, t.status),
-            thumbnail_url  = COALESCE($5, t.thumbnail_url),
-            schedule_time  = COALESCE($6, t.schedule_time),
-            start_time     = COALESCE($7, t.start_time),
-            end_time       = COALESCE($8, t.end_time)
+        SET title          = COALESCE($4, t.title),
+            status         = COALESCE($5, t.status),
+            thumbnail_url  = COALESCE($6, t.thumbnail_url),
+            schedule_time  = COALESCE($7, t.schedule_time),
+            start_time     = COALESCE($8, t.start_time),
+            end_time       = COALESCE($9, t.end_time)
   RETURNING stream_id
             "#,
-            self.platform_stream_id, // $1
-            self.channel_id,         // $2
-            self.title,              // $3
-            self.status as _,        // $4
-            self.thumbnail_url,      // $5
-            self.schedule_time,      // $6
-            self.start_time,         // $7
-            self.end_time,           // $8
-            self.vtuber_id,          // $9
+            self.platform as _,      // $1
+            self.platform_stream_id, // $2
+            self.channel_id,         // $3
+            self.title,              // $4
+            self.status as _,        // $5
+            self.thumbnail_url,      // $6
+            self.schedule_time,      // $7
+            self.start_time,         // $8
+            self.end_time,           // $9
+            self.vtuber_id,          // $10
         )
         .fetch_one(pool);
 
@@ -77,7 +80,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        let stream_id = UpsertYouTubeStreamQuery {
+        let stream_id = UpsertStreamQuery {
             vtuber_id: "vtuber1",
             channel_id: 1,
             platform_stream_id: "id1",
@@ -104,7 +107,7 @@ async fn test(pool: PgPool) -> Result<()> {
     }
 
     {
-        let stream_id = UpsertYouTubeStreamQuery {
+        let stream_id = UpsertStreamQuery {
             vtuber_id: "vtuber1",
             channel_id: 1,
             platform_stream_id: "id1",
@@ -139,7 +142,7 @@ async fn test(pool: PgPool) -> Result<()> {
     {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
 
-        let stream_id = UpsertYouTubeStreamQuery {
+        let stream_id = UpsertStreamQuery {
             vtuber_id: "vtuber1",
             channel_id: 1,
             platform_stream_id: "id1",

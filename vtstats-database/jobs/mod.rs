@@ -39,6 +39,7 @@ pub enum JobKind {
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream,
     CollectYoutubeStreamMetadata,
+    CollectTwitchStreamMetadata,
     SendNotification,
     InstallDiscordCommands,
 }
@@ -58,8 +59,16 @@ pub struct CollectYoutubeStreamMetadataJobPayload {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+pub struct CollectTwitchStreamMetadataJobPayload {
+    pub stream_id: i32,
+    pub platform_stream_id: String,
+    pub platform_channel_id: String,
+    pub platform_channel_login: String,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct SendNotificationJobPayload {
-    /// Unique identifier for vtuber, e.g. 'shirakamifubuki'
+    /// Unique identifier for vtuber, e.g. 'shirakami-fubuki'
     pub vtuber_id: String,
     /// Always be 'youtube'
     pub stream_platform: String,
@@ -76,6 +85,7 @@ pub enum JobPayload {
     UpdateCurrencyExchangeRate,
     UpsertYoutubeStream(UpsertYoutubeStreamJobPayload),
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
+    CollectTwitchStreamMetadata(CollectTwitchStreamMetadataJobPayload),
     SendNotification(SendNotificationJobPayload),
     InstallDiscordCommands,
 }
@@ -95,6 +105,38 @@ pub struct Job {
     pub kind: JobKind,
     #[serde(with = "ts_milliseconds")]
     pub updated_at: DateTime<Utc>,
+}
+
+impl JobPayload {
+    pub fn kind(&self) -> JobKind {
+        match self {
+            JobPayload::HealthCheck => JobKind::HealthCheck,
+            JobPayload::RefreshYoutubeRss => JobKind::RefreshYoutubeRss,
+            JobPayload::SubscribeYoutubePubsub => JobKind::SubscribeYoutubePubsub,
+            JobPayload::UpdateChannelStats => JobKind::UpdateChannelStats,
+            JobPayload::UpdateCurrencyExchangeRate => JobKind::UpdateCurrencyExchangeRate,
+            JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
+            JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
+            JobPayload::CollectTwitchStreamMetadata(_) => JobKind::CollectTwitchStreamMetadata,
+            JobPayload::SendNotification(_) => JobKind::SendNotification,
+            JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,
+        }
+    }
+
+    pub fn kind_str(&self) -> &'static str {
+        match self {
+            JobPayload::HealthCheck => "health_check",
+            JobPayload::RefreshYoutubeRss => "refresh_youtube_rss",
+            JobPayload::SubscribeYoutubePubsub => "subscribe_youtube_pubsub",
+            JobPayload::UpdateChannelStats => "update_channel_stats",
+            JobPayload::UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
+            JobPayload::UpsertYoutubeStream(_) => "upsert_youtube_stream",
+            JobPayload::CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
+            JobPayload::CollectTwitchStreamMetadata(_) => "collect_twitch_stream_metadata",
+            JobPayload::SendNotification(_) => "send_notification",
+            JobPayload::InstallDiscordCommands => "install_discord_commands",
+        }
+    }
 }
 
 impl FromRow<'_, PgRow> for Job {
@@ -121,6 +163,9 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::CollectYoutubeStreamMetadata => JobPayload::CollectYoutubeStreamMetadata(
                     row.try_get::<Json<_>, _>("payload")?.0,
                 ),
+                JobKind::CollectTwitchStreamMetadata => {
+                    JobPayload::CollectTwitchStreamMetadata(row.try_get::<Json<_>, _>("payload")?.0)
+                }
                 JobKind::SendNotification => {
                     JobPayload::SendNotification(row.try_get::<Json<_>, _>("payload")?.0)
                 }

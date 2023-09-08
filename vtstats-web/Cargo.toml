@@ -30,6 +30,7 @@ vtstats-database = { path = "../vtstats-database" }
 vtstats-utils = { path = "../vtstats-utils" }
 integration-googleauth = { path = "../integration-googleauth" }
 integration-discord = { path = "../integration-discord" }
+integration-twitch = { path = "../integration-twitch" }
 integration-youtube = { path = "../integration-youtube" }
 integration-s3 = { path = "../integration-s3" }
 
