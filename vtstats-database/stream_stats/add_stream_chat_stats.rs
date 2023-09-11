@@ -40,9 +40,9 @@ impl AddStreamChatStatsQuery {
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::{Duration, NaiveDateTime};
+    use chrono::{Duration, TimeZone};
 
-    let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
+    let time = Utc.timestamp_opt(9000, 0).single().unwrap();
 
     let result = AddStreamChatStatsQuery {
         stream_id: 1,

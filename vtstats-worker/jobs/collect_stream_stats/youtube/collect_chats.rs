@@ -199,7 +199,8 @@ async fn collect_chat_and_events(
 }
 
 pub fn parse_timestamp(string: &str) -> Option<DateTime<Utc>> {
-    Utc.timestamp_millis_opt(string.parse().ok()?).single()
+    Utc.timestamp_millis_opt((string.parse::<i64>().ok()?) / 1_000i64)
+        .single()
 }
 
 fn parse_amount(amount: &str) -> Option<(&str, String)> {
@@ -228,11 +229,19 @@ fn test_parse_timestamp() {
     assert_eq!(parse_timestamp("XXXXXXXXXXXXXXXX"), None);
     assert_eq!(
         parse_timestamp("1620129525000000"),
-        Some(Utc.timestamp_millis_opt(1620129525000000).single().unwrap())
+        Some(
+            DateTime::parse_from_rfc3339("2021-05-04T11:58:45Z")
+                .unwrap()
+                .with_timezone(&Utc)
+        )
     );
     assert_eq!(
         parse_timestamp("1620129525606474"),
-        Some(Utc.timestamp_millis_opt(1620129525606474).single().unwrap())
+        Some(
+            DateTime::parse_from_rfc3339("2021-05-04T11:58:45.606Z")
+                .unwrap()
+                .with_timezone(&Utc)
+        )
     );
 }
 

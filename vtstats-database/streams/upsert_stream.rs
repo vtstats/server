@@ -69,7 +69,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::NaiveDateTime;
+    use chrono::TimeZone;
 
     {
         let rows = sqlx::query!(r#"SELECT title FROM streams WHERE channel_id = 1"#)
@@ -78,7 +78,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
         assert_eq!(rows.len(), 0);
 
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
+        let time = Utc.timestamp_opt(3000, 0).single().unwrap();
 
         let stream_id = UpsertStreamQuery {
             vtuber_id: "vtuber1",
@@ -132,15 +132,12 @@ async fn test(pool: PgPool) -> Result<()> {
         assert_eq!(rows[0].title, "title2");
         assert_eq!(
             rows[0].start_time,
-            Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(),
-                Utc
-            ))
+            Some(Utc.timestamp_opt(3000, 0).single().unwrap())
         );
     }
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
+        let time = Utc.timestamp_opt(3000, 0).single().unwrap();
 
         let stream_id = UpsertStreamQuery {
             vtuber_id: "vtuber1",

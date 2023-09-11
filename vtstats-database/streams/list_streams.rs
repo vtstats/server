@@ -345,7 +345,7 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::NaiveDateTime;
+    use chrono::TimeZone;
 
     assert!(ListYouTubeStreamsQuery {
         vtuber_ids: &["poi".into()],
@@ -496,7 +496,7 @@ INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platf
         ListYouTubeStreamsQuery {
             start_at: Some((
                 Column::StartTime,
-                &UtcTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc)
+                &Utc.timestamp_opt(9000, 0).single().unwrap()
             )),
             ..Default::default()
         }
@@ -510,7 +510,7 @@ INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platf
         ListYouTubeStreamsQuery {
             end_at: Some((
                 Column::EndTime,
-                &UtcTime::from_utc(NaiveDateTime::from_timestamp_opt(15000, 0).unwrap(), Utc)
+                &Utc.timestamp_opt(15000, 0).single().unwrap()
             )),
             ..Default::default()
         }

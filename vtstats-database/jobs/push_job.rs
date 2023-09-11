@@ -113,7 +113,7 @@ pub async fn queue_collect_twitch_stream_metadata(
 #[cfg(test)]
 #[sqlx::test]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::NaiveDateTime;
+    use chrono::TimeZone;
 
     sqlx::query("DELETE FROM jobs").execute(&pool).await?;
 
@@ -139,7 +139,7 @@ async fn test(pool: PgPool) -> Result<()> {
         .execute(&pool)
         .await?;
 
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
+        let time = Utc.timestamp_opt(3000, 0).single().unwrap();
 
         PushJobQuery {
             continuation: None,

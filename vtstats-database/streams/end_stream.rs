@@ -73,7 +73,7 @@ pub async fn end_stream_with_values(
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::NaiveDateTime;
+    use chrono::TimeZone;
 
     sqlx::query!(
         r#"
@@ -87,7 +87,7 @@ async fn test(pool: PgPool) -> Result<()> {
     .await?;
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
+        let time = Utc.timestamp_opt(9000, 0).single().unwrap();
 
         end_stream_with_values(1, None, None, None, Some(time), Some(0), None, &pool).await?;
 

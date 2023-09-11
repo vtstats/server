@@ -31,7 +31,7 @@ pub async fn start_stream(
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::NaiveDateTime;
+    use chrono::TimeZone;
 
     sqlx::query!(
         r#"
@@ -45,7 +45,7 @@ INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platf
     .await?;
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
+        let time = Utc.timestamp_opt(3000, 0).single().unwrap();
 
         let res = start_stream(1, None, time, None, &pool).await?;
 
@@ -59,7 +59,7 @@ INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platf
     }
 
     {
-        let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(3000, 0).unwrap(), Utc);
+        let time = Utc.timestamp_opt(3000, 0).single().unwrap();
 
         let res = start_stream(2, Some("title_alt"), time, Some(100), &pool).await?;
 
@@ -74,10 +74,7 @@ INSERT INTO streams (stream_id, vtuber_id, title, channel_id, platform_id, platf
         assert_eq!(row.title, "title_alt".to_string());
         assert_eq!(
             row.start_time,
-            Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(10000, 0).unwrap(),
-                Utc
-            ))
+            Some(Utc.timestamp_opt(10000, 0).single().unwrap())
         );
         assert_eq!(row.like_max, Some(100));
     }

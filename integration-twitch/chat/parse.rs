@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, TimeZone, Utc};
 use twitch_message::messages::Privmsg;
 
 #[derive(Debug)]
@@ -42,10 +42,7 @@ pub fn parse_privmsg(msg: Privmsg<'_>) -> Option<LiveChatMessage> {
         .map(|s| s.to_string());
 
     let timestamp = msg.tmi_sent_ts()?;
-    let timestamp = DateTime::from_utc(
-        NaiveDateTime::from_timestamp_millis(timestamp.parse().ok()?)?,
-        Utc,
-    );
+    let timestamp = Utc.timestamp_millis_opt(timestamp.parse().ok()?).single()?;
     let text = msg.data.to_string();
     let author_username = msg.sender.to_string();
 

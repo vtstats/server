@@ -60,7 +60,7 @@ ORDER BY start_time DESC
 #[cfg(test)]
 #[sqlx::test(fixtures("channels"))]
 async fn test(pool: PgPool) -> Result<()> {
-    use chrono::NaiveDateTime;
+    use chrono::TimeZone;
 
     sqlx::query!(
         r#"
@@ -73,7 +73,7 @@ INSERT INTO streams (platform, vtuber_id, platform_id, title, channel_id, schedu
     .execute(&pool)
     .await?;
 
-    let big_bang = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc);
+    let big_bang = Utc.timestamp_opt(0, 0).single().unwrap();
 
     {
         let times = stream_times_start_at(&[2], big_bang, &pool).await?;

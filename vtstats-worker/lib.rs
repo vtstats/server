@@ -98,7 +98,5 @@ async fn waiting(pool: &PgPool, listener: &mut PgListener) -> anyhow::Result<()>
 }
 
 fn parse_timestamp(value: &str) -> Option<DateTime<Utc>> {
-    let value: i64 = value.parse().ok()?;
-    Utc.timestamp_opt(value / 1000, ((value % 1000) * 1_000_000) as u32)
-        .single()
+    Utc.timestamp_millis_opt(value.parse().ok()?).single()
 }
