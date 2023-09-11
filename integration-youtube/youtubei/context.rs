@@ -1,12 +1,12 @@
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct Context {
+pub(crate) struct Context {
     pub client: Client,
 }
 
 #[derive(Serialize)]
-pub struct Client {
+pub(crate) struct Client {
     #[serde(rename = "hl")]
     pub language: String,
     #[serde(rename = "clientName")]

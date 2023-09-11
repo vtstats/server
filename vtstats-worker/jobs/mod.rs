@@ -23,16 +23,12 @@ use vtstats_database::{
 
 pub enum JobResult {
     Completed,
-    Next {
-        run: DateTime<Utc>,
-        continuation: Option<String>,
-    },
+    Next { run: DateTime<Utc> },
 }
 
 pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_tx: Sender<()>) {
     let job_id = job.job_id;
     let payload = job.payload;
-    let continuation = job.continuation;
     let job_type = payload.kind_str();
 
     let span = match &payload {
@@ -59,7 +55,7 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
                 upsert_youtube_stream::execute(&pool, client, payload).await
             }
             CollectYoutubeStreamMetadata(payload) => {
-                collect_youtube_stream_metadata::execute(&pool, client, continuation, payload).await
+                collect_youtube_stream_metadata::execute(&pool, client, payload).await
             }
             CollectTwitchStreamMetadata(payload) => {
                 collect_twitch_stream::execute(&pool, client, payload).await
@@ -82,19 +78,17 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
         );
 
         let query = match result {
-            Ok(JobResult::Next { run, continuation }) => UpdateJobQuery {
+            Ok(JobResult::Next { run }) => UpdateJobQuery {
                 job_id,
                 status: JobStatus::Queued,
                 next_run: Some(run),
                 last_run: Utc::now(),
-                continuation,
             },
             Ok(JobResult::Completed) => UpdateJobQuery {
                 job_id,
                 status: JobStatus::Success,
                 next_run: None,
                 last_run: Utc::now(),
-                continuation: None,
             },
             Err(ref err) => {
                 tracing::error!(exception.stacktrace = ?err, message= %err);
@@ -104,7 +98,6 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
                     status: JobStatus::Failed,
                     next_run: None,
                     last_run: Utc::now(),
-                    continuation: None,
                 }
             }
         };

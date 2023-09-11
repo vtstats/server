@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use vtstats_database::streams::{Stream, StreamStatus};
+use vtstats_database::{
+    channels::Platform,
+    streams::{Stream, StreamStatus},
+};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,6 +45,7 @@ impl Response {
             StreamStatus::Scheduled
         };
         Some(Stream {
+            platform: Platform::Youtube,
             title: format.title.simple_text,
             platform_id: video_id.clone(),
             start_time: if status != StreamStatus::Scheduled {
@@ -55,6 +59,7 @@ impl Response {
                 None
             },
             end_time: format.live_broadcast_details.end_timestamp,
+            channel_id: 0,
             status,
             highlighted_title: None,
             like_max: None,

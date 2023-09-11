@@ -5,14 +5,18 @@ use chrono::serde::{ts_milliseconds, ts_milliseconds_option};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
+use crate::channels::Platform;
+
 type UtcTime = DateTime<Utc>;
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct Stream {
+    pub platform: Platform,
     pub platform_id: String,
     pub stream_id: i32,
+    pub channel_id: i32,
     pub title: String,
     pub highlighted_title: Option<String>,
     pub vtuber_id: String,
@@ -87,9 +91,11 @@ pub async fn filter_streams_order_by_schedule_time_asc(
 ) -> Result<Vec<Stream>> {
     let query = sqlx::query_as!(
         Stream,
-        "SELECT platform_id, \
+        "SELECT platform as \"platform: _\", \
+        platform_id, \
         stream_id, \
         title, \
+        channel_id, \
         null as highlighted_title, \
         vtuber_id, \
         thumbnail_url, \
@@ -139,9 +145,11 @@ pub async fn filter_streams_order_by_start_time_desc(
 
         let query = sqlx::query_as!(
             Stream,
-            "SELECT platform_id, \
+            "SELECT platform as \"platform: _\", \
+            platform_id, \
             stream_id, \
             title, \
+            channel_id, \
             pgroonga_highlight_html(\
                 title, pgroonga_query_extract_keywords($5)\
             ) as highlighted_title, \
@@ -175,9 +183,11 @@ pub async fn filter_streams_order_by_start_time_desc(
     } else {
         let query = sqlx::query_as!(
             Stream,
-            "SELECT platform_id, \
+            "SELECT platform as \"platform: _\", \
+            platform_id, \
             stream_id, \
             title, \
+            channel_id, \
             null as highlighted_title, \
             vtuber_id, \
             thumbnail_url, \
@@ -205,35 +215,6 @@ pub async fn filter_streams_order_by_start_time_desc(
 
         crate::otel::execute_query!("SELECT", "streams", query)
     }
-}
-
-pub async fn find_stream_by_platform_id(
-    platform_id: &str,
-    pool: &PgPool,
-) -> Result<Option<Stream>> {
-    let query = sqlx::query_as!(
-        Stream,
-        "SELECT platform_id, \
-        stream_id, \
-        title, \
-        null as highlighted_title, \
-        vtuber_id, \
-        thumbnail_url, \
-        schedule_time, \
-        start_time, \
-        end_time, \
-        viewer_max, \
-        viewer_avg, \
-        like_max, \
-        updated_at, \
-        status as \"status: _\" \
-        FROM streams \
-        WHERE platform_id = $1",
-        platform_id
-    )
-    .fetch_optional(pool);
-
-    crate::otel::execute_query!("SELECT", "streams", query)
 }
 
 pub struct ListYouTubeStreamsQuery<'q> {
@@ -276,9 +257,11 @@ impl<'q> ListYouTubeStreamsQuery<'q> {
 
     pub fn into_query_builder(self) -> QueryBuilder<'q, Postgres> {
         let init = "\
-       SELECT platform_id, \
+       SELECT platform, \
+              platform_id, \
               stream_id, \
               title, \
+              channel_id, \
               null as highlighted_title, \
               vtuber_id, \
               thumbnail_url, \

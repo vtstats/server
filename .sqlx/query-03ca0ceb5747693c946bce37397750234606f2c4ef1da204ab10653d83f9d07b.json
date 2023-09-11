@@ -1,75 +1,96 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT platform_id, stream_id, title, pgroonga_highlight_html(title, pgroonga_query_extract_keywords($5)) as highlighted_title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status as \"status: _\" FROM streams WHERE channel_id = ANY($1) AND status = $2 AND (start_time > $3 OR $3 IS NULL) AND (start_time < $4 OR $4 IS NULL) AND title &@~ $5 ORDER BY start_time DESC LIMIT 24",
+  "query": "SELECT platform as \"platform: _\", platform_id, stream_id, title, channel_id, null as highlighted_title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status as \"status: _\" FROM streams WHERE channel_id = ANY($1) AND status = $2 AND (start_time > $3 OR $3 IS NULL) AND (start_time < $4 OR $4 IS NULL) ORDER BY start_time DESC LIMIT 24",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
+        "name": "platform: _",
+        "type_info": {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 1,
         "name": "platform_id",
         "type_info": "Text"
       },
       {
-        "ordinal": 1,
+        "ordinal": 2,
         "name": "stream_id",
         "type_info": "Int4"
       },
       {
-        "ordinal": 2,
+        "ordinal": 3,
         "name": "title",
         "type_info": "Text"
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
+        "name": "channel_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
         "name": "highlighted_title",
         "type_info": "Text"
       },
       {
-        "ordinal": 4,
+        "ordinal": 6,
         "name": "vtuber_id",
         "type_info": "Text"
       },
       {
-        "ordinal": 5,
+        "ordinal": 7,
         "name": "thumbnail_url",
         "type_info": "Text"
       },
       {
-        "ordinal": 6,
+        "ordinal": 8,
         "name": "schedule_time",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 7,
+        "ordinal": 9,
         "name": "start_time",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 8,
+        "ordinal": 10,
         "name": "end_time",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 9,
+        "ordinal": 11,
         "name": "viewer_max",
         "type_info": "Int4"
       },
       {
-        "ordinal": 10,
+        "ordinal": 12,
         "name": "viewer_avg",
         "type_info": "Int4"
       },
       {
-        "ordinal": 11,
+        "ordinal": 13,
         "name": "like_max",
         "type_info": "Int4"
       },
       {
-        "ordinal": 12,
+        "ordinal": 14,
         "name": "updated_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 13,
+        "ordinal": 15,
         "name": "status: _",
         "type_info": {
           "Custom": {
@@ -101,11 +122,12 @@
           }
         },
         "Timestamptz",
-        "Timestamptz",
-        "Text"
+        "Timestamptz"
       ]
     },
     "nullable": [
+      false,
+      false,
       false,
       false,
       false,
@@ -122,5 +144,5 @@
       false
     ]
   },
-  "hash": "c5aad2fa4e0bf1e99d66855dd75a39f3eb0f0de449324ed7a1f4b129e11ef669"
+  "hash": "03ca0ceb5747693c946bce37397750234606f2c4ef1da204ab10653d83f9d07b"
 }

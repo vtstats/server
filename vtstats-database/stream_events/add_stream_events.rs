@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgQueryResult, types::Json, PgPool, Postgres, QueryBuilder, Result};
 
-use super::{StreamEventKind, StreamEventValue};
+use super::StreamEventValue;
 
 pub async fn add_stream_events(
     stream_id: i32,
@@ -12,18 +12,9 @@ pub async fn add_stream_events(
         QueryBuilder::new("INSERT INTO stream_events (stream_id, time, kind, value) ");
 
     query_builder.push_values(rows.into_iter(), |mut b, (time, value)| {
-        let kind = match value {
-            StreamEventValue::YoutubeSuperChat { .. } => StreamEventKind::YoutubeSuperChat,
-            StreamEventValue::YoutubeSuperSticker { .. } => StreamEventKind::YoutubeSuperSticker,
-            StreamEventValue::YoutubeNewMember { .. } => StreamEventKind::YoutubeNewMember,
-            StreamEventValue::YoutubeMemberMilestone { .. } => {
-                StreamEventKind::YoutubeMemberMilestone
-            }
-        };
-
         b.push_bind(stream_id)
             .push_bind(time)
-            .push_bind(kind)
+            .push_bind(value.kind())
             .push_bind(Json(value));
     });
 

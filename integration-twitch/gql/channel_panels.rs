@@ -10,11 +10,11 @@ static HASH: &str = "c388999b5fcd8063deafc7f7ad32ebd1cce3d94953c20bf96cffeef6433
 pub async fn channel_panels(channel_id: &str, client: &Client) -> Result<Response> {
     let req = gql_request(
         client,
-        OPERATION.into(),
+        OPERATION,
         Variables {
             id: channel_id.to_string(),
         },
-        HASH.into(),
+        HASH,
     );
 
     let res = send_request!(req)?;

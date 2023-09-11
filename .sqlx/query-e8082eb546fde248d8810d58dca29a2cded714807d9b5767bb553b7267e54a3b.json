@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE platform = 'youtube' AND vtuber_id IN (SELECT vtuber_id FROM vtubers WHERE retired_at IS NULL OR retired_at + '2 week' >= NOW())",
+  "query": "SELECT channel_id, platform_id, vtuber_id, platform as \"platform: _\" FROM channels WHERE platform = $1 AND vtuber_id IN (SELECT vtuber_id FROM vtubers WHERE retired_at IS NULL OR retired_at + '2 week' >= NOW())",
   "describe": {
     "columns": [
       {
@@ -36,7 +36,20 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      ]
     },
     "nullable": [
       false,
@@ -45,5 +58,5 @@
       false
     ]
   },
-  "hash": "ff57178be1536e264ff7d91de7bf6ce1004312b3f9527b2508c0d22d5b01d5d8"
+  "hash": "e8082eb546fde248d8810d58dca29a2cded714807d9b5767bb553b7267e54a3b"
 }

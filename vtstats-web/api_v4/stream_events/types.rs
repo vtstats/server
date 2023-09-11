@@ -6,19 +6,26 @@ use vtstats_utils::currency::currency_symbol_to_code;
 #[serde(untagged)]
 pub enum RefinedStreamEventValue {
     #[serde(rename_all = "camelCase")]
-    SuperChat {
+    YouTubeSuperChat {
         amount: String,
         currency_code: String,
         color: YouTubeChatColor,
     },
     #[serde(rename_all = "camelCase")]
-    SuperSticker {
+    YouTubeSuperSticker {
         amount: String,
         currency_code: String,
         color: YouTubeChatColor,
     },
-    NewMember,
-    MemberMilestone,
+    YouTubeNewMember,
+    YouTubeMemberMilestone,
+    TwitchCheering {
+        bits: usize,
+    },
+    TwitchHyperChat {
+        amount: String,
+        currency_code: String,
+    },
 }
 
 impl RefinedStreamEventValue {
@@ -26,27 +33,37 @@ impl RefinedStreamEventValue {
     pub fn is_empty(&self) -> bool {
         matches!(
             self,
-            RefinedStreamEventValue::MemberMilestone | RefinedStreamEventValue::NewMember
+            RefinedStreamEventValue::YouTubeMemberMilestone
+                | RefinedStreamEventValue::YouTubeNewMember
         )
     }
 }
 
 pub fn refine(value: StreamEventValue) -> Option<RefinedStreamEventValue> {
     match value {
-        StreamEventValue::YoutubeSuperChat(v) => Some(RefinedStreamEventValue::SuperChat {
+        StreamEventValue::YoutubeSuperChat(v) => Some(RefinedStreamEventValue::YouTubeSuperChat {
             amount: v.paid_amount,
             currency_code: currency_symbol_to_code(&v.paid_currency_symbol)?.into(),
             color: color_hex_to_chat_color(&v.paid_color)?,
         }),
-        StreamEventValue::YoutubeSuperSticker(v) => Some(RefinedStreamEventValue::SuperSticker {
-            amount: v.paid_amount,
-            currency_code: currency_symbol_to_code(&v.paid_currency_symbol)?.into(),
-            color: color_hex_to_chat_color(&v.paid_color)?,
-        }),
-        StreamEventValue::YoutubeNewMember(_) => Some(RefinedStreamEventValue::NewMember),
-        StreamEventValue::YoutubeMemberMilestone(_) => {
-            Some(RefinedStreamEventValue::MemberMilestone)
+        StreamEventValue::YoutubeSuperSticker(v) => {
+            Some(RefinedStreamEventValue::YouTubeSuperSticker {
+                amount: v.paid_amount,
+                currency_code: currency_symbol_to_code(&v.paid_currency_symbol)?.into(),
+                color: color_hex_to_chat_color(&v.paid_color)?,
+            })
         }
+        StreamEventValue::YoutubeNewMember(_) => Some(RefinedStreamEventValue::YouTubeNewMember),
+        StreamEventValue::YoutubeMemberMilestone(_) => {
+            Some(RefinedStreamEventValue::YouTubeMemberMilestone)
+        }
+        StreamEventValue::TwitchCheering(v) => Some(RefinedStreamEventValue::TwitchCheering {
+            bits: v.bits.parse().ok()?,
+        }),
+        StreamEventValue::TwitchHyperChat(v) => Some(RefinedStreamEventValue::TwitchHyperChat {
+            amount: v.amount,
+            currency_code: v.currency_code,
+        }),
     }
 }
 

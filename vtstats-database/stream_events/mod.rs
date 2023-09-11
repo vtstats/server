@@ -18,10 +18,12 @@ pub enum StreamEventKind {
     YoutubeSuperSticker,
     YoutubeNewMember,
     YoutubeMemberMilestone,
+    TwitchCheering,
+    TwitchHyperChat,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct YoutubeSuperChatDonationValue {
+pub struct YoutubeSuperChat {
     #[serde(default)]
     pub message: Option<String>,
     pub author_name: String,
@@ -34,7 +36,7 @@ pub struct YoutubeSuperChatDonationValue {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct YoutubeSuperStickerDonationValue {
+pub struct YoutubeSuperSticker {
     #[serde(default)]
     pub message: Option<String>,
     pub author_name: String,
@@ -47,7 +49,7 @@ pub struct YoutubeSuperStickerDonationValue {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct YoutubeNewMemberDonationValue {
+pub struct YoutubeNewMember {
     pub message: String,
     pub author_name: String,
     #[serde(default)]
@@ -56,20 +58,55 @@ pub struct YoutubeNewMemberDonationValue {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct YoutubeMemberMilestoneDonationValue {
+pub struct YoutubeMemberMilestone {
     pub author_name: String,
     #[serde(default)]
     pub author_badges: Option<String>,
     pub author_channel_id: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TwitchCheering {
+    pub author_username: String,
+    #[serde(default)]
+    pub badges: Option<String>,
+    pub bits: String,
+    pub message: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TwitchHyperChat {
+    pub author_username: String,
+    #[serde(default)]
+    pub badges: Option<String>,
+    pub message: String,
+    pub currency_code: String,
+    pub level: String,
+    pub amount: String,
+}
+
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum StreamEventValue {
-    YoutubeSuperChat(YoutubeSuperChatDonationValue),
-    YoutubeSuperSticker(YoutubeSuperStickerDonationValue),
-    YoutubeNewMember(YoutubeNewMemberDonationValue),
-    YoutubeMemberMilestone(YoutubeMemberMilestoneDonationValue),
+    YoutubeSuperChat(YoutubeSuperChat),
+    YoutubeSuperSticker(YoutubeSuperSticker),
+    YoutubeNewMember(YoutubeNewMember),
+    YoutubeMemberMilestone(YoutubeMemberMilestone),
+    TwitchCheering(TwitchCheering),
+    TwitchHyperChat(TwitchHyperChat),
+}
+
+impl StreamEventValue {
+    pub fn kind(&self) -> StreamEventKind {
+        match self {
+            StreamEventValue::YoutubeSuperChat(_) => StreamEventKind::YoutubeSuperChat,
+            StreamEventValue::YoutubeSuperSticker(_) => StreamEventKind::YoutubeSuperSticker,
+            StreamEventValue::YoutubeNewMember(_) => StreamEventKind::YoutubeNewMember,
+            StreamEventValue::YoutubeMemberMilestone(_) => StreamEventKind::YoutubeMemberMilestone,
+            StreamEventValue::TwitchCheering(_) => StreamEventKind::TwitchCheering,
+            StreamEventValue::TwitchHyperChat(_) => StreamEventKind::TwitchHyperChat,
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -95,6 +132,12 @@ impl FromRow<'_, PgRow> for StreamEvent {
             }
             StreamEventKind::YoutubeMemberMilestone => {
                 StreamEventValue::YoutubeMemberMilestone(row.try_get::<Json<_>, _>("value")?.0)
+            }
+            StreamEventKind::TwitchCheering => {
+                StreamEventValue::TwitchCheering(row.try_get::<Json<_>, _>("value")?.0)
+            }
+            StreamEventKind::TwitchHyperChat => {
+                StreamEventValue::TwitchHyperChat(row.try_get::<Json<_>, _>("value")?.0)
             }
         };
 

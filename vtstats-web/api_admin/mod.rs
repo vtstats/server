@@ -174,7 +174,7 @@ async fn list_streams(pool: PgPool, parameter: ListParameter) -> Result<Response
 }
 
 async fn list_channels(pool: PgPool) -> Result<Response, Rejection> {
-    let channels = vtstats_database::channels::list_youtube_channels(&pool)
+    let channels = vtstats_database::channels::list_channels(&pool)
         .await
         .map_err(Into::<WarpError>::into)?;
 

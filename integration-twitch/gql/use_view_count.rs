@@ -4,10 +4,10 @@ use vtstats_utils::send_request;
 
 use super::gql_request;
 
-static OPERATION: &str = "ChannelAvatar";
-static HASH: &str = "84ed918aaa9aaf930e58ac81733f552abeef8ac26c0117746865428a7e5c8ab0";
+static OPERATION: &str = "UseViewCount";
+static HASH: &str = "00b11c9c428f79ae228f30080a06ffd8226a1f068d6f52fbc057cbde66e994c2";
 
-pub async fn channel_avatar(channel_login: String, client: &Client) -> Result<Response> {
+pub async fn use_view_count(channel_login: String, client: &Client) -> Result<Response> {
     let req = gql_request(client, OPERATION, Variables { channel_login }, HASH);
 
     let res = send_request!(req)?;
@@ -38,13 +38,13 @@ pub struct Data {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
-    pub followers: Followers,
+    pub stream: Option<Stream>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Followers {
-    pub total_count: i32,
+pub struct Stream {
+    pub viewers_count: i32,
 }
 
 #[test]
@@ -54,23 +54,40 @@ fn de() {
     from_str::<Response>(
         r#"{
             "data": {
-                "user": {
-                "id": "583341489",
-                "followers": {
-                    "totalCount": 70085,
-                    "__typename": "FollowerConnection"
-                },
-                "isPartner": true,
-                "primaryColorHex": null,
+              "user": {
+                "id": "1117857350",
+                "stream": null,
                 "__typename": "User"
-                }
+              }
             },
             "extensions": {
-                "durationMilliseconds": 42,
-                "operationName": "ChannelAvatar",
-                "requestID": "01H9NBWDNRAJMTYDQDVVYYY39A"
+              "durationMilliseconds": 38,
+              "operationName": "UseViewCount",
+              "requestID": "01H9XC3B66VM13JGDCSQSJZBV6"
             }
-        }"#,
+          }"#,
+    )
+    .unwrap();
+
+    from_str::<Response>(
+        r#"{
+            "data": {
+              "user": {
+                "id": "902183508",
+                "stream": {
+                  "id": "39941506117",
+                  "viewersCount": 2855,
+                  "__typename": "Stream"
+                },
+                "__typename": "User"
+              }
+            },
+            "extensions": {
+              "durationMilliseconds": 44,
+              "operationName": "UseViewCount",
+              "requestID": "01H9XC49J729SJ9GP8Q6F93SZ4"
+            }
+          }"#,
     )
     .unwrap();
 }

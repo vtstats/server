@@ -1,8 +1,11 @@
 use chrono::{DateTime, Duration, DurationRound, NaiveDateTime, Utc};
+use integration_s3::upload_file;
 use reqwest::Client;
+use tokio::signal::unix;
 
 use integration_youtube::{
-    data_api::videos::{list_videos, Stream},
+    data_api::videos::list_videos,
+    thumbnail::get_thumbnail,
     youtubei::{
         live_chat::{LiveChatMessage, MemberMessageType, PaidMessageType},
         updated_metadata, updated_metadata_with_continuation, youtube_live_chat,
@@ -10,15 +13,16 @@ use integration_youtube::{
     },
 };
 use vtstats_database::{
+    channels::{get_channel_by_id, Channel},
     jobs::{queue_send_notification, CollectYoutubeStreamMetadataJobPayload},
     stream_events::{
-        add_stream_events, StreamEventValue, YoutubeMemberMilestoneDonationValue,
-        YoutubeNewMemberDonationValue, YoutubeSuperChatDonationValue,
-        YoutubeSuperStickerDonationValue,
+        add_stream_events, StreamEventValue, YoutubeMemberMilestone, YoutubeNewMember,
+        YoutubeSuperChat, YoutubeSuperSticker,
     },
     stream_stats::{AddStreamChatStatsQuery, AddStreamChatStatsRow, AddStreamViewerStatsQuery},
     streams::{
-        delete_stream, end_stream, end_stream_with_values, find_stream, start_stream, StreamStatus,
+        delete_stream, end_stream, end_stream_with_values, get_stream_by_id, start_stream, Stream,
+        StreamStatus,
     },
     PgPool,
 };
@@ -28,138 +32,193 @@ use super::JobResult;
 pub async fn execute(
     pool: &PgPool,
     client: Client,
-    continuation: Option<String>,
     payload: CollectYoutubeStreamMetadataJobPayload,
 ) -> anyhow::Result<JobResult> {
-    let CollectYoutubeStreamMetadataJobPayload {
-        stream_id,
-        platform_stream_id,
-        platform_channel_id,
-    } = payload;
-
-    let Some(find) = find_stream(stream_id, pool).await? else {
+    let Some(stream) = get_stream_by_id(payload.stream_id, pool).await? else {
         return Ok(JobResult::Completed);
     };
 
-    let (metadata_continuation, chat_continuation) = continuation
-        .and_then(|c| serde_json::from_str::<(String, String)>(&c).ok())
-        .unwrap_or_default();
-
-    let metadata = if !metadata_continuation.is_empty() {
-        updated_metadata_with_continuation(&metadata_continuation, &client).await
-    } else {
-        updated_metadata(&platform_stream_id, &client).await
-    }?;
-
-    let (mut timeout, next_metadata_continuation) =
-        match (metadata.timeout(), metadata.continuation()) {
-            (Some(a), Some(b)) => (a, b),
-            _ => {
-                // stream not found
-                if find.status == StreamStatus::Scheduled {
-                    delete_stream(stream_id, pool).await?;
-                } else {
-                    end_stream(stream_id, pool).await?;
-                }
-                return Ok(JobResult::Completed);
-            }
-        };
-
-    // stream is still waiting
-    if metadata.is_waiting() {
-        let continuation = serde_json::to_string(&(next_metadata_continuation, "")).ok();
-
-        return Ok(JobResult::Next {
-            run: Utc::now() + Duration::from_std(timeout)?,
-            continuation,
-        });
-    }
-
-    let (messages, next_chat_timeout, next_chat_continuation) = if !chat_continuation.is_empty() {
-        youtube_live_chat_with_continuation(chat_continuation, &client).await
-    } else {
-        youtube_live_chat(&platform_channel_id, &platform_stream_id, &client).await
-    }
-    .map(|(messages, continuation)| {
-        match continuation.and_then(|c| c.get_continuation_and_timeout()) {
-            Some((t, c)) => (messages, Some(t), Some(c)),
-            _ => (messages, None, None),
-        }
-    })?;
-
-    let _ = collect_donation_and_chat(stream_id, messages, pool).await;
-
-    let now = Utc::now();
-
-    if let Some(viewer) = metadata.view_count() {
-        AddStreamViewerStatsQuery {
-            time: now.duration_trunc(Duration::seconds(15)).unwrap(),
-            count: viewer,
-            stream_id,
-        }
-        .execute(pool)
-        .await?;
-    }
-
-    // stream has ended
-    if timeout.as_secs() > 5 {
-        if find.status == StreamStatus::Scheduled {
-            delete_stream(stream_id, pool).await?;
-            return Ok(JobResult::Completed);
-        }
-
-        let mut videos = list_videos(&platform_stream_id, &client).await?;
-        let stream: Option<Stream> = videos.pop().and_then(Into::into);
-
-        end_stream_with_values(
-            stream_id,
-            stream.as_ref().map(|s| s.title.as_str()),
-            stream.as_ref().and_then(|s| s.schedule_time),
-            stream.as_ref().and_then(|s| s.start_time),
-            stream.as_ref().and_then(|s| s.end_time),
-            stream.as_ref().and_then(|s| s.likes),
-            pool,
-        )
-        .await?;
-
-        queue_send_notification(
-            now,
-            "youtube".into(),
-            platform_stream_id,
-            find.vtuber_id,
-            pool,
-        )
-        .await?;
-
+    let Some(channel) = get_channel_by_id(stream.channel_id, pool).await? else {
         return Ok(JobResult::Completed);
+    };
+
+    let (Ok(mut sigint), Ok(mut sigterm)) = (
+        unix::signal(unix::SignalKind::interrupt()),
+        unix::signal(unix::SignalKind::terminate()),
+    ) else {
+        anyhow::bail!("Failed to listen unix signal")
+    };
+
+    tokio::select! {
+        _ = collect_stream_metadata(&stream, &client, pool) => {
+            Ok(JobResult::Completed)
+        },
+        _ = collect_stream_chats(&channel, &stream, &client, pool) => {
+            Ok(JobResult::Completed)
+        },
+        _ = sigint.recv() => {
+            Ok(JobResult::Next { run: Utc::now() })
+        },
+        _ = sigterm.recv() => {
+            Ok(JobResult::Next { run: Utc::now() })
+        },
     }
-
-    start_stream(
-        stream_id,
-        metadata.title().as_deref(),
-        now,
-        metadata.like_count(),
-        pool,
-    )
-    .await?;
-
-    let continuation = serde_json::to_string(&(
-        next_metadata_continuation,
-        next_chat_continuation.unwrap_or_default(),
-    ))
-    .ok();
-
-    if let Some(chat_timeout) = next_chat_timeout {
-        timeout = std::cmp::max(timeout, chat_timeout);
-    }
-
-    Ok(JobResult::Next {
-        run: now + Duration::from_std(timeout)?,
-        continuation,
-    })
 }
 
-pub async fn collect_donation_and_chat(
+async fn collect_stream_metadata(
+    stream: &Stream,
+    client: &Client,
+    pool: &PgPool,
+) -> anyhow::Result<()> {
+    let mut continuation: Option<String> = None;
+    let mut status = stream.status;
+
+    loop {
+        let metadata = if let Some(continuation) = &continuation {
+            updated_metadata_with_continuation(continuation, client).await
+        } else {
+            updated_metadata(&stream.platform_id, client).await
+        }?;
+
+        let (Some(timeout), Some(next_continuation)) =
+            (metadata.timeout(), metadata.continuation())
+        else {
+            // stream not found
+            if status == StreamStatus::Scheduled {
+                delete_stream(stream.stream_id, pool).await?;
+            } else {
+                end_stream(stream.stream_id, pool).await?;
+            }
+            return Ok(());
+        };
+
+        continuation = Some(next_continuation.to_string());
+
+        // stream is still waiting
+        if metadata.is_waiting() {
+            tokio::time::sleep(timeout).await;
+            continue;
+        }
+
+        // record view stats
+        if let Some(viewer) = metadata.view_count() {
+            AddStreamViewerStatsQuery {
+                time: Utc::now().duration_trunc(Duration::seconds(15)).unwrap(),
+                count: viewer,
+                stream_id: stream.stream_id,
+            }
+            .execute(pool)
+            .await?;
+        }
+
+        // stream has ended
+        if timeout.as_secs() > 5 {
+            if status == StreamStatus::Scheduled {
+                delete_stream(stream.stream_id, pool).await?;
+                return Ok(());
+            }
+
+            let mut videos = list_videos(&stream.platform_id, client).await?;
+            let video: Option<integration_youtube::data_api::videos::Stream> =
+                videos.pop().and_then(Into::into);
+
+            // update thumbnail url after stream is ended
+            let thumbnail_url = match get_thumbnail(&stream.platform_id, client).await {
+                Ok((filename, content_type, bytes)) => {
+                    match upload_file(&filename, bytes, &content_type, client).await {
+                        Ok(thumbnail_url) => Some(thumbnail_url),
+                        Err(err) => {
+                            tracing::error!(exception.stacktrace = ?err, message= %err);
+                            None
+                        }
+                    }
+                }
+                Err(err) => {
+                    tracing::error!(exception.stacktrace = ?err, message= %err);
+                    None
+                }
+            };
+
+            end_stream_with_values(
+                stream.stream_id,
+                video.as_ref().map(|s| s.title.as_str()),
+                video.as_ref().and_then(|s| s.schedule_time),
+                video.as_ref().and_then(|s| s.start_time),
+                video.as_ref().and_then(|s| s.end_time),
+                video.as_ref().and_then(|s| s.likes),
+                thumbnail_url,
+                pool,
+            )
+            .await?;
+
+            queue_send_notification(
+                Utc::now(),
+                "youtube".into(),
+                stream.platform_id.to_string(),
+                stream.vtuber_id.to_string(),
+                pool,
+            )
+            .await?;
+
+            return Ok(());
+        }
+
+        if status == StreamStatus::Scheduled {
+            start_stream(
+                stream.stream_id,
+                metadata.title().as_deref(),
+                Utc::now(),
+                metadata.like_count(),
+                pool,
+            )
+            .await?;
+            status = StreamStatus::Live;
+        }
+
+        tokio::time::sleep(timeout).await;
+    }
+}
+
+async fn collect_stream_chats(
+    channel: &Channel,
+    stream: &Stream,
+    client: &Client,
+    pool: &PgPool,
+) -> anyhow::Result<()> {
+    use std::time::Duration;
+
+    let mut continuation: Option<String> = None;
+    let mut timeout = Duration::from_secs(15);
+
+    loop {
+        let messages;
+        if let Some(c) = continuation.take() {
+            let res = youtube_live_chat_with_continuation(c, client).await?;
+            messages = res.0;
+            if let Some((next_timeout, next_continuation)) =
+                res.1.and_then(|c| c.get_continuation_and_timeout())
+            {
+                timeout = next_timeout;
+                continuation = Some(next_continuation);
+            }
+        } else {
+            let res = youtube_live_chat(&channel.platform_id, &stream.platform_id, client).await?;
+            messages = res.0;
+            if let Some((next_timeout, next_continuation)) =
+                res.1.and_then(|c| c.get_continuation_and_timeout())
+            {
+                timeout = next_timeout;
+                continuation = Some(next_continuation);
+            }
+        }
+
+        let _ = collect_chat_and_events(stream.stream_id, messages, pool).await;
+
+        tokio::time::sleep(timeout).await;
+    }
+}
+
+async fn collect_chat_and_events(
     stream_id: i32,
     messages: Vec<LiveChatMessage>,
     pool: &PgPool,
@@ -217,20 +276,20 @@ pub async fn collect_donation_and_chat(
 
                 let value = match ty {
                     MemberMessageType::New => {
-                        StreamEventValue::YoutubeNewMember(YoutubeNewMemberDonationValue {
+                        StreamEventValue::YoutubeNewMember(YoutubeNewMember {
                             message: text,
                             author_name,
                             author_badges: (!badges.is_empty()).then_some(badges),
                             author_channel_id,
                         })
                     }
-                    MemberMessageType::Milestone => StreamEventValue::YoutubeMemberMilestone(
-                        YoutubeMemberMilestoneDonationValue {
+                    MemberMessageType::Milestone => {
+                        StreamEventValue::YoutubeMemberMilestone(YoutubeMemberMilestone {
                             author_name,
                             author_badges: (!badges.is_empty()).then_some(badges),
                             author_channel_id,
-                        },
-                    ),
+                        })
+                    }
                 };
 
                 stream_event_rows.push((time, value))
@@ -260,7 +319,7 @@ pub async fn collect_donation_and_chat(
 
                 let value = match ty {
                     PaidMessageType::SuperChat => {
-                        StreamEventValue::YoutubeSuperChat(YoutubeSuperChatDonationValue {
+                        StreamEventValue::YoutubeSuperChat(YoutubeSuperChat {
                             paid_amount,
                             paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,
@@ -271,7 +330,7 @@ pub async fn collect_donation_and_chat(
                         })
                     }
                     PaidMessageType::SuperSticker => {
-                        StreamEventValue::YoutubeSuperSticker(YoutubeSuperStickerDonationValue {
+                        StreamEventValue::YoutubeSuperSticker(YoutubeSuperSticker {
                             paid_amount,
                             paid_currency_symbol: paid_symbol.into(),
                             paid_color: color,

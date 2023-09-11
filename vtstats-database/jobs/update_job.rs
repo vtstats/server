@@ -8,7 +8,6 @@ pub struct UpdateJobQuery {
     pub status: JobStatus,
     pub last_run: DateTime<Utc>,
     pub next_run: Option<DateTime<Utc>>,
-    pub continuation: Option<String>,
 }
 
 impl UpdateJobQuery {
@@ -18,18 +17,16 @@ impl UpdateJobQuery {
      UPDATE jobs
         SET status       = $1,
             next_run     = $2,
-            last_run     = $5,
-            continuation = $3,
+            last_run     = $4,
             updated_at   = NOW()
-      WHERE job_id       = $4
+      WHERE job_id       = $3
   RETURNING *
             "#,
         )
         .bind(self.status) // $1
         .bind(self.next_run) // $2
-        .bind(self.continuation) // $3
-        .bind(self.job_id) // $4
-        .bind(self.last_run) // $5
+        .bind(self.job_id) // $3
+        .bind(self.last_run) // $4
         .fetch_one(pool);
 
         let job = crate::otel::execute_query!("UPDATE", "jobs", query)?;

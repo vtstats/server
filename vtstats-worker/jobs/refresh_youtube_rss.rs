@@ -9,7 +9,7 @@ use integration_youtube::{
     thumbnail::get_thumbnail,
 };
 use vtstats_database::{
-    channels::{list_youtube_channels, Platform},
+    channels::{list_active_channels_by_platform, Platform},
     streams::{ListYouTubeStreamsQuery, UpsertStreamQuery},
     PgPool,
 };
@@ -21,7 +21,7 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
 
     let now_str = now.to_string();
 
-    let youtube_channels = list_youtube_channels(pool).await?;
+    let youtube_channels = list_active_channels_by_platform(Platform::Youtube, pool).await?;
 
     let feeds = stream::unfold(youtube_channels.iter(), |mut iter| async {
         let channel = iter.next()?;
@@ -57,7 +57,6 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
     if missing.is_empty() {
         return Ok(JobResult::Next {
             run: now + Duration::hours(1),
-            continuation: None,
         });
     }
 
@@ -75,7 +74,6 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
         tracing::warn!("Stream not found, ids={:?}", missing);
         return Ok(JobResult::Next {
             run: now + Duration::hours(1),
-            continuation: None,
         });
     }
 
@@ -122,7 +120,6 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
 
     Ok(JobResult::Next {
         run: now + Duration::hours(1),
-        continuation: None,
     })
 }
 

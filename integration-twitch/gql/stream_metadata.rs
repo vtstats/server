@@ -10,11 +10,11 @@ static HASH: &str = "252a46e3f5b1ddc431b396e688331d8d020daec27079893ac7d4e6db759
 pub async fn stream_metadata(channel_login: &str, client: &Client) -> Result<Response> {
     let req = gql_request(
         client,
-        OPERATION.into(),
+        OPERATION,
         Variables {
             channel_login: channel_login.to_string(),
         },
-        HASH.into(),
+        HASH,
     );
 
     let res = send_request!(req)?;

@@ -7,8 +7,9 @@ use integration_discord::message::{
     EmbedImage, EmbedThumbnail, MessageReference,
 };
 use vtstats_database::{
+    channels::Platform,
     jobs::SendNotificationJobPayload,
-    streams::{find_stream_by_platform_id, Stream, StreamStatus},
+    streams::{get_stream_by_platform_id, Stream, StreamStatus},
     subscriptions::{
         list_discord_subscription_and_notification_by_vtuber_id, update_discord_notification,
         DiscordSubscriptionAndNotification, InsertNotificationQuery, NotificationPayload,
@@ -24,7 +25,8 @@ pub async fn execute(
     client: Client,
     payload: SendNotificationJobPayload,
 ) -> anyhow::Result<JobResult> {
-    let stream = find_stream_by_platform_id(&payload.stream_platform_id, pool).await?;
+    let stream =
+        get_stream_by_platform_id(Platform::Youtube, &payload.stream_platform_id, pool).await?;
 
     let Some(stream) = stream else {
         tracing::warn!(

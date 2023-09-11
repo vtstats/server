@@ -4,7 +4,7 @@ use crate::youtubei::context::Context;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Request<'r> {
+pub(crate) struct Request<'r> {
     pub context: Context,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub browse_id: Option<&'r str>,

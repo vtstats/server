@@ -9,8 +9,8 @@ use vtstats_database::{
         AddChannelViewStatsQuery, AddChannelViewStatsRow, ChannelRevenueStatsRow,
     },
     channels::{
-        list_bilibili_channels, list_twitch_channels, list_youtube_channels, update_channel_stats,
-        Channel, ChannelStatsSummary,
+        list_active_channels_by_platform, update_channel_stats, Channel, ChannelStatsSummary,
+        Platform,
     },
     stream_events::list_revenue_by_channel_start_at,
     PgPool,
@@ -22,9 +22,9 @@ use super::JobResult;
 pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult> {
     let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
 
-    let youtube_channels = list_youtube_channels(pool).await?;
-    let bilibili_channels = list_bilibili_channels(pool).await?;
-    let twitch_channels = list_twitch_channels(pool).await?;
+    let youtube_channels = list_active_channels_by_platform(Platform::Youtube, pool).await?;
+    let bilibili_channels = list_active_channels_by_platform(Platform::Bilibili, pool).await?;
+    let twitch_channels = list_active_channels_by_platform(Platform::Twitch, pool).await?;
 
     let (mut youtube_view_stats, mut youtube_subscriber_stats) =
         youtube_channels_stats(&youtube_channels, client)
@@ -140,7 +140,6 @@ pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult
 
     Ok(JobResult::Next {
         run: now + Duration::hours(1),
-        continuation: None,
     })
 }
 

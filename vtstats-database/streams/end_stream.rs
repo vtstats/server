@@ -13,6 +13,25 @@ pub async fn end_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
     Ok(())
 }
 
+pub async fn end_twitch_stream(
+    channel_id: i32,
+    thumbnail_url: Option<String>,
+    pool: &PgPool,
+) -> Result<()> {
+    let query = sqlx::query!(
+        "UPDATE streams \
+        SET status = 'ended', end_time = NOW(), thumbnail_url = COALESCE($1, thumbnail_url) \
+        WHERE channel_id = $2",
+        thumbnail_url,
+        channel_id
+    )
+    .execute(pool);
+
+    crate::otel::execute_query!("UPDATE", "streams", query)?;
+
+    Ok(())
+}
+
 pub async fn end_stream_with_values(
     stream_id: i32,
     title: Option<&str>,
@@ -20,6 +39,7 @@ pub async fn end_stream_with_values(
     start_time: Option<DateTime<Utc>>,
     end_time: Option<DateTime<Utc>>,
     likes: Option<i32>,
+    thumbnail_url: Option<String>,
     pool: &PgPool,
 ) -> Result<()> {
     let query = sqlx::query!(
@@ -31,15 +51,17 @@ pub async fn end_stream_with_values(
         start_time    = COALESCE($3, start_time),
         schedule_time = COALESCE($4, schedule_time),
         like_max      = GREATEST($5, like_max),
+        thumbnail_url = COALESCE($6, thumbnail_url),
         updated_at    = NOW()
-  WHERE stream_id     = $6
+  WHERE stream_id     = $7
         "#,
         title,         // $1
         end_time,      // $2
         start_time,    // $3
         schedule_time, // $4
         likes,         // $5
-        stream_id,     // $6
+        thumbnail_url, // $6
+        stream_id,     // $7
     )
     .execute(pool);
 
@@ -67,7 +89,7 @@ async fn test(pool: PgPool) -> Result<()> {
     {
         let time = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(9000, 0).unwrap(), Utc);
 
-        end_stream_with_values(1, None, None, None, Some(time), Some(0), &pool).await?;
+        end_stream_with_values(1, None, None, None, Some(time), Some(0), None, &pool).await?;
 
         let row = sqlx::query!(
             r#"SELECT status::TEXT, like_max, end_time FROM streams WHERE stream_id = 1"#
@@ -81,7 +103,7 @@ async fn test(pool: PgPool) -> Result<()> {
     }
 
     {
-        end_stream_with_values(3, None, None, None, None, Some(200), &pool).await?;
+        end_stream_with_values(3, None, None, None, None, Some(200), None, &pool).await?;
 
         let row = sqlx::query!(
             r#"SELECT status::TEXT, like_max, end_time FROM streams WHERE stream_id = 3"#

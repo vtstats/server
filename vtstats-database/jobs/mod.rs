@@ -93,7 +93,6 @@ pub enum JobPayload {
 #[derive(Serialize)]
 pub struct Job {
     pub job_id: i32,
-    pub continuation: Option<String>,
     pub status: JobStatus,
     #[serde(with = "ts_milliseconds")]
     pub created_at: DateTime<Utc>,
@@ -144,7 +143,6 @@ impl FromRow<'_, PgRow> for Job {
         let kind = row.try_get::<JobKind, _>("kind")?;
         Ok(Job {
             job_id: row.try_get("job_id")?,
-            continuation: row.try_get("continuation")?,
             status: row.try_get("status")?,
             created_at: row.try_get("created_at")?,
             updated_at: row.try_get("updated_at")?,

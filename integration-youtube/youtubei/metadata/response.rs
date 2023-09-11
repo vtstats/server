@@ -21,30 +21,25 @@ impl Response {
 
     pub fn is_waiting(&self) -> bool {
         self.actions.iter().any(|action| {
-            if let Some(action) = &action.update_viewership_action {
-                action
-                    .view_count
-                    .video_view_count_renderer
-                    .view_count
-                    .simple_text
-                    .contains("waiting")
-            } else {
-                false
-            }
+            action
+                .update_viewership_action
+                .as_ref()
+                .and_then(|action| action.view_count.as_ref())
+                .and_then(|view_count| view_count.video_view_count_renderer.view_count.as_ref())
+                .map(|view_count| view_count.simple_text.contains("waiting"))
+                .unwrap_or(false)
         })
     }
 
     pub fn view_count(&self) -> Option<i32> {
         self.actions.iter().find_map(|action| {
-            action.update_viewership_action.as_ref().and_then(|action| {
-                action
-                    .view_count
-                    .video_view_count_renderer
-                    .view_count
-                    .simple_text
-                    .strip_suffix("watching now")
-                    .and_then(|v| v.replace(',', "").trim().parse().ok())
-            })
+            action
+                .update_viewership_action
+                .as_ref()
+                .and_then(|action| action.view_count.as_ref())
+                .and_then(|view_count| view_count.video_view_count_renderer.view_count.as_ref())
+                .and_then(|view_count| view_count.simple_text.strip_suffix("watching now"))
+                .and_then(|v| v.replace(',', "").trim().parse().ok())
         })
     }
 
@@ -129,7 +124,8 @@ pub struct Action {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateViewershipAction {
-    pub view_count: UpdateViewershipActionViewCount,
+    #[serde(default)]
+    pub view_count: Option<UpdateViewershipActionViewCount>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -141,7 +137,8 @@ pub struct UpdateViewershipActionViewCount {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoViewCountRenderer {
-    pub view_count: VideoViewCountRendererViewCount,
+    #[serde(default)]
+    pub view_count: Option<VideoViewCountRendererViewCount>,
 }
 
 #[derive(Deserialize, Debug)]

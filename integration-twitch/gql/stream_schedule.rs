@@ -9,21 +9,21 @@ static OPERATION: &str = "StreamSchedule";
 static HASH: &str = "d495cb17a67b6f7a8842e10297e57dcd553ea17fe691db435e39a618fe4699cf";
 
 pub async fn stream_schedule(
-    channel_username: String,
+    channel_login: String,
     start_at: DateTime<Utc>,
     client: &Client,
 ) -> Result<Response> {
     let req = gql_request(
         client,
-        OPERATION.into(),
+        OPERATION,
         Variables {
-            login: channel_username,
+            login: channel_login,
             starting_weekday: "MONDAY".to_string(),
             utc_offset_minutes: 0,
             start_at,
             end_at: start_at + Duration::weeks(1),
         },
-        HASH.into(),
+        HASH,
     );
 
     let res = send_request!(req)?;

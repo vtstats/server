@@ -17,7 +17,7 @@ pub async fn get_thumbnail(
         let (filename, content_type) = if url.contains("vi_webp") {
             (format!("{video_id}.webp"), "image/webp".into())
         } else {
-            (format!("{video_id}.jpg"), "image/webp".into())
+            (format!("{video_id}.jpg"), "image/jpeg".into())
         };
 
         let bytes = res.bytes().await?.to_vec();
