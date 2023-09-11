@@ -1,4 +1,4 @@
-use metrics::{histogram, increment_counter};
+use metrics::histogram;
 use std::{env, net::SocketAddr};
 use tokio::sync::oneshot::Receiver;
 use tracing::{field::Empty, Span};
@@ -62,12 +62,6 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
                 "method" => method.clone(),
                 "status_code" => status_code.clone(),
                 "path" => path.clone()
-            );
-            increment_counter!(
-                "http_server_requests_count",
-                "method" => method,
-                "status_code" => status_code,
-                "path" => path
             );
         }))
         .with(warp::trace(|info| {

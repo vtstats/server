@@ -6,7 +6,7 @@ pub mod subscribe_youtube_pubsub;
 pub mod update_channel_stats;
 
 use chrono::{DateTime, Utc};
-use metrics::{histogram, increment_counter};
+use metrics::histogram;
 use reqwest::Client;
 use std::time::Instant;
 use tokio::sync::mpsc::Sender;
@@ -62,11 +62,6 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
         histogram!(
             "worker_jobs_elapsed_seconds",
             start.elapsed(),
-            "kind" => job_type,
-            "status" => status
-        );
-        increment_counter!(
-            "worker_jobs_count",
             "kind" => job_type,
             "status" => status
         );

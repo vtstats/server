@@ -1,6 +1,6 @@
 use backon::{ExponentialBuilder, Retryable};
 use futures::TryFutureExt;
-use metrics::{histogram, increment_counter};
+use metrics::histogram;
 use metrics_exporter_prometheus::PrometheusBuilder;
 use metrics_util::MetricKindMask;
 use reqwest::Request;
@@ -108,13 +108,7 @@ async fn execute_with_metrics(
                 "method" => method.clone(),
                 "path" => path.clone(),
                 "host" => host.clone(),
-            );
-            increment_counter!(
-                "http_client_requests_count",
-                "method" => method,
                 "status_code" => status_code,
-                "path" => path,
-                "host" => host,
             );
             res
         })
