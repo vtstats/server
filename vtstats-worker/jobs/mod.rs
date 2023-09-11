@@ -1,13 +1,9 @@
-pub mod collect_twitch_stream;
-pub mod collect_youtube_stream_metadata;
+pub mod collect_stream_stats;
 pub mod health_check;
-pub mod install_discord_command;
 pub mod refresh_youtube_rss;
 pub mod send_notification;
 pub mod subscribe_youtube_pubsub;
 pub mod update_channel_stats;
-pub mod update_currency_exchange_rate;
-pub mod upsert_youtube_stream;
 
 use chrono::{DateTime, Utc};
 use metrics::{histogram, increment_counter};
@@ -49,19 +45,17 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, client).await,
             SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, client).await,
             UpdateChannelStats => update_channel_stats::execute(&pool, &client).await,
-            // TODO:
-            UpdateCurrencyExchangeRate => update_currency_exchange_rate::execute(&pool).await,
-            UpsertYoutubeStream(payload) => {
-                upsert_youtube_stream::execute(&pool, client, payload).await
-            }
             CollectYoutubeStreamMetadata(payload) => {
-                collect_youtube_stream_metadata::execute(&pool, client, payload).await
+                collect_stream_stats::execute(&pool, client, payload.stream_id).await
             }
             CollectTwitchStreamMetadata(payload) => {
-                collect_twitch_stream::execute(&pool, client, payload).await
+                collect_stream_stats::execute(&pool, client, payload.stream_id).await
             }
             SendNotification(payload) => send_notification::execute(&pool, client, payload).await,
-            InstallDiscordCommands => install_discord_command::execute(&client).await,
+            // TODO: remove
+            UpsertYoutubeStream(_) => Ok(JobResult::Completed),
+            UpdateCurrencyExchangeRate => Ok(JobResult::Completed),
+            InstallDiscordCommands => Ok(JobResult::Completed),
         };
 
         let status = if result.is_ok() { "ok" } else { "err" };

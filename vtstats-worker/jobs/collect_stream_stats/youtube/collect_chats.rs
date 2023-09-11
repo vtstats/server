@@ -1,192 +1,27 @@
-use chrono::{DateTime, Duration, DurationRound, NaiveDateTime, Utc};
-use integration_s3::upload_file;
-use reqwest::Client;
-use tokio::signal::unix;
-
-use integration_youtube::{
-    data_api::videos::list_videos,
-    thumbnail::get_thumbnail,
-    youtubei::{
-        live_chat::{LiveChatMessage, MemberMessageType, PaidMessageType},
-        updated_metadata, updated_metadata_with_continuation, youtube_live_chat,
-        youtube_live_chat_with_continuation,
-    },
+use chrono::{DateTime, DurationRound, TimeZone, Utc};
+use integration_youtube::youtubei::{
+    youtube_live_chat, youtube_live_chat_with_continuation, LiveChatMessage, MemberMessageType,
+    PaidMessageType,
 };
+use reqwest::Client;
+use std::time::Duration;
 use vtstats_database::{
-    channels::{get_channel_by_id, Channel},
-    jobs::{queue_send_notification, CollectYoutubeStreamMetadataJobPayload},
+    channels::Channel,
     stream_events::{
         add_stream_events, StreamEventValue, YoutubeMemberMilestone, YoutubeNewMember,
         YoutubeSuperChat, YoutubeSuperSticker,
     },
-    stream_stats::{AddStreamChatStatsQuery, AddStreamChatStatsRow, AddStreamViewerStatsQuery},
-    streams::{
-        delete_stream, end_stream, end_stream_with_values, get_stream_by_id, start_stream, Stream,
-        StreamStatus,
-    },
+    stream_stats::{AddStreamChatStatsQuery, AddStreamChatStatsRow},
+    streams::Stream,
     PgPool,
 };
 
-use super::JobResult;
-
-pub async fn execute(
-    pool: &PgPool,
-    client: Client,
-    payload: CollectYoutubeStreamMetadataJobPayload,
-) -> anyhow::Result<JobResult> {
-    let Some(stream) = get_stream_by_id(payload.stream_id, pool).await? else {
-        return Ok(JobResult::Completed);
-    };
-
-    let Some(channel) = get_channel_by_id(stream.channel_id, pool).await? else {
-        return Ok(JobResult::Completed);
-    };
-
-    let (Ok(mut sigint), Ok(mut sigterm)) = (
-        unix::signal(unix::SignalKind::interrupt()),
-        unix::signal(unix::SignalKind::terminate()),
-    ) else {
-        anyhow::bail!("Failed to listen unix signal")
-    };
-
-    tokio::select! {
-        _ = collect_stream_metadata(&stream, &client, pool) => {
-            Ok(JobResult::Completed)
-        },
-        _ = collect_stream_chats(&channel, &stream, &client, pool) => {
-            Ok(JobResult::Completed)
-        },
-        _ = sigint.recv() => {
-            Ok(JobResult::Next { run: Utc::now() })
-        },
-        _ = sigterm.recv() => {
-            Ok(JobResult::Next { run: Utc::now() })
-        },
-    }
-}
-
-async fn collect_stream_metadata(
-    stream: &Stream,
-    client: &Client,
-    pool: &PgPool,
-) -> anyhow::Result<()> {
-    let mut continuation: Option<String> = None;
-    let mut status = stream.status;
-
-    loop {
-        let metadata = if let Some(continuation) = &continuation {
-            updated_metadata_with_continuation(continuation, client).await
-        } else {
-            updated_metadata(&stream.platform_id, client).await
-        }?;
-
-        let (Some(timeout), Some(next_continuation)) =
-            (metadata.timeout(), metadata.continuation())
-        else {
-            // stream not found
-            if status == StreamStatus::Scheduled {
-                delete_stream(stream.stream_id, pool).await?;
-            } else {
-                end_stream(stream.stream_id, pool).await?;
-            }
-            return Ok(());
-        };
-
-        continuation = Some(next_continuation.to_string());
-
-        // stream is still waiting
-        if metadata.is_waiting() {
-            tokio::time::sleep(timeout).await;
-            continue;
-        }
-
-        // record view stats
-        if let Some(viewer) = metadata.view_count() {
-            AddStreamViewerStatsQuery {
-                time: Utc::now().duration_trunc(Duration::seconds(15)).unwrap(),
-                count: viewer,
-                stream_id: stream.stream_id,
-            }
-            .execute(pool)
-            .await?;
-        }
-
-        // stream has ended
-        if timeout.as_secs() > 5 {
-            if status == StreamStatus::Scheduled {
-                delete_stream(stream.stream_id, pool).await?;
-                return Ok(());
-            }
-
-            let mut videos = list_videos(&stream.platform_id, client).await?;
-            let video: Option<integration_youtube::data_api::videos::Stream> =
-                videos.pop().and_then(Into::into);
-
-            // update thumbnail url after stream is ended
-            let thumbnail_url = match get_thumbnail(&stream.platform_id, client).await {
-                Ok((filename, content_type, bytes)) => {
-                    match upload_file(&filename, bytes, &content_type, client).await {
-                        Ok(thumbnail_url) => Some(thumbnail_url),
-                        Err(err) => {
-                            tracing::error!(exception.stacktrace = ?err, message= %err);
-                            None
-                        }
-                    }
-                }
-                Err(err) => {
-                    tracing::error!(exception.stacktrace = ?err, message= %err);
-                    None
-                }
-            };
-
-            end_stream_with_values(
-                stream.stream_id,
-                video.as_ref().map(|s| s.title.as_str()),
-                video.as_ref().and_then(|s| s.schedule_time),
-                video.as_ref().and_then(|s| s.start_time),
-                video.as_ref().and_then(|s| s.end_time),
-                video.as_ref().and_then(|s| s.likes),
-                thumbnail_url,
-                pool,
-            )
-            .await?;
-
-            queue_send_notification(
-                Utc::now(),
-                "youtube".into(),
-                stream.platform_id.to_string(),
-                stream.vtuber_id.to_string(),
-                pool,
-            )
-            .await?;
-
-            return Ok(());
-        }
-
-        if status == StreamStatus::Scheduled {
-            start_stream(
-                stream.stream_id,
-                metadata.title().as_deref(),
-                Utc::now(),
-                metadata.like_count(),
-                pool,
-            )
-            .await?;
-            status = StreamStatus::Live;
-        }
-
-        tokio::time::sleep(timeout).await;
-    }
-}
-
-async fn collect_stream_chats(
+pub async fn collect_chats(
     channel: &Channel,
     stream: &Stream,
     client: &Client,
     pool: &PgPool,
 ) -> anyhow::Result<()> {
-    use std::time::Duration;
-
     let mut continuation: Option<String> = None;
     let mut timeout = Duration::from_secs(15);
 
@@ -241,7 +76,7 @@ async fn collect_chat_and_events(
                     continue;
                 };
 
-                let time = time.duration_trunc(Duration::seconds(15)).unwrap();
+                let time = time.duration_trunc(chrono::Duration::seconds(15)).unwrap();
 
                 let from_member = badges
                     .iter()
@@ -364,16 +199,7 @@ async fn collect_chat_and_events(
 }
 
 pub fn parse_timestamp(string: &str) -> Option<DateTime<Utc>> {
-    if string.len() <= 6 {
-        return None;
-    }
-
-    let (secs, nsecs) = string.split_at(string.len() - 6);
-
-    Some(DateTime::from_utc(
-        NaiveDateTime::from_timestamp_opt(secs.parse().ok()?, nsecs.parse().ok()?)?,
-        Utc,
-    ))
+    Utc.timestamp_millis_opt(string.parse().ok()?).single()
 }
 
 fn parse_amount(amount: &str) -> Option<(&str, String)> {
@@ -402,17 +228,11 @@ fn test_parse_timestamp() {
     assert_eq!(parse_timestamp("XXXXXXXXXXXXXXXX"), None);
     assert_eq!(
         parse_timestamp("1620129525000000"),
-        Some(DateTime::from_utc(
-            NaiveDateTime::from_timestamp_opt(1620129525, 0).unwrap(),
-            Utc,
-        ))
+        Some(Utc.timestamp_millis_opt(1620129525000000).single().unwrap())
     );
     assert_eq!(
         parse_timestamp("1620129525606474"),
-        Some(DateTime::from_utc(
-            NaiveDateTime::from_timestamp_opt(1620129525, 606474).unwrap(),
-            Utc,
-        ))
+        Some(Utc.timestamp_millis_opt(1620129525606474).single().unwrap())
     );
 }
 
