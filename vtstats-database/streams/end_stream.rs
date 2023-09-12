@@ -21,7 +21,7 @@ pub async fn end_twitch_stream(
     let query = sqlx::query!(
         "UPDATE streams \
         SET status = 'ended', end_time = NOW(), thumbnail_url = COALESCE($1, thumbnail_url) \
-        WHERE channel_id = $2",
+        WHERE channel_id = $2 AND status = 'live'",
         thumbnail_url,
         channel_id
     )
