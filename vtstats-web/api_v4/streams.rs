@@ -6,7 +6,7 @@ use warp::{reply::Response, Rejection, Reply};
 use vtstats_database::channels::Platform;
 use vtstats_database::streams::{
     filter_streams_order_by_schedule_time_asc, filter_streams_order_by_start_time_desc,
-    get_stream_by_platform_id, StreamStatus,
+    get_stream_by_id, get_stream_by_platform_id, StreamStatus,
 };
 use vtstats_database::PgPool;
 
@@ -29,19 +29,28 @@ pub struct ReqQuery {
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReqQuery_ {
-    platform_id: String,
-    platform: Platform,
+    #[serde(default)]
+    platform_id: Option<String>,
+    #[serde(default)]
+    platform: Option<Platform>,
+    #[serde(default)]
+    id: Option<i32>,
 }
 
 pub async fn list_stream_by_platform_id(
     query: ReqQuery_,
     pool: PgPool,
 ) -> Result<Response, Rejection> {
-    let streams = get_stream_by_platform_id(query.platform, &query.platform_id, &pool)
-        .await
-        .map_err(Into::<WarpError>::into)?;
+    let stream = match (query.id, query.platform, query.platform_id) {
+        (Some(id), None, None) => get_stream_by_id(id, &pool).await,
+        (None, Some(platform), Some(platform_id)) => {
+            get_stream_by_platform_id(platform, &platform_id, &pool).await
+        }
+        _ => return Err(warp::reject::reject()),
+    }
+    .map_err(Into::<WarpError>::into)?;
 
-    Ok(warp::reply::json(&streams).into_response())
+    Ok(warp::reply::json(&stream).into_response())
 }
 
 pub async fn list_scheduled_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
