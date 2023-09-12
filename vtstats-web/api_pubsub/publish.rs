@@ -112,7 +112,7 @@ async fn handle_modification(
         _ => {}
     }
 
-    let next = now.duration_trunc(Duration::seconds(5)).unwrap() + Duration::seconds(5);
+    let next = now.duration_trunc(Duration::seconds(5))? + Duration::seconds(5);
 
     queue_send_notification(
         next,

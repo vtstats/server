@@ -67,7 +67,7 @@ pub async fn collect_chats(stream_id: i32, login: &str, pool: &PgPool) -> anyhow
             LiveChatMessage::Subscriber { timestamp, .. } => (timestamp, true),
         };
 
-        let timestamp = timestamp.duration_trunc(Duration::seconds(15)).unwrap();
+        let timestamp = timestamp.duration_trunc(Duration::seconds(15))?;
 
         match time {
             Some(time) if time != timestamp => {

@@ -9,8 +9,6 @@ use vtstats_database::PgPool;
 use super::JobResult;
 
 pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult> {
-    let next_run = Utc::now().duration_trunc(Duration::days(1)).unwrap() + Duration::days(1);
-
     let channels = list_active_channels_by_platform(Platform::Youtube, pool).await?;
 
     let _ = stream::unfold(channels.iter(), |mut iter| async {
@@ -24,6 +22,8 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
     })
     .try_collect::<Vec<()>>()
     .await?;
+
+    let next_run = Utc::now().duration_trunc(Duration::days(1))? + Duration::days(1);
 
     Ok(JobResult::Next { run: next_run })
 }

@@ -53,7 +53,7 @@ pub async fn collect_viewers(
         // record view stats
         if let Some(viewer) = metadata.view_count() {
             AddStreamViewerStatsQuery {
-                time: Utc::now().duration_trunc(Duration::seconds(15)).unwrap(),
+                time: Utc::now().duration_trunc(Duration::seconds(15))?,
                 count: viewer,
                 stream_id: stream.stream_id,
             }

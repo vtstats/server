@@ -15,7 +15,7 @@ pub async fn collect_viewers(
         if let Some(stream) = res.data.user.stream {
             AddStreamViewerStatsQuery {
                 stream_id,
-                time: Utc::now().duration_trunc(Duration::seconds(15)).unwrap(),
+                time: Utc::now().duration_trunc(Duration::seconds(15))?,
                 count: stream.viewers_count,
             }
             .execute(pool)

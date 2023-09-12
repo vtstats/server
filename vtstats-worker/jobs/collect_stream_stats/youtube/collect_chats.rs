@@ -76,7 +76,7 @@ async fn collect_chat_and_events(
                     continue;
                 };
 
-                let time = time.duration_trunc(chrono::Duration::seconds(15)).unwrap();
+                let time = time.duration_trunc(chrono::Duration::seconds(15))?;
 
                 let from_member = badges
                     .iter()

@@ -20,7 +20,7 @@ use vtstats_utils::currency::currency_symbol_to_code;
 use super::JobResult;
 
 pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult> {
-    let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
+    let now = Utc::now().duration_trunc(Duration::hours(1))?;
 
     let youtube_channels = list_active_channels_by_platform(Platform::Youtube, pool).await?;
     let bilibili_channels = list_active_channels_by_platform(Platform::Bilibili, pool).await?;

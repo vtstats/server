@@ -17,7 +17,7 @@ use vtstats_database::{
 use super::JobResult;
 
 pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult> {
-    let now = Utc::now().duration_trunc(Duration::hours(1)).unwrap();
+    let now = Utc::now().duration_trunc(Duration::hours(1))?;
 
     let now_str = now.to_string();
 

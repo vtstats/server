@@ -1,3 +1,5 @@
+#![deny(clippy::unwrap_used)]
+
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use reqwest::{ClientBuilder, Proxy};
 use std::env;
