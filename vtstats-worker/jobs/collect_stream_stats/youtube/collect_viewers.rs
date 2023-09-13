@@ -9,9 +9,7 @@ use reqwest::Client;
 use vtstats_database::{
     jobs::queue_send_notification,
     stream_stats::AddStreamViewerStatsQuery,
-    streams::{
-        delete_stream, end_stream, end_stream_with_values, start_stream, Stream, StreamStatus,
-    },
+    streams::{delete_stream, end_stream_with_values, start_stream, Stream, StreamStatus},
     PgPool,
 };
 
@@ -35,9 +33,10 @@ pub async fn collect_viewers(
         else {
             // stream not found
             if status == StreamStatus::Scheduled {
+                tracing::warn!("delete schedule stream {}", stream.platform_id);
                 delete_stream(stream.stream_id, pool).await?;
             } else {
-                end_stream(stream.stream_id, pool).await?;
+                end_youtube_stream(stream, client, pool).await?;
             }
             return Ok(());
         };
@@ -64,52 +63,11 @@ pub async fn collect_viewers(
         // stream has ended
         if timeout.as_secs() > 5 {
             if status == StreamStatus::Scheduled {
+                tracing::warn!("delete schedule stream {}", stream.platform_id);
                 delete_stream(stream.stream_id, pool).await?;
-                return Ok(());
+            } else {
+                end_youtube_stream(stream, client, pool).await?;
             }
-
-            let mut videos = list_videos(&stream.platform_id, client).await?;
-            let video: Option<integration_youtube::data_api::videos::Stream> =
-                videos.pop().and_then(Into::into);
-
-            // update thumbnail url after stream is ended
-            let thumbnail_url = match get_thumbnail(&stream.platform_id, client).await {
-                Ok((filename, content_type, bytes)) => {
-                    match upload_file(&filename, bytes, &content_type, client).await {
-                        Ok(thumbnail_url) => Some(thumbnail_url),
-                        Err(err) => {
-                            tracing::error!(exception.stacktrace = ?err, message= %err);
-                            None
-                        }
-                    }
-                }
-                Err(err) => {
-                    tracing::error!(exception.stacktrace = ?err, message= %err);
-                    None
-                }
-            };
-
-            end_stream_with_values(
-                stream.stream_id,
-                video.as_ref().map(|s| s.title.as_str()),
-                video.as_ref().and_then(|s| s.schedule_time),
-                video.as_ref().and_then(|s| s.start_time),
-                video.as_ref().and_then(|s| s.end_time),
-                video.as_ref().and_then(|s| s.likes),
-                thumbnail_url,
-                pool,
-            )
-            .await?;
-
-            queue_send_notification(
-                Utc::now(),
-                "youtube".into(),
-                stream.platform_id.to_string(),
-                stream.vtuber_id.to_string(),
-                pool,
-            )
-            .await?;
-
             return Ok(());
         }
 
@@ -127,4 +85,50 @@ pub async fn collect_viewers(
 
         tokio::time::sleep(timeout).await;
     }
+}
+
+async fn end_youtube_stream(stream: &Stream, client: &Client, pool: &PgPool) -> anyhow::Result<()> {
+    let mut videos = list_videos(&stream.platform_id, client).await?;
+    let video: Option<integration_youtube::data_api::videos::Stream> =
+        videos.pop().and_then(Into::into);
+
+    // update thumbnail url after stream is ended
+    let thumbnail_url = match get_thumbnail(&stream.platform_id, client).await {
+        Ok((filename, content_type, bytes)) => {
+            match upload_file(&filename, bytes, &content_type, client).await {
+                Ok(thumbnail_url) => Some(thumbnail_url),
+                Err(err) => {
+                    tracing::error!(exception.stacktrace = ?err, message= %err);
+                    None
+                }
+            }
+        }
+        Err(err) => {
+            tracing::error!(exception.stacktrace = ?err, message= %err);
+            None
+        }
+    };
+
+    end_stream_with_values(
+        stream.stream_id,
+        video.as_ref().map(|s| s.title.as_str()),
+        video.as_ref().and_then(|s| s.schedule_time),
+        video.as_ref().and_then(|s| s.start_time),
+        video.as_ref().and_then(|s| s.end_time),
+        video.as_ref().and_then(|s| s.likes),
+        thumbnail_url,
+        pool,
+    )
+    .await?;
+
+    queue_send_notification(
+        Utc::now(),
+        "youtube".into(),
+        stream.platform_id.to_string(),
+        stream.vtuber_id.to_string(),
+        pool,
+    )
+    .await?;
+
+    Ok(())
 }

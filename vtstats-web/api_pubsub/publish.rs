@@ -134,6 +134,7 @@ async fn handle_deletion(platform_stream_id: &str, pool: &PgPool) -> anyhow::Res
     };
 
     if stream.status == StreamStatus::Scheduled {
+        tracing::warn!("delete schedule stream {}", stream.platform_id);
         delete_stream(stream.stream_id, pool).await?;
     } else {
         end_stream(stream.stream_id, pool).await?;

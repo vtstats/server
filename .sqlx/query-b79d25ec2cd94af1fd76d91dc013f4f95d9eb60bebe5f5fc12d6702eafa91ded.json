@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE from stream_chat_stats WHERE stream_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b79d25ec2cd94af1fd76d91dc013f4f95d9eb60bebe5f5fc12d6702eafa91ded"
+}

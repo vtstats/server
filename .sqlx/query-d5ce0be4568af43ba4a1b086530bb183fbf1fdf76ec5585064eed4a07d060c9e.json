@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE from stream_viewer_stats WHERE stream_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d5ce0be4568af43ba4a1b086530bb183fbf1fdf76ec5585064eed4a07d060c9e"
+}
