@@ -1,3 +1,4 @@
+pub mod collect_channel_stats;
 pub mod collect_stream_stats;
 pub mod health_check;
 pub mod refresh_youtube_rss;
@@ -6,7 +7,7 @@ pub mod subscribe_youtube_pubsub;
 pub mod update_channel_stats;
 
 use chrono::{DateTime, Utc};
-use metrics::histogram;
+use metrics::{decrement_gauge, histogram, increment_gauge};
 use reqwest::Client;
 use std::time::Instant;
 use tokio::sync::mpsc::Sender;
@@ -40,6 +41,12 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
     async move {
         let start = Instant::now();
 
+        increment_gauge!(
+            "worker_jobs_running_count",
+            1.,
+            "kind" => job_type
+        );
+
         let result = match payload {
             HealthCheck => health_check::execute().await,
             RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, client).await,
@@ -64,6 +71,11 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             start.elapsed(),
             "kind" => job_type,
             "status" => status
+        );
+        decrement_gauge!(
+            "worker_jobs_running_count",
+            1.,
+            "kind" => job_type
         );
 
         let query = match result {
