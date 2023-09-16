@@ -27,15 +27,14 @@ pub async fn channel_subscriber_stats(
     crate::otel::execute_query!("SELECT", "channel_subscriber_stats", query)
 }
 
-pub async fn channel_subscriber_stats_before(
-    before: DateTime<Utc>,
+pub async fn channel_subscriber_stats_at(
+    at: DateTime<Utc>,
     pool: &PgPool,
 ) -> Result<Vec<AddChannelSubscriberStatsRow>> {
     let query = sqlx::query_as!(
         AddChannelSubscriberStatsRow,
-        "SELECT channel_id, count AS value FROM channel_subscriber_stats WHERE (time, channel_id) IN \
-        (SELECT MAX(time), channel_id FROM channel_subscriber_stats WHERE time <= $1 GROUP BY channel_id)",
-        before
+        "SELECT channel_id, count AS value FROM channel_subscriber_stats WHERE time = $1",
+        at
     )
     .fetch_all(pool);
 

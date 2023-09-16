@@ -4,8 +4,8 @@ use reqwest::Client;
 use tokio::try_join;
 use vtstats_database::{
     channel_stats::{
-        add_channel_revenue_stats, channel_revenue_stats_before, channel_subscriber_stats_before,
-        channel_view_stats_before, AddChannelSubscriberStatsQuery, AddChannelSubscriberStatsRow,
+        add_channel_revenue_stats, channel_revenue_stats_at, channel_subscriber_stats_at,
+        channel_view_stats_at, AddChannelSubscriberStatsQuery, AddChannelSubscriberStatsRow,
         AddChannelViewStatsQuery, AddChannelViewStatsRow, ChannelRevenueStatsRow,
     },
     channels::{
@@ -75,15 +75,15 @@ pub async fn execute(pool: &PgPool, client: &Client) -> anyhow::Result<JobResult
         ref mut revenue_stats_7d_ago,
         ref mut revenue_stats_30d_ago,
     ) = try_join!(
-        channel_view_stats_before(now - Duration::days(1), pool),
-        channel_view_stats_before(now - Duration::days(7), pool),
-        channel_view_stats_before(now - Duration::days(30), pool),
-        channel_subscriber_stats_before(now - Duration::days(1), pool),
-        channel_subscriber_stats_before(now - Duration::days(7), pool),
-        channel_subscriber_stats_before(now - Duration::days(30), pool),
-        channel_revenue_stats_before(now - Duration::days(1), pool),
-        channel_revenue_stats_before(now - Duration::days(7), pool),
-        channel_revenue_stats_before(now - Duration::days(30), pool),
+        channel_view_stats_at(now - Duration::days(1), pool),
+        channel_view_stats_at(now - Duration::days(7), pool),
+        channel_view_stats_at(now - Duration::days(30), pool),
+        channel_subscriber_stats_at(now - Duration::days(1), pool),
+        channel_subscriber_stats_at(now - Duration::days(7), pool),
+        channel_subscriber_stats_at(now - Duration::days(30), pool),
+        channel_revenue_stats_at(now - Duration::days(1), pool),
+        channel_revenue_stats_at(now - Duration::days(7), pool),
+        channel_revenue_stats_at(now - Duration::days(30), pool),
     )?;
 
     if !revenue_stats.is_empty() {
@@ -148,7 +148,7 @@ async fn channel_revenue_stats(
     start_at: DateTime<Utc>,
     pool: &PgPool,
 ) -> anyhow::Result<Vec<ChannelRevenueStatsRow>> {
-    let mut _1h_ago = channel_revenue_stats_before(start_at, pool).await?;
+    let mut _1h_ago = channel_revenue_stats_at(start_at, pool).await?;
 
     let mut new = list_revenue_by_channel_start_at(start_at, pool).await?;
 

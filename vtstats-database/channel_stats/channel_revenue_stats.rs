@@ -31,14 +31,13 @@ pub async fn channel_revenue_stats(
     crate::otel::execute_query!("SELECT", "channel_revenue_stats", query)
 }
 
-pub async fn channel_revenue_stats_before(
-    before: DateTime<Utc>,
+pub async fn channel_revenue_stats_at(
+    at: DateTime<Utc>,
     pool: &PgPool,
 ) -> Result<Vec<ChannelRevenueStatsRow>> {
     let query = sqlx::query!(
-        "SELECT channel_id, value FROM channel_revenue_stats WHERE (time, channel_id) IN \
-        (SELECT MAX(time), channel_id FROM channel_revenue_stats WHERE time <= $1 GROUP BY channel_id)",
-        before
+        "SELECT channel_id, value FROM channel_revenue_stats WHERE time = $1",
+        at
     )
     .try_map(|r| {
         Ok(ChannelRevenueStatsRow {

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT channel_id, value FROM channel_revenue_stats WHERE (time, channel_id) IN (SELECT MAX(time), channel_id FROM channel_revenue_stats WHERE time <= $1 GROUP BY channel_id)",
+  "query": "SELECT channel_id, value FROM channel_revenue_stats WHERE time = $1",
   "describe": {
     "columns": [
       {
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "2d00a662db6044155cbc9f4086160e5ca0146d00324c197b1f22e9cd661e4e68"
+  "hash": "0981eb7c3f17b6b37c2795baec2d83537a2a14c3a61e15c69ef372690ef2ce7e"
 }

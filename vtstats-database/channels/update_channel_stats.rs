@@ -25,18 +25,18 @@ pub async fn update_channel_stats(
 ) -> Result<()> {
     let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
         "UPDATE channels AS c SET \
-        view = n.view, \
-        view_1d_ago = n.view_1d_ago, \
-        view_7d_ago = n.view_7d_ago, \
-        view_30d_ago = n.view_30d_ago, \
-        subscriber = n.subscriber, \
-        subscriber_1d_ago = n.subscriber_1d_ago, \
-        subscriber_7d_ago = n.subscriber_7d_ago, \
-        subscriber_30d_ago = n.subscriber_30d_ago, \
-        revenue = n.revenue, \
-        revenue_1d_ago = n.revenue_1d_ago, \
-        revenue_7d_ago = n.revenue_7d_ago, \
-        revenue_30d_ago = n.revenue_30d_ago  FROM (",
+        view = COALESCE(n.view, c.view), \
+        view_1d_ago = COALESCE(n.view_1d_ago, c.view_1d_ago), \
+        view_7d_ago = COALESCE(n.view_7d_ago, c.view_7d_ago), \
+        view_30d_ago = COALESCE(n.view_30d_ago, c.view_30d_ago), \
+        subscriber = COALESCE(n.subscriber, c.subscriber), \
+        subscriber_1d_ago = COALESCE(n.subscriber_1d_ago, c.subscriber_1d_ago), \
+        subscriber_7d_ago = COALESCE(n.subscriber_7d_ago, c.subscriber_7d_ago), \
+        subscriber_30d_ago = COALESCE(n.subscriber_30d_ago, c.subscriber_30d_ago), \
+        revenue = COALESCE(n.revenue, c.revenue), \
+        revenue_1d_ago = COALESCE(n.revenue_1d_ago, c.revenue_1d_ago), \
+        revenue_7d_ago = COALESCE(n.revenue_7d_ago, c.revenue_7d_ago), \
+        revenue_30d_ago = COALESCE(n.revenue_30d_ago, c.revenue_30d_ago) FROM (",
     );
 
     query_builder.push_values(iter, |mut b, row| {
