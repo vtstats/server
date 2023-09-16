@@ -33,13 +33,13 @@ ON CONFLICT (kind, payload) DO UPDATE
         let record = crate::otel::execute_query!("INSERT", "jobs", query)?;
 
         if let Some(next_run) = self.next_run {
-            let _ = sqlx::query!(
+            let query = sqlx::query!(
                 "SELECT pg_notify('vt_new_job_queued', $1)",
                 next_run.timestamp_millis().to_string()
             )
-            .execute(pool)
-            .await
-            .map_err(|err| {
+            .execute(pool);
+
+            let _ = crate::otel::execute_query!("SELECT", "pg_notify", query).map_err(|err| {
                 tracing::error!("push job: {err:?}");
             });
         }
@@ -50,19 +50,13 @@ ON CONFLICT (kind, payload) DO UPDATE
 
 pub async fn queue_send_notification(
     time: DateTime<Utc>,
-    stream_platform: String,
-    stream_platform_id: String,
-    vtuber_id: String,
+    stream_id: i32,
     pool: &PgPool,
 ) -> Result<i32> {
     PushJobQuery {
         continuation: None,
         next_run: Some(time),
-        payload: JobPayload::SendNotification(SendNotificationJobPayload {
-            stream_platform,
-            stream_platform_id,
-            vtuber_id,
-        }),
+        payload: JobPayload::SendNotification(SendNotificationJobPayload { stream_id }),
     }
     .execute(pool)
     .await
@@ -71,8 +65,6 @@ pub async fn queue_send_notification(
 pub async fn queue_collect_youtube_stream_metadata(
     time: DateTime<Utc>,
     stream_id: i32,
-    platform_stream_id: String,
-    platform_channel_id: String,
     pool: &PgPool,
 ) -> Result<i32> {
     PushJobQuery {
@@ -80,8 +72,6 @@ pub async fn queue_collect_youtube_stream_metadata(
         next_run: Some(time),
         payload: JobPayload::CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload {
             stream_id,
-            platform_stream_id,
-            platform_channel_id,
         }),
     }
     .execute(pool)
@@ -91,9 +81,6 @@ pub async fn queue_collect_youtube_stream_metadata(
 pub async fn queue_collect_twitch_stream_metadata(
     time: DateTime<Utc>,
     stream_id: i32,
-    platform_stream_id: String,
-    platform_channel_id: String,
-    platform_channel_login: String,
     pool: &PgPool,
 ) -> Result<i32> {
     PushJobQuery {
@@ -101,9 +88,6 @@ pub async fn queue_collect_twitch_stream_metadata(
         next_run: Some(time),
         payload: JobPayload::CollectTwitchStreamMetadata(CollectTwitchStreamMetadataJobPayload {
             stream_id,
-            platform_stream_id,
-            platform_channel_id,
-            platform_channel_login,
         }),
     }
     .execute(pool)
@@ -130,11 +114,9 @@ async fn test(pool: PgPool) -> Result<()> {
         PushJobQuery {
             continuation: Some("continuation".into()),
             next_run: None,
-            payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
-                vtuber_id: "poi".into(),
-                channel_id: 0,
-                platform_stream_id: "foo".into(),
-            }),
+            payload: JobPayload::CollectTwitchStreamMetadata(
+                CollectTwitchStreamMetadataJobPayload { stream_id: 0 },
+            ),
         }
         .execute(&pool)
         .await?;
@@ -144,11 +126,9 @@ async fn test(pool: PgPool) -> Result<()> {
         PushJobQuery {
             continuation: None,
             next_run: Some(time),
-            payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
-                vtuber_id: "poi".into(),
-                channel_id: 0,
-                platform_stream_id: "bar".into(),
-            }),
+            payload: JobPayload::CollectTwitchStreamMetadata(
+                CollectTwitchStreamMetadataJobPayload { stream_id: 1 },
+            ),
         }
         .execute(&pool)
         .await?;
@@ -171,11 +151,9 @@ async fn test(pool: PgPool) -> Result<()> {
         PushJobQuery {
             continuation: Some("foobar".into()),
             next_run: None,
-            payload: JobPayload::UpsertYoutubeStream(UpsertYoutubeStreamJobPayload {
-                vtuber_id: "poi".into(),
-                channel_id: 0,
-                platform_stream_id: "foo".into(),
-            }),
+            payload: JobPayload::CollectTwitchStreamMetadata(
+                CollectTwitchStreamMetadataJobPayload { stream_id: 0 },
+            ),
         }
         .execute(&pool)
         .await?;

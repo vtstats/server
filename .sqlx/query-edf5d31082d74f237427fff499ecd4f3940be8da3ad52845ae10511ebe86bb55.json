@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs SET status = $1, next_run = $2, last_run = $4, updated_at = NOW() WHERE job_id = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "job_status",
+            "kind": {
+              "Enum": [
+                "queued",
+                "running",
+                "success",
+                "failed"
+              ]
+            }
+          }
+        },
+        "Timestamptz",
+        "Int4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "edf5d31082d74f237427fff499ecd4f3940be8da3ad52845ae10511ebe86bb55"
+}

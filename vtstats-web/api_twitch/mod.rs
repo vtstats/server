@@ -132,15 +132,7 @@ async fn handle_stream_online(
     .execute(pool)
     .await?;
 
-    queue_collect_twitch_stream_metadata(
-        Utc::now(),
-        stream_id,
-        platform_stream_id,
-        platform_channel_id.to_string(),
-        platform_channel_login.to_string(),
-        pool,
-    )
-    .await?;
+    queue_collect_twitch_stream_metadata(Utc::now(), stream_id, pool).await?;
 
     Ok(())
 }

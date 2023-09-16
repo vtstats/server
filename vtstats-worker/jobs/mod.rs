@@ -58,11 +58,9 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             CollectTwitchStreamMetadata(payload) => {
                 collect_stream_stats::execute(&pool, client, payload.stream_id).await
             }
-            SendNotification(payload) => send_notification::execute(&pool, client, payload).await,
-            // TODO: remove
-            UpsertYoutubeStream(_) => Ok(JobResult::Completed),
-            UpdateCurrencyExchangeRate => Ok(JobResult::Completed),
-            InstallDiscordCommands => Ok(JobResult::Completed),
+            SendNotification(payload) => {
+                send_notification::execute(&pool, client, payload.stream_id).await
+            }
         };
 
         let status = if result.is_ok() { "ok" } else { "err" };

@@ -34,45 +34,25 @@ pub enum JobKind {
     HealthCheck,
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
-    #[sqlx(rename = "update_youtube_channel_view_and_subscriber")]
     UpdateChannelStats,
-    UpdateCurrencyExchangeRate,
-    UpsertYoutubeStream,
     CollectYoutubeStreamMetadata,
     CollectTwitchStreamMetadata,
     SendNotification,
-    InstallDiscordCommands,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
-pub struct UpsertYoutubeStreamJobPayload {
-    pub vtuber_id: String,
-    pub channel_id: i32,
-    pub platform_stream_id: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct CollectYoutubeStreamMetadataJobPayload {
     pub stream_id: i32,
-    pub platform_stream_id: String,
-    pub platform_channel_id: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct CollectTwitchStreamMetadataJobPayload {
     pub stream_id: i32,
-    pub platform_stream_id: String,
-    pub platform_channel_id: String,
-    pub platform_channel_login: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct SendNotificationJobPayload {
-    /// Unique identifier for vtuber, e.g. 'shirakami-fubuki'
-    pub vtuber_id: String,
-    /// Always be 'youtube'
-    pub stream_platform: String,
-    pub stream_platform_id: String,
+    pub stream_id: i32,
 }
 
 #[derive(Serialize, PartialEq, Eq, Debug)]
@@ -82,12 +62,9 @@ pub enum JobPayload {
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
     UpdateChannelStats,
-    UpdateCurrencyExchangeRate,
-    UpsertYoutubeStream(UpsertYoutubeStreamJobPayload),
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
     CollectTwitchStreamMetadata(CollectTwitchStreamMetadataJobPayload),
     SendNotification(SendNotificationJobPayload),
-    InstallDiscordCommands,
 }
 
 #[derive(Serialize)]
@@ -113,12 +90,9 @@ impl JobPayload {
             JobPayload::RefreshYoutubeRss => JobKind::RefreshYoutubeRss,
             JobPayload::SubscribeYoutubePubsub => JobKind::SubscribeYoutubePubsub,
             JobPayload::UpdateChannelStats => JobKind::UpdateChannelStats,
-            JobPayload::UpdateCurrencyExchangeRate => JobKind::UpdateCurrencyExchangeRate,
-            JobPayload::UpsertYoutubeStream(_) => JobKind::UpsertYoutubeStream,
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
             JobPayload::CollectTwitchStreamMetadata(_) => JobKind::CollectTwitchStreamMetadata,
             JobPayload::SendNotification(_) => JobKind::SendNotification,
-            JobPayload::InstallDiscordCommands => JobKind::InstallDiscordCommands,
         }
     }
 
@@ -128,12 +102,9 @@ impl JobPayload {
             JobPayload::RefreshYoutubeRss => "refresh_youtube_rss",
             JobPayload::SubscribeYoutubePubsub => "subscribe_youtube_pubsub",
             JobPayload::UpdateChannelStats => "update_channel_stats",
-            JobPayload::UpdateCurrencyExchangeRate => "update_currency_exchange_rate",
-            JobPayload::UpsertYoutubeStream(_) => "upsert_youtube_stream",
             JobPayload::CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
             JobPayload::CollectTwitchStreamMetadata(_) => "collect_twitch_stream_metadata",
             JobPayload::SendNotification(_) => "send_notification",
-            JobPayload::InstallDiscordCommands => "install_discord_commands",
         }
     }
 }
@@ -154,10 +125,6 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
                 JobKind::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
                 JobKind::UpdateChannelStats => JobPayload::UpdateChannelStats,
-                JobKind::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
-                JobKind::UpsertYoutubeStream => {
-                    JobPayload::UpsertYoutubeStream(row.try_get::<Json<_>, _>("payload")?.0)
-                }
                 JobKind::CollectYoutubeStreamMetadata => JobPayload::CollectYoutubeStreamMetadata(
                     row.try_get::<Json<_>, _>("payload")?.0,
                 ),
@@ -167,7 +134,6 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::SendNotification => {
                     JobPayload::SendNotification(row.try_get::<Json<_>, _>("payload")?.0)
                 }
-                JobKind::InstallDiscordCommands => JobPayload::InstallDiscordCommands,
             },
         })
     }

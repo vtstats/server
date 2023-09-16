@@ -100,28 +100,15 @@ async fn handle_modification(
         youtube_stream.end_time,
     ) {
         (Some(time), None, None) | (_, Some(time), None) => {
-            queue_collect_youtube_stream_metadata(
-                std::cmp::max(now, time),
-                stream_id,
-                youtube_stream.id.clone(),
-                youtube_stream.channel_id.to_owned(),
-                pool,
-            )
-            .await?;
+            queue_collect_youtube_stream_metadata(std::cmp::max(now, time), stream_id, pool)
+                .await?;
         }
         _ => {}
     }
 
     let next = now.duration_trunc(Duration::seconds(5))? + Duration::seconds(5);
 
-    queue_send_notification(
-        next,
-        "youtube".into(),
-        youtube_stream.id.clone(),
-        channel.vtuber_id.clone(),
-        pool,
-    )
-    .await?;
+    queue_send_notification(next, stream_id, pool).await?;
 
     Ok(())
 }

@@ -32,11 +32,11 @@ async fn test(pool: PgPool) -> Result<()> {
     sqlx::query!(
         r#"
 INSERT INTO jobs (kind, payload, status, next_run)
-          VALUES ('upsert_youtube_stream', '{"vtuber_id":"poi","channel_id":0,"platform_stream_id":"foo1"}', 'queued',  NOW() + INTERVAL '15s'),
-                 ('upsert_youtube_stream', '{"vtuber_id":"poi","channel_id":0,"platform_stream_id":"foo2"}', 'queued',  NOW() - INTERVAL '15s'),
-                 ('upsert_youtube_stream', '{"vtuber_id":"poi","channel_id":0,"platform_stream_id":"foo3"}', 'running', NOW() - INTERVAL '15s'),
-                 ('upsert_youtube_stream', '{"vtuber_id":"poi","channel_id":0,"platform_stream_id":"foo4"}', 'success', NOW() - INTERVAL '15s'),
-                 ('upsert_youtube_stream', '{"vtuber_id":"poi","channel_id":0,"platform_stream_id":"foo5"}', 'failed',  NOW() - INTERVAL '15s');
+          VALUES ('collect_twitch_stream_metadata', '{"stream_id":1}', 'queued',  NOW() + INTERVAL '15s'),
+                 ('collect_twitch_stream_metadata', '{"stream_id":2}', 'queued',  NOW() - INTERVAL '15s'),
+                 ('collect_twitch_stream_metadata', '{"stream_id":3}', 'running', NOW() - INTERVAL '15s'),
+                 ('collect_twitch_stream_metadata', '{"stream_id":4}', 'success', NOW() - INTERVAL '15s'),
+                 ('collect_twitch_stream_metadata', '{"stream_id":5}', 'failed',  NOW() - INTERVAL '15s');
         "#
     )
     .execute(&pool)

@@ -8,8 +8,7 @@ use integration_discord::message::{
 };
 use vtstats_database::{
     channels::Platform,
-    jobs::SendNotificationJobPayload,
-    streams::{get_stream_by_platform_id, Stream, StreamStatus},
+    streams::{get_stream_by_id, Stream, StreamStatus},
     subscriptions::{
         list_discord_subscription_and_notification_by_vtuber_id, update_discord_notification,
         DiscordSubscriptionAndNotification, InsertNotificationQuery, NotificationPayload,
@@ -20,24 +19,19 @@ use vtstats_database::{
 
 use super::JobResult;
 
-pub async fn execute(
-    pool: &PgPool,
-    client: Client,
-    payload: SendNotificationJobPayload,
-) -> anyhow::Result<JobResult> {
-    let stream =
-        get_stream_by_platform_id(Platform::Youtube, &payload.stream_platform_id, pool).await?;
-
-    let Some(stream) = stream else {
-        tracing::warn!(
-            "Can't find stream with platform id: {}",
-            payload.stream_platform_id
-        );
+pub async fn execute(pool: &PgPool, client: Client, stream_id: i32) -> anyhow::Result<JobResult> {
+    let Some(stream) = get_stream_by_id(stream_id, pool).await? else {
+        tracing::warn!("Can't find stream with id: {}", stream_id);
         return Ok(JobResult::Completed);
     };
 
+    if stream.platform != Platform::Youtube {
+        tracing::warn!("Can't find stream with id: {}", stream_id);
+        return Ok(JobResult::Completed);
+    }
+
     let subscriptions = list_discord_subscription_and_notification_by_vtuber_id(
-        payload.vtuber_id.clone(),
+        stream.vtuber_id.clone(),
         stream.stream_id,
         pool,
     )
@@ -47,7 +41,7 @@ pub async fn execute(
         return Ok(JobResult::Completed);
     }
 
-    let embeds = vec![build_discord_embed(&stream, &payload.vtuber_id, pool).await?];
+    let embeds = vec![build_discord_embed(&stream, &stream.vtuber_id, pool).await?];
 
     for item in subscriptions {
         let result = send_discord_notification(&item, &stream, embeds.clone(), pool, &client).await;

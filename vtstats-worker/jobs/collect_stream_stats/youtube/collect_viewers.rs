@@ -121,14 +121,7 @@ async fn end_youtube_stream(stream: &Stream, client: &Client, pool: &PgPool) -> 
     )
     .await?;
 
-    queue_send_notification(
-        Utc::now(),
-        "youtube".into(),
-        stream.platform_id.to_string(),
-        stream.vtuber_id.to_string(),
-        pool,
-    )
-    .await?;
+    queue_send_notification(Utc::now(), stream.stream_id, pool).await?;
 
     Ok(())
 }

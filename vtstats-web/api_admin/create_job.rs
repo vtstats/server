@@ -16,8 +16,6 @@ pub enum CreateJobPayload {
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
     UpdateChannelStats,
-    UpdateCurrencyExchangeRate,
-    InstallDiscordCommands,
 }
 
 pub async fn create_job(pool: PgPool, payload: CreateJobPayload) -> Result<Response, Rejection> {
@@ -29,8 +27,6 @@ pub async fn create_job(pool: PgPool, payload: CreateJobPayload) -> Result<Respo
             CreateJobPayload::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
             CreateJobPayload::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
             CreateJobPayload::UpdateChannelStats => JobPayload::UpdateChannelStats,
-            CreateJobPayload::UpdateCurrencyExchangeRate => JobPayload::UpdateCurrencyExchangeRate,
-            CreateJobPayload::InstallDiscordCommands => JobPayload::InstallDiscordCommands,
         },
     }
     .execute(&pool)

@@ -13,12 +13,9 @@ pub async fn re_run_job(job_id: i32, pool: &PgPool) -> Result<()> {
 
     crate::otel::execute_query!("UPDATE", "jobs", query)?;
 
-    let _ = sqlx::query!("SELECT pg_notify('vt_new_job_queued', '10000000000000')")
-        .execute(pool)
-        .await
-        .map_err(|err| {
-            tracing::error!("push job: {err:?}");
-        });
+    let query = sqlx::query!("SELECT pg_notify('vt_new_job_queued', '0')").execute(pool);
+
+    crate::otel::execute_query!("SELECT", "vt_new_job_queued", query)?;
 
     Ok(())
 }
