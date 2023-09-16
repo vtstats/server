@@ -1,20 +1,40 @@
 use std::env;
 
 use anyhow::Result;
-use reqwest::{header::AUTHORIZATION, Client};
+use reqwest::{header::AUTHORIZATION, Client, Url};
 use serde::Deserialize;
 use vtstats_utils::send_request;
 
 use crate::subscription::{Condition, CreatedSubscription, Subscription, Transport};
 
 #[derive(Deserialize)]
-struct ListSubscriptionResponse {
-    data: Vec<CreatedSubscription>,
+pub struct ListSubscriptionResponse {
+    pub data: Vec<CreatedSubscription>,
+    #[serde(default)]
+    pub pagination: Pagination,
 }
 
-pub async fn list_subscriptions(token: &str, client: &Client) -> Result<Vec<CreatedSubscription>> {
+#[derive(Deserialize, Default)]
+pub struct Pagination {
+    pub cursor: Option<String>,
+}
+
+pub async fn list_subscriptions(
+    after: Option<String>,
+    token: &str,
+    client: &Client,
+) -> Result<ListSubscriptionResponse> {
+    let url = if let Some(after) = after {
+        Url::parse_with_params(
+            "https://api.twitch.tv/helix/eventsub/subscriptions",
+            &[("after", &after)],
+        )
+    } else {
+        Url::parse("https://api.twitch.tv/helix/eventsub/subscriptions")
+    }?;
+
     let req = client
-        .get("https://api.twitch.tv/helix/eventsub/subscriptions")
+        .get(url)
         .header(AUTHORIZATION, format!("Bearer {token}"))
         .header("Client-Id", env::var("TWITCH_CLIENT_ID")?);
 
@@ -22,7 +42,7 @@ pub async fn list_subscriptions(token: &str, client: &Client) -> Result<Vec<Crea
 
     let list: ListSubscriptionResponse = res.json().await?;
 
-    Ok(list.data)
+    Ok(list)
 }
 
 pub async fn create_channel_update_subscription(
