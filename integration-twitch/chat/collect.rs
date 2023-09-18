@@ -39,7 +39,10 @@ pub async fn read_live_chat_message(
         line.clear();
         stream.read_line(&mut line).await?;
 
-        let ParseResult { message, .. } = parse(&line)?;
+        let Ok(ParseResult { message, .. }) = parse(&line) else {
+            tracing::warn!("failed to parse message line {line}");
+            continue;
+        };
 
         if message.as_typed_message::<Ping>().is_some() {
             stream.write_all(b"PONG :tmi.twitch.tv\r\n").await?;
