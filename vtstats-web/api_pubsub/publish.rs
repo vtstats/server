@@ -6,6 +6,7 @@ use integration_youtube::{
 };
 use reqwest::Client;
 
+use tracing::Span;
 use warp::{http::StatusCode, Rejection};
 
 use vtstats_database::{
@@ -92,6 +93,8 @@ async fn handle_modification(
     .execute(pool)
     .await?;
 
+    Span::current().record("stream_id", stream_id);
+
     let now = Utc::now();
 
     match (
@@ -119,6 +122,8 @@ async fn handle_deletion(platform_stream_id: &str, pool: &PgPool) -> anyhow::Res
     let Some(stream) = stream else {
         return Ok(());
     };
+
+    Span::current().record("stream_id", stream.stream_id);
 
     if stream.status == StreamStatus::Scheduled {
         tracing::warn!("delete schedule stream {}", stream.platform_id);

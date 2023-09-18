@@ -1,6 +1,7 @@
 use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde_with::{formats::CommaSeparator, serde_as, StringWithSeparator};
 use std::convert::Into;
+use tracing::Span;
 use warp::{reply::Response, Rejection, Reply};
 
 use vtstats_database::channels::Platform;
@@ -49,6 +50,10 @@ pub async fn list_stream_by_platform_id(
         _ => return Err(warp::reject::reject()),
     }
     .map_err(Into::<WarpError>::into)?;
+
+    if let Some(stream) = &stream {
+        Span::current().record("stream_id", stream.stream_id);
+    }
 
     Ok(warp::reply::json(&stream).into_response())
 }

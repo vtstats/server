@@ -3,6 +3,7 @@ mod types;
 use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::Serialize;
 use std::convert::Into;
+use tracing::Span;
 use vtstats_database::{
     stream_events::{list_stream_events, StreamEventKind},
     PgPool,
@@ -43,6 +44,8 @@ pub async fn stream_events(query: ReqQuery, pool: PgPool) -> Result<impl warp::R
             })
         })
         .collect();
+
+    Span::current().record("stream_id", query.stream_id);
 
     Ok(warp::reply::json(&events))
 }

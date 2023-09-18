@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use integration_s3::upload_file;
 use reqwest::{header::CONTENT_TYPE, Client};
+use tracing::Span;
 use vtstats_database::{
     channels::{get_active_channel_by_platform_id, Platform},
     jobs::queue_collect_twitch_stream_metadata,
@@ -98,11 +99,11 @@ async fn handle_stream_online(
 
     let metadata = stream_metadata(&platform_channel_login, client).await?;
 
-    let Some(stream) = metadata.data.user.stream else {
+    let Some(platform_stream) = metadata.data.user.stream else {
         return Ok(());
     };
 
-    if stream.id != platform_stream_id {
+    if platform_stream.id != platform_stream_id {
         return Ok(());
     }
 
@@ -111,7 +112,7 @@ async fn handle_stream_online(
         .user
         .last_broadcast
         .title
-        .filter(|_| matches!(metadata.data.user.last_broadcast.id, Some(id) if id == stream.id))
+        .filter(|_| matches!(metadata.data.user.last_broadcast.id, Some(id) if id == platform_stream.id))
         .unwrap_or_else(|| format!("Twitch stream #{}", platform_channel_login));
 
     let stream_id = UpsertStreamQuery {
@@ -131,6 +132,8 @@ async fn handle_stream_online(
     }
     .execute(pool)
     .await?;
+
+    Span::current().record("stream_id", stream_id);
 
     queue_collect_twitch_stream_metadata(Utc::now(), stream_id, pool).await?;
 

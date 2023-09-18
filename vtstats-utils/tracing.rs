@@ -76,6 +76,14 @@ impl JsonMessage {
             self.message += &format!(" duration={ms}ms");
         }
 
+        if let Some(job_id) = self.fields.remove("job_id") {
+            self.message += &format!(" job_id={job_id}");
+        }
+
+        if let Some(stream_id) = self.fields.remove("stream_id") {
+            self.message += &format!(" stream_id={stream_id}");
+        }
+
         if std::env::var("LOG_PRETTY")
             .map(|c| c == "1" || c == "on" || c == "true")
             .unwrap_or_default()
@@ -115,12 +123,21 @@ where
         span.extensions_mut().insert(msg);
     }
 
-    fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
-        let mut msg = JsonMessage::new(event.metadata());
+    fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
+        if let Some(id) = ctx.current_span().id() {
+            let span = ctx.span(id).expect("span not found");
 
-        event.record(&mut msg);
+            let mut msg = JsonMessage::new(event.metadata());
+            event.record(&mut msg);
 
-        msg.print(&self.stdout);
+            if let Some(span_msg) = span.extensions().get::<JsonMessage>() {
+                let mut span_fields = span_msg.fields.clone();
+                span_fields.remove("message");
+                msg.fields.append(&mut span_fields);
+            }
+
+            msg.print(&self.stdout);
+        }
     }
 
     fn on_record(&self, id: &Id, values: &Record<'_>, ctx: Context<'_, S>) {

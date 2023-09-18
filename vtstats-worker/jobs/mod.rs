@@ -26,20 +26,29 @@ pub enum JobResult {
 pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_tx: Sender<()>) {
     let job_id = job.job_id;
     let payload = job.payload;
+    let next_run = job.next_run;
     let job_type = payload.kind_str();
+    let stream_id = match &payload {
+        CollectYoutubeStreamMetadata(p) => Some(p.stream_id),
+        CollectTwitchStreamMetadata(p) => Some(p.stream_id),
+        SendNotification(p) => Some(p.stream_id),
+        _ => None,
+    };
 
     let span = match &payload {
         HealthCheck => tracing::trace_span!("Ignored"),
         _ => tracing::info_span!(
             "Worker Job",
             "message" = &format!("Job {job_type}"),
-            "job.id" = job_id,
-            "job.type" = job_type,
+            "job_id" = job_id,
+            "job_type" = job_type,
+            "stream_id" = stream_id,
         ),
     };
 
     async move {
         let start = Instant::now();
+        let last_run = Utc::now();
 
         increment_gauge!(
             "worker_jobs_running_count",

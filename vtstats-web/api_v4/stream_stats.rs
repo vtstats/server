@@ -1,4 +1,5 @@
 use std::convert::Into;
+use tracing::Span;
 use vtstats_database::{stream_stats as db, PgPool};
 use warp::{reply::Response, Rejection, Reply};
 
@@ -15,6 +16,8 @@ pub async fn stream_viewer_stats(query: ReqQuery, pool: PgPool) -> Result<Respon
         .await
         .map_err(Into::<WarpError>::into)?;
 
+    Span::current().record("stream_id", query.stream_id);
+
     Ok(warp::reply::json(&stats).into_response())
 }
 
@@ -22,6 +25,8 @@ pub async fn stream_chat_stats(query: ReqQuery, pool: PgPool) -> Result<Response
     let stats = db::stream_chat_stats(query.stream_id, &pool)
         .await
         .map_err(Into::<WarpError>::into)?;
+
+    Span::current().record("stream_id", query.stream_id);
 
     Ok(warp::reply::json(&stats).into_response())
 }
