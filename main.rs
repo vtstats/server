@@ -2,6 +2,8 @@ use tokio::sync::oneshot;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    std::panic::set_hook(Box::new(vtstats_utils::panic::hook_impl));
+
     let command = std::env::args().nth(1).unwrap_or_default();
 
     if command == "database-migrate" {

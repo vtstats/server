@@ -1,5 +1,6 @@
 pub mod currency;
 pub mod metrics;
+pub mod panic;
 pub mod shutdown;
 pub mod tracing;
 
