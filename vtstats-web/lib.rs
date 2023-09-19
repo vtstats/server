@@ -1,8 +1,8 @@
 use metrics::histogram;
-use std::{env, net::SocketAddr};
+use std::{env, net::SocketAddr, time::Duration};
 use tokio::sync::oneshot::Receiver;
 use tracing::{field::Empty, Span};
-use vtstats_database::PgPool;
+use vtstats_database::PgPoolOptions;
 use warp::Filter;
 
 // utils
@@ -19,7 +19,10 @@ mod api_v4;
 // mod api_telegram;
 
 pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
-    let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
+    let pool = PgPoolOptions::new()
+        .max_lifetime(Duration::from_secs(10 * 60)) // 10 minutes
+        .connect(&env::var("DATABASE_URL")?)
+        .await?;
 
     let whoami = warp::path!("whoami").and(warp::get()).map(|| "OK");
 

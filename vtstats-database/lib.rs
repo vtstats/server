@@ -17,6 +17,7 @@ pub use sqlx::PgPool;
 pub use sqlx::Error as DatabaseError;
 
 pub use sqlx::postgres::PgListener;
+pub use sqlx::postgres::PgPoolOptions;
 
 pub async fn migrate() -> anyhow::Result<()> {
     let migrator = sqlx::migrate!();

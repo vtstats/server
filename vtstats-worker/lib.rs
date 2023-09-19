@@ -10,7 +10,7 @@ use tokio::{
 };
 use vtstats_database::{
     jobs::{next_queued, pull_jobs},
-    PgListener, PgPool,
+    PgListener, PgPool, PgPoolOptions,
 };
 
 pub mod jobs;
@@ -38,7 +38,10 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
 async fn execute(shutdown_complete_tx: Sender<()>) -> anyhow::Result<()> {
     let database_url = &env::var("DATABASE_URL")?;
 
-    let pool = PgPool::connect(database_url).await?;
+    let pool = PgPoolOptions::new()
+        .max_lifetime(std::time::Duration::from_secs(10 * 60)) // 10 minutes
+        .connect(database_url)
+        .await?;
 
     let mut listener = PgListener::connect(database_url).await?;
 
