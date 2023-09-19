@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 
 use integration_twitch::gql::channel_panels;
 use reqwest::Client;
@@ -14,7 +14,12 @@ use super::JobResult;
 pub mod twitch;
 pub mod youtube;
 
-pub async fn execute(pool: &PgPool, client: Client, stream_id: i32) -> anyhow::Result<JobResult> {
+pub async fn execute(
+    pool: &PgPool,
+    client: Client,
+    stream_id: i32,
+    next_run: Option<DateTime<Utc>>,
+) -> anyhow::Result<JobResult> {
     let Some(stream) = get_stream_by_id(stream_id, pool).await? else {
         return Ok(JobResult::Completed);
     };
@@ -48,10 +53,12 @@ pub async fn execute(pool: &PgPool, client: Client, stream_id: i32) -> anyhow::R
                     res.map(|_| JobResult::Completed)
                 },
                 _ = sigint.recv() => {
-                    Ok(JobResult::Next { run: Utc::now() })
+                    let run = next_run.unwrap_or_else(Utc::now);
+                    Ok(JobResult::Next { run })
                 },
                 _ = sigterm.recv() => {
-                    Ok(JobResult::Next { run: Utc::now() })
+                    let run = next_run.unwrap_or_else(Utc::now);
+                    Ok(JobResult::Next { run })
                 },
             }
         }
@@ -70,10 +77,12 @@ pub async fn execute(pool: &PgPool, client: Client, stream_id: i32) -> anyhow::R
                     res.map(|_| JobResult::Completed)
                 },
                 _ = sigint.recv() => {
-                    Ok(JobResult::Next { run: Utc::now()  })
+                    let run = next_run.unwrap_or_else(Utc::now);
+                    Ok(JobResult::Next { run })
                 },
                 _ = sigterm.recv() => {
-                    Ok(JobResult::Next { run: Utc::now()  })
+                    let run = next_run.unwrap_or_else(Utc::now);
+                    Ok(JobResult::Next { run })
                 },
             }
         }

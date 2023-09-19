@@ -62,10 +62,10 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, client).await,
             UpdateChannelStats => update_channel_stats::execute(&pool, &client).await,
             CollectYoutubeStreamMetadata(payload) => {
-                collect_stream_stats::execute(&pool, client, payload.stream_id).await
+                collect_stream_stats::execute(&pool, client, payload.stream_id, next_run).await
             }
             CollectTwitchStreamMetadata(payload) => {
-                collect_stream_stats::execute(&pool, client, payload.stream_id).await
+                collect_stream_stats::execute(&pool, client, payload.stream_id, next_run).await
             }
             SendNotification(payload) => {
                 send_notification::execute(&pool, client, payload.stream_id).await
@@ -90,13 +90,13 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
                 job_id,
                 status: JobStatus::Queued,
                 next_run: Some(run),
-                last_run: Utc::now(),
+                last_run,
             },
             Ok(JobResult::Completed) => UpdateJobQuery {
                 job_id,
                 status: JobStatus::Success,
                 next_run: None,
-                last_run: Utc::now(),
+                last_run,
             },
             Err(ref err) => {
                 tracing::error!(exception.stacktrace = ?err, message= %err);
@@ -105,7 +105,7 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
                     job_id,
                     status: JobStatus::Failed,
                     next_run: None,
-                    last_run: Utc::now(),
+                    last_run,
                 }
             }
         };
