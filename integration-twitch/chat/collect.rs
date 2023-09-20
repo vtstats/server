@@ -5,7 +5,7 @@ use twitch_message::{parse, ParseResult};
 
 use super::parse::{parse_privmsg, LiveChatMessage};
 
-pub async fn connect_chat_room(login: String) -> anyhow::Result<BufReader<TcpStream>> {
+pub async fn connect_chat_room(login: &str) -> anyhow::Result<BufReader<TcpStream>> {
     let stream = TcpStream::connect(twitch_message::TWITCH_IRC_ADDRESS).await?;
     let mut stream = BufReader::new(stream);
 
@@ -32,12 +32,18 @@ pub async fn connect_chat_room(login: String) -> anyhow::Result<BufReader<TcpStr
 
 pub async fn read_live_chat_message(
     stream: &mut BufReader<TcpStream>,
-) -> anyhow::Result<LiveChatMessage> {
+) -> anyhow::Result<Option<LiveChatMessage>> {
     let mut line = String::new();
 
     loop {
         line.clear();
         stream.read_line(&mut line).await?;
+
+        // Sometime tcp stream will only emit nothing but empty string
+        // in that cases, we just reconnect the chat room
+        if line.trim().is_empty() {
+            return Ok(None);
+        }
 
         let Ok(ParseResult { message, .. }) = parse(&line) else {
             tracing::warn!("failed to parse message line {line}");
@@ -48,7 +54,7 @@ pub async fn read_live_chat_message(
             stream.write_all(b"PONG :tmi.twitch.tv\r\n").await?;
         } else if let Some(msg) = message.as_typed_message::<Privmsg>() {
             if let Some(msg) = parse_privmsg(msg) {
-                return Ok(msg);
+                return Ok(Some(msg));
             }
         }
     }

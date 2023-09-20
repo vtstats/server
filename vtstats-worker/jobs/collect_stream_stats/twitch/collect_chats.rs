@@ -10,7 +10,7 @@ use vtstats_database::{
 };
 
 pub async fn collect_chats(stream_id: i32, login: &str, pool: &PgPool) -> anyhow::Result<()> {
-    let mut tcp = connect_chat_room(login.to_string()).await?;
+    let mut tcp = connect_chat_room(login).await?;
 
     let mut time: Option<DateTime<Utc>> = None;
     let mut count = 0;
@@ -19,6 +19,12 @@ pub async fn collect_chats(stream_id: i32, login: &str, pool: &PgPool) -> anyhow
 
     loop {
         let msg = read_live_chat_message(&mut tcp).await?;
+
+        let Some(msg) = msg else {
+            tracing::warn!("Reconnecting to twitch chatroom ##{login}");
+            tcp = connect_chat_room(login).await?;
+            continue;
+        };
 
         let (timestamp, from_subscriber) = match msg {
             LiveChatMessage::HyperChat {
