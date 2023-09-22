@@ -1,7 +1,12 @@
+#![warn(clippy::print_stdout)]
+#![warn(clippy::todo)]
+#![warn(clippy::unwrap_used)]
+
 pub mod json;
 pub mod otel;
 
 pub mod channel_stats;
+pub mod channel_stats_summary;
 pub mod channels;
 pub mod currencies;
 pub mod groups;

@@ -53,7 +53,7 @@ pub async fn collect_chats(
     }
 }
 
-async fn collect_chat_and_events(
+pub async fn collect_chat_and_events(
     stream_id: i32,
     messages: Vec<LiveChatMessage>,
     pool: &PgPool,

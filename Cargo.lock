@@ -84,6 +84,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrayvec"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+
+[[package]]
 name = "async-compression"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1744,6 +1750,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust_decimal"
+version = "1.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4c4216490d5a413bc6d10fa4742bd7d4955941d062c0ef873141d6b0e7b30fd"
+dependencies = [
+ "arrayvec",
+ "num-traits",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2600,6 +2618,7 @@ dependencies = [
  "chrono",
  "futures-util",
  "metrics",
+ "rust_decimal",
  "serde",
  "serde_json",
  "serde_with",
@@ -2671,6 +2690,7 @@ dependencies = [
  "metrics",
  "pretty_assertions",
  "reqwest",
+ "rust_decimal",
  "serde",
  "serde_json",
  "tokio",

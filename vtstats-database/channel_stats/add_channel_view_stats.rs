@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgQueryResult, PgPool, Postgres, QueryBuilder, Result};
 
-pub struct AddChannelViewStatsQuery<'q> {
+pub struct AddChannelViewStatsQuery<I: IntoIterator<Item = AddChannelViewStatsRow>> {
     pub time: DateTime<Utc>,
-    pub rows: &'q [AddChannelViewStatsRow],
+    pub rows: I,
 }
 
 pub struct AddChannelViewStatsRow {
@@ -11,12 +11,12 @@ pub struct AddChannelViewStatsRow {
     pub value: i32,
 }
 
-impl<'q> AddChannelViewStatsQuery<'q> {
+impl<I: IntoIterator<Item = AddChannelViewStatsRow>> AddChannelViewStatsQuery<I> {
     pub async fn execute(self, pool: &PgPool) -> Result<PgQueryResult> {
         let mut query_builder: QueryBuilder<Postgres> =
             QueryBuilder::new("INSERT INTO channel_view_stats AS s (channel_id, time, count) ");
 
-        query_builder.push_values(self.rows.iter(), |mut b, row| {
+        query_builder.push_values(self.rows.into_iter(), |mut b, row| {
             b.push_bind(row.channel_id)
                 .push_bind(self.time)
                 .push_bind(row.value);
@@ -42,7 +42,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     let result = AddChannelViewStatsQuery {
         time,
-        rows: &[
+        rows: [
             AddChannelViewStatsRow {
                 channel_id: 1,
                 value: 20,
@@ -68,7 +68,7 @@ async fn test(pool: PgPool) -> Result<()> {
 
     let result = AddChannelViewStatsQuery {
         time,
-        rows: &[
+        rows: [
             AddChannelViewStatsRow {
                 channel_id: 2,
                 value: 20,

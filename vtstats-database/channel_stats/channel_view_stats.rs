@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Result};
 
-use crate::channel_stats::AddChannelViewStatsRow;
-
 pub async fn channel_view_stats(
     channel_id: i32,
     start_at: Option<DateTime<Utc>>,
@@ -22,20 +20,6 @@ pub async fn channel_view_stats(
         end_at,     // $3
     )
     .map(|row| (row.ts.timestamp_millis(), row.v1))
-    .fetch_all(pool);
-
-    crate::otel::execute_query!("SELECT", "channel_view_stats", query)
-}
-
-pub async fn channel_view_stats_at(
-    at: DateTime<Utc>,
-    pool: &PgPool,
-) -> Result<Vec<AddChannelViewStatsRow>> {
-    let query = sqlx::query_as!(
-        AddChannelViewStatsRow,
-        "SELECT channel_id, count as value FROM channel_view_stats WHERE time = $1",
-        at,
-    )
     .fetch_all(pool);
 
     crate::otel::execute_query!("SELECT", "channel_view_stats", query)

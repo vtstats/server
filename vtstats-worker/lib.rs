@@ -1,4 +1,6 @@
-#![deny(clippy::unwrap_used)]
+#![warn(clippy::print_stdout)]
+#![warn(clippy::todo)]
+#![warn(clippy::unwrap_used)]
 
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use reqwest::{ClientBuilder, Proxy};
@@ -54,7 +56,7 @@ async fn execute(shutdown_complete_tx: Sender<()>) -> anyhow::Result<()> {
         .gzip(true);
 
     if let Ok(proxy) = env::var("ALL_PROXY") {
-        builder = builder.proxy(Proxy::all(proxy).unwrap());
+        builder = builder.proxy(Proxy::all(proxy)?);
     }
 
     let client = builder.build()?;

@@ -35,10 +35,34 @@ pub async fn collect_viewers(
             if status == StreamStatus::Scheduled {
                 tracing::warn!("delete schedule stream {}", stream.platform_id);
                 delete_stream(stream.stream_id, pool).await?;
+
+                return Ok(());
             } else {
-                end_youtube_stream(stream, client, pool).await?;
+                let mut videos = list_videos(&stream.platform_id, client).await?;
+                let video: Option<integration_youtube::data_api::videos::Stream> =
+                    videos.pop().and_then(Into::into);
+
+                match video {
+                    Some(video) if video.end_time.is_some() => {
+                        tracing::warn!(
+                            stream_id = stream.stream_id,
+                            "delete schedule stream, platform_id={}",
+                            stream.platform_id
+                        );
+                        end_youtube_stream(stream, video, client, pool).await?;
+                        return Ok(());
+                    }
+                    _ => {
+                        tracing::warn!(
+                            stream_id = stream.stream_id,
+                            "stream timeout and next_continuation is not found, but stream is not ended, platform_id={}",
+                            stream.platform_id
+                        );
+                        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                        continue;
+                    }
+                }
             }
-            return Ok(());
         };
 
         continuation = Some(next_continuation.to_string());
@@ -63,12 +87,35 @@ pub async fn collect_viewers(
         // stream has ended
         if timeout.as_secs() > 5 {
             if status == StreamStatus::Scheduled {
-                tracing::warn!("delete schedule stream {}", stream.platform_id);
+                tracing::warn!(
+                    stream_id = stream.stream_id,
+                    "delete schedule stream, platform_id={}",
+                    stream.platform_id
+                );
                 delete_stream(stream.stream_id, pool).await?;
+                return Ok(());
             } else {
-                end_youtube_stream(stream, client, pool).await?;
+                let mut videos = list_videos(&stream.platform_id, client).await?;
+                let video: Option<integration_youtube::data_api::videos::Stream> =
+                    videos.pop().and_then(Into::into);
+
+                match video {
+                    Some(video) if video.end_time.is_some() => {
+                        end_youtube_stream(stream, video, client, pool).await?;
+                        return Ok(());
+                    }
+                    _ => {
+                        tracing::warn!(
+                            stream_id = stream.stream_id,
+                            "stream timeout is {}ms, but stream is not ended, platform_id={}",
+                            timeout.as_millis(),
+                            stream.platform_id
+                        );
+                        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                        continue;
+                    }
+                }
             }
-            return Ok(());
         }
 
         if status == StreamStatus::Scheduled {
@@ -87,11 +134,12 @@ pub async fn collect_viewers(
     }
 }
 
-async fn end_youtube_stream(stream: &Stream, client: &Client, pool: &PgPool) -> anyhow::Result<()> {
-    let mut videos = list_videos(&stream.platform_id, client).await?;
-    let video: Option<integration_youtube::data_api::videos::Stream> =
-        videos.pop().and_then(Into::into);
-
+async fn end_youtube_stream(
+    stream: &Stream,
+    video: integration_youtube::data_api::videos::Stream,
+    client: &Client,
+    pool: &PgPool,
+) -> anyhow::Result<()> {
     // update thumbnail url after stream is ended
     let thumbnail_url = match get_thumbnail(&stream.platform_id, client).await {
         Ok((filename, content_type, bytes)) => {
@@ -111,11 +159,11 @@ async fn end_youtube_stream(stream: &Stream, client: &Client, pool: &PgPool) -> 
 
     end_stream_with_values(
         stream.stream_id,
-        video.as_ref().map(|s| s.title.as_str()),
-        video.as_ref().and_then(|s| s.schedule_time),
-        video.as_ref().and_then(|s| s.start_time),
-        video.as_ref().and_then(|s| s.end_time),
-        video.as_ref().and_then(|s| s.likes),
+        Some(video.title.as_str()),
+        video.schedule_time,
+        video.start_time,
+        video.end_time,
+        video.likes,
         thumbnail_url,
         pool,
     )

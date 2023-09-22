@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT channel_id, time, (value->>'paid_amount') amount, (value->>'paid_currency_symbol') symbol FROM stream_events LEFT JOIN streams ON streams.stream_id = stream_events.stream_id WHERE time <= $1 AND (kind = 'youtube_super_chat' OR kind = 'youtube_super_sticker')",
+  "query": "SELECT channel_id, time, CASE WHEN kind = 'twitch_cheering' THEN 'cheering' ELSE (value->>'currency_code') END symbol, CASE WHEN kind = 'twitch_cheering' THEN (value->>'bits') ELSE (value->>'amount') END amount FROM stream_events LEFT JOIN streams ON streams.stream_id = stream_events.stream_id WHERE time > $1 AND (kind = 'twitch_cheering' OR kind = 'twitch_hyper_chat')",
   "describe": {
     "columns": [
       {
@@ -15,12 +15,12 @@
       },
       {
         "ordinal": 2,
-        "name": "amount",
+        "name": "symbol",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "symbol",
+        "name": "amount",
         "type_info": "Text"
       }
     ],
@@ -36,5 +36,5 @@
       null
     ]
   },
-  "hash": "0ae04880113f51575b7e34ce6363468876687306760b2d479f8288fc2ac1aa51"
+  "hash": "88853d9c1da6d0a6f1e428aac36764fc3541b998d15807d7f3088c34585b97e3"
 }

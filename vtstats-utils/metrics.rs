@@ -73,8 +73,8 @@ pub async fn instrument_send(
 
     let retry_builder = ExponentialBuilder::default()
         .with_min_delay(Duration::from_secs(1))
-        .with_factor(1.25)
-        .with_max_times(5);
+        .with_factor(1.5)
+        .with_max_times(10);
 
     future_fn
         .retry(&retry_builder)

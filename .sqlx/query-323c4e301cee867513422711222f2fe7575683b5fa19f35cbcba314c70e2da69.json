@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO channel_revenue_stats(channel_id, time, value) VALUES ($1, $2, $3) ON CONFLICT (channel_id, time) DO UPDATE SET value = excluded.value",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Timestamptz",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "323c4e301cee867513422711222f2fe7575683b5fa19f35cbcba314c70e2da69"
+}

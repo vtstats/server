@@ -14,24 +14,23 @@ pub async fn list_stream_events(stream_id: i32, pool: &PgPool) -> Result<Vec<Str
 }
 
 #[derive(Debug)]
-pub struct ChannelRevenue {
+pub struct ChannelRevenueEvent {
     pub channel_id: i32,
     pub time: DateTime<Utc>,
     pub amount: Option<String>,
     pub symbol: Option<String>,
 }
 
-pub async fn list_revenue_by_channel_start_at(
+pub async fn list_youtube_channel_revenue_events(
     start_at: DateTime<Utc>,
     pool: &PgPool,
-) -> Result<Vec<ChannelRevenue>> {
+) -> Result<Vec<ChannelRevenueEvent>> {
     let query = sqlx::query_as!(
-        ChannelRevenue,
+        ChannelRevenueEvent,
         "SELECT channel_id, time, \
         (value->>'paid_amount') amount, \
         (value->>'paid_currency_symbol') symbol \
-        FROM stream_events LEFT JOIN streams ON \
-        streams.stream_id = stream_events.stream_id \
+        FROM stream_events LEFT JOIN streams ON streams.stream_id = stream_events.stream_id \
         WHERE time > $1 AND (kind = 'youtube_super_chat' OR kind = 'youtube_super_sticker')",
         start_at
     )
@@ -40,19 +39,41 @@ pub async fn list_revenue_by_channel_start_at(
     crate::otel::execute_query!("SELECT", "stream_events", query)
 }
 
-pub async fn list_revenue_by_channel_end_at(
-    end_at: DateTime<Utc>,
+pub async fn list_twitch_channel_revenue_events(
+    start_at: DateTime<Utc>,
     pool: &PgPool,
-) -> Result<Vec<ChannelRevenue>> {
+) -> Result<Vec<ChannelRevenueEvent>> {
     let query = sqlx::query_as!(
-        ChannelRevenue,
+        ChannelRevenueEvent,
         "SELECT channel_id, time, \
-        (value->>'paid_amount') amount, \
-        (value->>'paid_currency_symbol') symbol \
-        FROM stream_events LEFT JOIN streams ON \
-        streams.stream_id = stream_events.stream_id \
-        WHERE time <= $1 AND (kind = 'youtube_super_chat' OR kind = 'youtube_super_sticker')",
-        end_at
+        CASE WHEN kind = 'twitch_cheering' THEN 'cheering' ELSE (value->>'currency_code') END symbol, \
+        CASE WHEN kind = 'twitch_cheering' THEN (value->>'bits') ELSE (value->>'amount') END amount \
+        FROM stream_events LEFT JOIN streams ON streams.stream_id = stream_events.stream_id \
+        WHERE time > $1 AND (kind = 'twitch_cheering' OR kind = 'twitch_hyper_chat')",
+        start_at
+    )
+    .fetch_all(pool);
+
+    crate::otel::execute_query!("SELECT", "stream_events", query)
+}
+
+pub async fn list_channel_revenue_events(
+    channel_id: i32,
+    pool: &PgPool,
+) -> Result<Vec<ChannelRevenueEvent>> {
+    let query = sqlx::query_as!(
+        ChannelRevenueEvent,
+        "SELECT channel_id, time, \
+        CASE WHEN kind = 'twitch_cheering' THEN 'cheering' \
+        WHEN kind = 'twitch_hyper_chat' THEN (value->>'currency_code') \
+        ELSE (value->>'paid_currency_symbol') END symbol, \
+        CASE WHEN kind = 'twitch_cheering' THEN (value->>'bits') \
+        WHEN kind = 'twitch_hyper_chat' THEN (value->>'amount') \
+        ELSE (value->>'paid_amount') END amount \
+        FROM stream_events LEFT JOIN streams ON streams.stream_id = stream_events.stream_id \
+        WHERE channel_id = $1 AND (kind = 'youtube_super_chat' OR kind = 'youtube_super_sticker' \
+        OR kind = 'twitch_cheering' OR kind = 'twitch_hyper_chat')",
+        channel_id
     )
     .fetch_all(pool);
 

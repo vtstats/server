@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO channel_subscriber_stats as s (channel_id, time, count) VALUES ($1, $2, $3) ON CONFLICT (channel_id, time) DO UPDATE SET count = GREATEST(excluded.count, s.count)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c7897ccd68b50f7ea3f46067d6d2cc2243f14cbb441815c76dea9b34532a7a0f"
+}

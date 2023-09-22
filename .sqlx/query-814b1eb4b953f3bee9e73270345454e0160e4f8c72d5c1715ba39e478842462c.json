@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE channel_stats_summary SET value = $1, value_1_day_ago = COALESCE((SELECT value FROM channel_revenue_stats WHERE time = $2 AND channel_id = $5), value_1_day_ago), value_7_days_ago = COALESCE((SELECT value FROM channel_revenue_stats WHERE time = $3 AND channel_id = $5), value_7_days_ago), value_30_days_ago = COALESCE((SELECT value FROM channel_revenue_stats WHERE time = $4 AND channel_id = $5), value_30_days_ago) WHERE channel_id = $5 AND kind = 'revenue'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Jsonb",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "814b1eb4b953f3bee9e73270345454e0160e4f8c72d5c1715ba39e478842462c"
+}
