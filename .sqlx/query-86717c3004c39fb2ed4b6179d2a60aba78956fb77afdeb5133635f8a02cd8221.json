@@ -1,12 +1,29 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nINSERT INTO jobs (kind, payload, status, next_run, continuation)\n     VALUES ($1, $2, 'queued', $3, $4)\nON CONFLICT (kind, payload) DO UPDATE\n        SET status       = 'queued',\n            next_run     = $3,\n            continuation = $4,\n            updated_at   = NOW()\n  RETURNING job_id\n            ",
+  "query": "INSERT INTO jobs as j (kind, payload, status, next_run) VALUES ($1, $2, 'queued', $3) ON CONFLICT (kind, payload) DO UPDATE SET status = CASE WHEN j.status != 'running' THEN 'queued'::job_status ELSE 'running'::job_status END, next_run = $3, updated_at = NOW() RETURNING job_id, status as \"status: _\"",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
         "name": "job_id",
         "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "status: _",
+        "type_info": {
+          "Custom": {
+            "name": "job_status",
+            "kind": {
+              "Enum": [
+                "queued",
+                "running",
+                "success",
+                "failed"
+              ]
+            }
+          }
+        }
       }
     ],
     "parameters": {
@@ -35,13 +52,13 @@
           }
         },
         "Jsonb",
-        "Timestamptz",
-        "Text"
+        "Timestamptz"
       ]
     },
     "nullable": [
+      false,
       false
     ]
   },
-  "hash": "1d9236436bf7d38f230f514bb4e3561816129d9947ce8a6b100fa63596809787"
+  "hash": "86717c3004c39fb2ed4b6179d2a60aba78956fb77afdeb5133635f8a02cd8221"
 }

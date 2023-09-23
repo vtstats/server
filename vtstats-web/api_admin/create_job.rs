@@ -20,7 +20,6 @@ pub enum CreateJobPayload {
 
 pub async fn create_job(pool: PgPool, payload: CreateJobPayload) -> Result<Response, Rejection> {
     let job_id = PushJobQuery {
-        continuation: None,
         next_run: Some(Utc::now()),
         payload: match payload {
             CreateJobPayload::HealthCheck => JobPayload::HealthCheck,

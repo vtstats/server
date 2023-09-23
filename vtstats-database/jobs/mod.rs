@@ -27,7 +27,7 @@ pub enum JobStatus {
     Failed,
 }
 
-#[derive(sqlx::Type, Serialize, Clone, Copy)]
+#[derive(sqlx::Type, Serialize, Clone, Copy, Debug)]
 #[sqlx(type_name = "job_kind", rename_all = "snake_case")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum JobKind {

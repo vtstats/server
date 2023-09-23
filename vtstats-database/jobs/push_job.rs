@@ -7,30 +7,40 @@ use super::*;
 pub struct PushJobQuery {
     pub payload: JobPayload,
     pub next_run: Option<DateTime<Utc>>,
-    pub continuation: Option<String>,
 }
 
 impl PushJobQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<i32> {
-        let query = sqlx::query!(
-            r#"
-INSERT INTO jobs (kind, payload, status, next_run, continuation)
-     VALUES ($1, $2, 'queued', $3, $4)
-ON CONFLICT (kind, payload) DO UPDATE
-        SET status       = 'queued',
-            next_run     = $3,
-            continuation = $4,
-            updated_at   = NOW()
-  RETURNING job_id
-            "#,
-            self.payload.kind() as _, // $1
-            Json(self.payload) as _,  // $2
-            self.next_run,            // $3
-            self.continuation,        // $4
+        struct Record {
+            job_id: i32,
+            status: JobStatus,
+        }
+
+        let query = sqlx::query_as!(
+            Record,
+            "INSERT INTO jobs as j (kind, payload, status, next_run) \
+            VALUES ($1, $2, 'queued', $3) \
+            ON CONFLICT (kind, payload) DO UPDATE \
+            SET status = CASE WHEN j.status != 'running' THEN 'queued'::job_status ELSE 'running'::job_status END, \
+            next_run = $3, updated_at = NOW() \
+            RETURNING job_id, status as \"status: _\"",
+            self.payload.kind() as _,  // $1
+            Json(&self.payload) as _,  // $2
+            self.next_run,             // $3
         )
         .fetch_one(pool);
 
         let record = crate::otel::execute_query!("INSERT", "jobs", query)?;
+
+        if record.status == JobStatus::Running {
+            tracing::warn!(
+                "Same job already running kind={:?} payload={:?} job_id={}",
+                self.payload.kind(),
+                self.payload,
+                record.job_id
+            );
+            return Ok(record.job_id);
+        }
 
         if let Some(next_run) = self.next_run {
             let query = sqlx::query!(
@@ -54,7 +64,6 @@ pub async fn queue_send_notification(
     pool: &PgPool,
 ) -> Result<i32> {
     PushJobQuery {
-        continuation: None,
         next_run: Some(time),
         payload: JobPayload::SendNotification(SendNotificationJobPayload { stream_id }),
     }
@@ -68,7 +77,6 @@ pub async fn queue_collect_youtube_stream_metadata(
     pool: &PgPool,
 ) -> Result<i32> {
     PushJobQuery {
-        continuation: None,
         next_run: Some(time),
         payload: JobPayload::CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload {
             stream_id,
@@ -84,7 +92,6 @@ pub async fn queue_collect_twitch_stream_metadata(
     pool: &PgPool,
 ) -> Result<i32> {
     PushJobQuery {
-        continuation: None,
         next_run: Some(time),
         payload: JobPayload::CollectTwitchStreamMetadata(CollectTwitchStreamMetadataJobPayload {
             stream_id,
@@ -104,7 +111,6 @@ async fn test(pool: PgPool) -> Result<()> {
     // should push a new job
     {
         PushJobQuery {
-            continuation: None,
             next_run: None,
             payload: JobPayload::HealthCheck,
         }
@@ -112,7 +118,6 @@ async fn test(pool: PgPool) -> Result<()> {
         .await?;
 
         PushJobQuery {
-            continuation: Some("continuation".into()),
             next_run: None,
             payload: JobPayload::CollectTwitchStreamMetadata(
                 CollectTwitchStreamMetadataJobPayload { stream_id: 0 },
@@ -124,7 +129,6 @@ async fn test(pool: PgPool) -> Result<()> {
         let time = Utc.timestamp_opt(3000, 0).single().unwrap();
 
         PushJobQuery {
-            continuation: None,
             next_run: Some(time),
             payload: JobPayload::CollectTwitchStreamMetadata(
                 CollectTwitchStreamMetadataJobPayload { stream_id: 1 },
@@ -142,14 +146,13 @@ async fn test(pool: PgPool) -> Result<()> {
         );
     }
 
-    // re-queued jobs without same payload
+    // re-queued jobs w/ same payload
     {
         sqlx::query("UPDATE jobs SET status = 'success'")
             .execute(&pool)
             .await?;
 
         PushJobQuery {
-            continuation: Some("foobar".into()),
             next_run: None,
             payload: JobPayload::CollectTwitchStreamMetadata(
                 CollectTwitchStreamMetadataJobPayload { stream_id: 0 },
@@ -171,6 +174,38 @@ async fn test(pool: PgPool) -> Result<()> {
                 .await?
                 .len(),
             1
+        );
+    }
+
+    // re-queued jobs that is already running same payload
+    {
+        sqlx::query("UPDATE jobs SET status = 'running'")
+            .execute(&pool)
+            .await?;
+
+        PushJobQuery {
+            next_run: None,
+            payload: JobPayload::CollectTwitchStreamMetadata(
+                CollectTwitchStreamMetadataJobPayload { stream_id: 0 },
+            ),
+        }
+        .execute(&pool)
+        .await?;
+
+        assert_eq!(
+            sqlx::query_as::<_, Job>("SELECT * FROM jobs")
+                .fetch_all(&pool)
+                .await?
+                .len(),
+            3
+        );
+
+        assert_eq!(
+            sqlx::query_as::<_, Job>("SELECT * FROM jobs WHERE status = 'queued'")
+                .fetch_all(&pool)
+                .await?
+                .len(),
+            0
         );
     }
 
