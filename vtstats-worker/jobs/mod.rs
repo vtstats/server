@@ -1,4 +1,4 @@
-pub mod collect_channel_stats;
+// pub mod collect_channel_stats;
 pub mod collect_stream_stats;
 pub mod health_check;
 pub mod refresh_youtube_rss;
@@ -53,7 +53,8 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
         increment_gauge!(
             "worker_jobs_running_count",
             1.,
-            "kind" => job_type
+            "kind" => job_type,
+            "id" => job_id.to_string(),
         );
 
         let result = match payload {
@@ -82,7 +83,8 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
         decrement_gauge!(
             "worker_jobs_running_count",
             1.,
-            "kind" => job_type
+            "kind" => job_type,
+            "id" => job_id.to_string(),
         );
 
         let query = match result {
