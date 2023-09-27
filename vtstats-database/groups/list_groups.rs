@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 use sqlx::{PgPool, Result};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[skip_serializing_none]
 pub struct Group {
     pub group_id: String,
     #[serde(default)]
