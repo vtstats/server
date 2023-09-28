@@ -1,4 +1,5 @@
 use anyhow::bail;
+use chrono::Utc;
 use reqwest::Client;
 use std::{fmt::Write, vec};
 
@@ -72,82 +73,88 @@ async fn send_discord_notification(
     let notification = &item.notification_payload;
     let notification_id = item.notification_id;
 
-    match (notification, notification_id) {
-        (Some(notification), Some(notification_id)) => {
-            EditMessageRequest {
-                channel_id: subscription.channel_id.clone(),
-                content: String::new(),
-                message_id: notification.message_id.clone(),
-                embeds,
-            }
-            .send(client)
-            .await?;
-
-            let mut start_message_id = notification.start_message_id.clone();
-            let mut end_message_id = notification.end_message_id.clone();
-
-            if stream.status == StreamStatus::Live && start_message_id.is_none() {
-                let message_id = CreateMessageRequest {
-                    channel_id: subscription.channel_id.clone(),
-                    content: "Stream has started".into(),
-                    embeds: vec![],
-                    message_reference: Some(MessageReference {
-                        message_id: notification.message_id.clone(),
-                        fail_if_not_exists: false,
-                    }),
-                }
-                .send(client)
-                .await?;
-                start_message_id = Some(message_id);
-            }
-
-            if stream.status == StreamStatus::Ended && end_message_id.is_none() {
-                let message_id = CreateMessageRequest {
-                    channel_id: subscription.channel_id.clone(),
-                    content: "Stream has ended".into(),
-                    embeds: vec![],
-                    message_reference: Some(MessageReference {
-                        message_id: notification.message_id.clone(),
-                        fail_if_not_exists: false,
-                    }),
-                }
-                .send(client)
-                .await?;
-                end_message_id = Some(message_id);
-            }
-
-            update_discord_notification(
-                notification_id,
-                notification.message_id.clone(),
-                start_message_id,
-                end_message_id,
-                pool,
-            )
-            .await?;
+    if let (Some(notification), Some(notification_id)) = (notification, notification_id) {
+        EditMessageRequest {
+            channel_id: subscription.channel_id.clone(),
+            content: String::new(),
+            message_id: notification.message_id.clone(),
+            embeds,
         }
-        _ => {
+        .send(client)
+        .await?;
+
+        let mut start_message_id = notification.start_message_id.clone();
+        let mut end_message_id = notification.end_message_id.clone();
+
+        if stream.status == StreamStatus::Live && start_message_id.is_none() {
             let message_id = CreateMessageRequest {
                 channel_id: subscription.channel_id.clone(),
-                content: String::new(),
-                embeds: embeds.clone(),
-                message_reference: None,
+                content: "Stream has started".into(),
+                embeds: vec![],
+                message_reference: Some(MessageReference {
+                    message_id: notification.message_id.clone(),
+                    fail_if_not_exists: false,
+                }),
             }
             .send(client)
             .await?;
-
-            InsertNotificationQuery {
-                subscription_id,
-                payload: NotificationPayload {
-                    vtuber_id: stream.vtuber_id.clone(),
-                    stream_id: stream.stream_id,
-                    message_id,
-                    start_message_id: None,
-                    end_message_id: None,
-                },
-            }
-            .execute(pool)
-            .await?;
+            start_message_id = Some(message_id);
         }
+
+        if stream.status == StreamStatus::Ended && end_message_id.is_none() {
+            let message_id = CreateMessageRequest {
+                channel_id: subscription.channel_id.clone(),
+                content: "Stream has ended".into(),
+                embeds: vec![],
+                message_reference: Some(MessageReference {
+                    message_id: notification.message_id.clone(),
+                    fail_if_not_exists: false,
+                }),
+            }
+            .send(client)
+            .await?;
+            end_message_id = Some(message_id);
+        }
+
+        update_discord_notification(
+            notification_id,
+            notification.message_id.clone(),
+            start_message_id,
+            end_message_id,
+            pool,
+        )
+        .await?;
+    } else if matches!(
+        stream.end_time, Some(t) if (Utc::now() - t).num_days() > 3
+    ) {
+        tracing::info!(
+            "Received old stream notification, skipping stream_id={}",
+            stream.stream_id
+        );
+
+        return Ok(());
+    } else {
+        let message_id = CreateMessageRequest {
+            channel_id: subscription.channel_id.clone(),
+            content: String::new(),
+            embeds: embeds.clone(),
+            message_reference: None,
+        }
+        .send(client)
+        .await?;
+
+        InsertNotificationQuery {
+            subscription_id,
+            payload: NotificationPayload {
+                vtuber_id: stream.vtuber_id.clone(),
+                stream_id: stream.stream_id,
+                message_id,
+                start_message_id: None,
+                end_message_id: None,
+            },
+        }
+        .execute(pool)
+        .await?;
     }
 
     Ok(())
