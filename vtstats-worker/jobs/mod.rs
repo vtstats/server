@@ -4,6 +4,7 @@ pub mod health_check;
 pub mod refresh_youtube_rss;
 pub mod send_notification;
 pub mod subscribe_youtube_pubsub;
+pub mod update_exchange_rates;
 
 use chrono::{DateTime, Utc};
 use metrics::{decrement_gauge, histogram, increment_gauge};
@@ -70,6 +71,7 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             SendNotification(payload) => {
                 send_notification::execute(&pool, client, payload.stream_id).await
             }
+            UpdateExchangeRates => update_exchange_rates::execute(&pool, client).await,
         };
 
         let status = if result.is_ok() { "ok" } else { "err" };

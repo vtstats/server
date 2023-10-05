@@ -1,6 +1,7 @@
 mod catalog;
 mod channel_stats;
 mod channels;
+mod exchange_rates;
 mod stream_events;
 mod stream_stats;
 mod stream_times;
@@ -9,6 +10,7 @@ mod streams;
 use catalog::*;
 use channel_stats::*;
 use channels::*;
+use exchange_rates::*;
 use stream_events::*;
 use stream_stats::*;
 use stream_times::*;
@@ -80,6 +82,10 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
         .and(with_pool(pool.clone()))
         .and_then(stream_events);
 
+    let api_exchange_rates = warp::path!("exchange-rates")
+        .and(with_pool(pool.clone()))
+        .and_then(exchange_rates);
+
     let api_catalog = warp::path!("catalog")
         .and(with_pool(pool.clone()))
         .and_then(catalog);
@@ -97,6 +103,7 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
             .or(api_stream_stats_viewer)
             .or(api_stream_stats_chat)
             .or(api_stream_times)
-            .or(api_stream_stats),
+            .or(api_stream_stats)
+            .or(api_exchange_rates),
     )
 }

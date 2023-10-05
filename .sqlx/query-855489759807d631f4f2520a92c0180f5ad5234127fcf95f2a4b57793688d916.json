@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT code, rate FROM currencies",
+  "query": "SELECT code, rate FROM exchange_rates",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       false
     ]
   },
-  "hash": "46e1b1e8602619bb9da2ea0bd2ddf6b1ec47561a15dd1a8a2d161bad0b504d21"
+  "hash": "855489759807d631f4f2520a92c0180f5ad5234127fcf95f2a4b57793688d916"
 }

@@ -39,7 +39,7 @@
                 "update_youtube_channel_view_and_subscriber",
                 "update_bilibili_channel_view_and_subscriber",
                 "update_youtube_channel_donation",
-                "update_currency_exchange_rate",
+                "update_exchange_rates",
                 "upsert_youtube_stream",
                 "collect_youtube_stream_metadata",
                 "collect_youtube_stream_live_chat",

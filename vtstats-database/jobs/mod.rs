@@ -37,6 +37,7 @@ pub enum JobKind {
     UpdateChannelStats,
     CollectYoutubeStreamMetadata,
     CollectTwitchStreamMetadata,
+    UpdateExchangeRates,
     SendNotification,
 }
 
@@ -62,6 +63,7 @@ pub enum JobPayload {
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
     UpdateChannelStats,
+    UpdateExchangeRates,
     CollectYoutubeStreamMetadata(CollectYoutubeStreamMetadataJobPayload),
     CollectTwitchStreamMetadata(CollectTwitchStreamMetadataJobPayload),
     SendNotification(SendNotificationJobPayload),
@@ -89,6 +91,7 @@ impl JobPayload {
             JobPayload::HealthCheck => JobKind::HealthCheck,
             JobPayload::RefreshYoutubeRss => JobKind::RefreshYoutubeRss,
             JobPayload::SubscribeYoutubePubsub => JobKind::SubscribeYoutubePubsub,
+            JobPayload::UpdateExchangeRates => JobKind::UpdateExchangeRates,
             JobPayload::UpdateChannelStats => JobKind::UpdateChannelStats,
             JobPayload::CollectYoutubeStreamMetadata(_) => JobKind::CollectYoutubeStreamMetadata,
             JobPayload::CollectTwitchStreamMetadata(_) => JobKind::CollectTwitchStreamMetadata,
@@ -100,6 +103,7 @@ impl JobPayload {
         match self {
             JobPayload::HealthCheck => "health_check",
             JobPayload::RefreshYoutubeRss => "refresh_youtube_rss",
+            JobPayload::UpdateExchangeRates => "update_exchange_rates",
             JobPayload::SubscribeYoutubePubsub => "subscribe_youtube_pubsub",
             JobPayload::UpdateChannelStats => "update_channel_stats",
             JobPayload::CollectYoutubeStreamMetadata(_) => "collect_youtube_stream_metadata",
@@ -125,6 +129,7 @@ impl FromRow<'_, PgRow> for Job {
                 JobKind::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
                 JobKind::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
                 JobKind::UpdateChannelStats => JobPayload::UpdateChannelStats,
+                JobKind::UpdateExchangeRates => JobPayload::UpdateExchangeRates,
                 JobKind::CollectYoutubeStreamMetadata => JobPayload::CollectYoutubeStreamMetadata(
                     row.try_get::<Json<_>, _>("payload")?.0,
                 ),
