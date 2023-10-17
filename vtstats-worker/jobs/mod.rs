@@ -54,7 +54,6 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             "worker_jobs_running_count",
             1.,
             "kind" => job_type,
-            "id" => job_id.to_string(),
         );
 
         let result = match payload {
@@ -85,7 +84,6 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             "worker_jobs_running_count",
             1.,
             "kind" => job_type,
-            "id" => job_id.to_string(),
         );
 
         let query = match result {
