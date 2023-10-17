@@ -98,7 +98,7 @@ host;x-amz-content-sha256;x-amz-date
         .header(AUTHORIZATION, authorization)
         .body(data);
 
-    send_request!(req)?;
+    send_request!(req, "/:bucket/:filename")?;
 
     Ok(format!("{s3_public_url}/{filename}"))
 }

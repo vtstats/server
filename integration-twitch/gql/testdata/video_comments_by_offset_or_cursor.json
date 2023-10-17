@@ -1,0 +1,2684 @@
+{
+  "data": {
+    "video": {
+      "comments": {
+        "edges": [
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "2e910218-209b-4ba5-a2a0-661406663213",
+              "commenter": {
+                "id": "130565809",
+                "login": "nemokyuki",
+                "displayName": "nemokyuki"
+              },
+              "contentOffsetSeconds": 951,
+              "createdAt": "2023-09-25T23:17:13.881Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;38;55",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 38
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjswOw==",
+                    "setID": "subscriber",
+                    "version": "0"
+                  },
+                  {
+                    "id": "c3ViLWdpZnRlcjs1Ow==",
+                    "setID": "sub-gifter",
+                    "version": "5"
+                  }
+                ],
+                "userColor": "#0000FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "48b7114c-8bd2-4aef-9e8f-fe850832ae64",
+              "commenter": {
+                "id": "716044899",
+                "login": "yurichiyo",
+                "displayName": "ゆりちよ"
+              },
+              "contentOffsetSeconds": 951,
+              "createdAt": "2023-09-25T23:17:14.275Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;38;55",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 38
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjsyOw==",
+                    "setID": "subscriber",
+                    "version": "2"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "76dc00d4-563f-47e2-a41c-9b6566e9f4df",
+              "commenter": {
+                "id": "47647698",
+                "login": "grybel",
+                "displayName": "grybel"
+              },
+              "contentOffsetSeconds": 951,
+              "createdAt": "2023-09-25T23:17:14.664Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Im in pain, but at least im cute!"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjswOw==",
+                    "setID": "subscriber",
+                    "version": "0"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "eafec6c6-f619-419d-9726-2db3fff1b048",
+              "commenter": {
+                "id": "885213628",
+                "login": "felixlonardo21",
+                "displayName": "felixlonardo21"
+              },
+              "contentOffsetSeconds": 952,
+              "createdAt": "2023-09-25T23:17:14.903Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "More important than your health?"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "5348f5af-2fd7-4e3d-9aea-2adaedf09c9b",
+              "commenter": {
+                "id": "905007130",
+                "login": "ultraderek",
+                "displayName": "ultraderek"
+              },
+              "contentOffsetSeconds": 953,
+              "createdAt": "2023-09-25T23:17:16.137Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "White?"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjswOw==",
+                    "setID": "subscriber",
+                    "version": "0"
+                  }
+                ],
+                "userColor": "#B22222"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "b5ec94e4-5161-4ed1-8de7-9e80cc6cf059",
+              "commenter": {
+                "id": "413822428",
+                "login": "kalphantasm",
+                "displayName": "kalphantasm"
+              },
+              "contentOffsetSeconds": 953,
+              "createdAt": "2023-09-25T23:17:16.405Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "😭😭😭😭😭😭😭😭😭😭😭😭😭😭💢"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "c3ViLWdpZnRlcjs1Ow==",
+                    "setID": "sub-gifter",
+                    "version": "5"
+                  }
+                ],
+                "userColor": "#0000FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "bc3c364d-1bf6-4006-a86a-b7a0694f090a",
+              "commenter": {
+                "id": "57534652",
+                "login": "pomuranian",
+                "displayName": "Pomuranian"
+              },
+              "contentOffsetSeconds": 953,
+              "createdAt": "2023-09-25T23:17:16.621Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;38;55",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 38
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;57;74",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 57
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;76;93",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 76
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "Yml0cy1jaGFyaXR5OzE7",
+                    "setID": "bits-charity",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#066EA1"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "bc08bc08-c8ac-489c-a306-a7008d179a6b",
+              "commenter": {
+                "id": "64628466",
+                "login": "corvidien",
+                "displayName": "CORVIDIEN"
+              },
+              "contentOffsetSeconds": 954,
+              "createdAt": "2023-09-25T23:17:16.907Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;38;55",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 38
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;57;74",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 57
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDA7",
+                    "setID": "bits",
+                    "version": "100"
+                  }
+                ],
+                "userColor": "#B22222"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "7ef8e447-b957-441f-af86-101a3bd4c392",
+              "commenter": {
+                "id": "776208053",
+                "login": "peacefullyviolent",
+                "displayName": "peacefullyviolent"
+              },
+              "contentOffsetSeconds": 954,
+              "createdAt": "2023-09-25T23:17:16.916Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "I hope you're better brother"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Yml0czsxMDA7",
+                    "setID": "bits",
+                    "version": "100"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "a9bbc2bf-0968-4feb-b860-edad399ed078",
+              "commenter": {
+                "id": "56786156",
+                "login": "vicious_souza",
+                "displayName": "vicious_souza"
+              },
+              "contentOffsetSeconds": 955,
+              "createdAt": "2023-09-25T23:17:17.888Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "cute while dying KEKW"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Zm91bmRlcjswOw==",
+                    "setID": "founder",
+                    "version": "0"
+                  },
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#FF0000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "74ea78c5-17fe-4108-9115-3c2980c20a16",
+              "commenter": {
+                "id": "467063343",
+                "login": "916jono",
+                "displayName": "916Jono"
+              },
+              "contentOffsetSeconds": 956,
+              "createdAt": "2023-09-25T23:17:18.798Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;19;30",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 19
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;32;49",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 32
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;51;62",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 51
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;64;81",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 64
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;83;94",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 83
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#FF0000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "d25b4288-0d7e-4754-9146-b2685df27590",
+              "commenter": {
+                "id": "794332399",
+                "login": "maira_karasu",
+                "displayName": "maira_karasu"
+              },
+              "contentOffsetSeconds": 957,
+              "createdAt": "2023-09-25T23:17:19.899Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "しまむらよりは…"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "08003000-b93e-4be4-af68-282e33452ac4",
+              "commenter": {
+                "id": "815869651",
+                "login": "maddyobx",
+                "displayName": "maddyobx"
+              },
+              "contentOffsetSeconds": 957,
+              "createdAt": "2023-09-25T23:17:20.096Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_a83158ddc47744808cfe0eeb36c49e36;0;10",
+                      "emoteID": "emotesv2_a83158ddc47744808cfe0eeb36c49e36",
+                      "from": 0
+                    },
+                    "text": "gamer85Love"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_a83158ddc47744808cfe0eeb36c49e36;12;22",
+                      "emoteID": "emotesv2_a83158ddc47744808cfe0eeb36c49e36",
+                      "from": 12
+                    },
+                    "text": "gamer85Love"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_a83158ddc47744808cfe0eeb36c49e36;24;34",
+                      "emoteID": "emotesv2_a83158ddc47744808cfe0eeb36c49e36",
+                      "from": 24
+                    },
+                    "text": "gamer85Love"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_a83158ddc47744808cfe0eeb36c49e36;36;46",
+                      "emoteID": "emotesv2_a83158ddc47744808cfe0eeb36c49e36",
+                      "from": 36
+                    },
+                    "text": "gamer85Love"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": "#1E90FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "28caafba-432d-4e91-80fa-ad55eeb400b8",
+              "commenter": {
+                "id": "59317773",
+                "login": "azure_phantom",
+                "displayName": "Azure_Phantom"
+              },
+              "contentOffsetSeconds": 957,
+              "createdAt": "2023-09-25T23:17:20.263Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjsyOw==",
+                    "setID": "subscriber",
+                    "version": "2"
+                  },
+                  {
+                    "id": "dHdpdGNoY29uTkEyMDIyOzE7",
+                    "setID": "twitchconNA2022",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#143FFC"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "544ffd74-d1d8-4d35-a6e9-433ecd149e4d",
+              "commenter": {
+                "id": "668016459",
+                "login": "ghostcitycr",
+                "displayName": "ghostcitycr"
+              },
+              "contentOffsetSeconds": 957,
+              "createdAt": "2023-09-25T23:17:20.404Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Well understandable "
+                  },
+                  {
+                    "emote": {
+                      "id": "425618;20;22",
+                      "emoteID": "425618",
+                      "from": 20
+                    },
+                    "text": "LUL"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "d31d0d21-c2ac-412b-928c-bdee752b5650",
+              "commenter": {
+                "id": "24274378",
+                "login": "toastybiggins",
+                "displayName": "ToastyBiggins"
+              },
+              "contentOffsetSeconds": 958,
+              "createdAt": "2023-09-25T23:17:21.289Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "\"Did you see that neighbor girl getting taken away in an ambulance? Her panties were so cute.\" "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_656e437aca024e1781d838d5af2a49ba;95;102",
+                      "emoteID": "emotesv2_656e437aca024e1781d838d5af2a49ba",
+                      "from": 95
+                    },
+                    "text": "henyaSip"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDAwOw==",
+                    "setID": "bits",
+                    "version": "1000"
+                  }
+                ],
+                "userColor": "#0000FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "d6d5a354-678d-431e-a5e1-dada53a6641a",
+              "commenter": {
+                "id": "576586009",
+                "login": "noerisia",
+                "displayName": "noerisia"
+              },
+              "contentOffsetSeconds": 958,
+              "createdAt": "2023-09-25T23:17:21.342Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#0000FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "efa862d3-cc3f-4e5c-958b-18a4998d2948",
+              "commenter": {
+                "id": "57673425",
+                "login": "tokico",
+                "displayName": "Tokico"
+              },
+              "contentOffsetSeconds": 958,
+              "createdAt": "2023-09-25T23:17:21.69Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "@henyathegenius wait you were FORCED to go OUTSIDE D:"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": "#777777"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "64d69107-d579-4199-af8b-bf229a998638",
+              "commenter": {
+                "id": "757999946",
+                "login": "justtentative",
+                "displayName": "justtentative"
+              },
+              "contentOffsetSeconds": 959,
+              "createdAt": "2023-09-25T23:17:22.205Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Yeah chat. Even like this, she is still a girl "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;47;64",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 47
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;66;83",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 66
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;85;102",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 85
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "92a3c545-154f-468d-8a3f-c259f5e9e3b0",
+              "commenter": {
+                "id": "552810483",
+                "login": "alvsten",
+                "displayName": "Alvsten"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:22.829Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;26;37",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 26
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;39;50",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 39
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;52;63",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 52
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;65;76",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 65
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;78;89",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 78
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;91;102",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 91
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;104;115",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 104
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;117;128",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 117
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;130;141",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 130
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#1E90FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "361daa62-93d2-4e1b-b136-833d06864474",
+              "commenter": {
+                "id": "67038511",
+                "login": "junice3",
+                "displayName": "JunICE3"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:23.041Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Sending good vibes"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0cy1jaGFyaXR5OzE7",
+                    "setID": "bits-charity",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#1FF4FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "01a224a3-38b6-49bb-87ee-987a902762a2",
+              "commenter": {
+                "id": "564520147",
+                "login": "itsmeninjacat",
+                "displayName": "itsmeninjacat"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:23.142Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Pizza alergic"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "8868421e-3440-4965-b6cc-9510a5da89b9",
+              "commenter": {
+                "id": "57134852",
+                "login": "garuyashi",
+                "displayName": "Garuyashi"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:23.155Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;26;37",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 26
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "c3ViLWdpZnRlcjsxMDs=",
+                    "setID": "sub-gifter",
+                    "version": "10"
+                  }
+                ],
+                "userColor": "#1E90FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "dfdff1b9-a331-421d-a768-cacc790ce7c4",
+              "commenter": {
+                "id": "185873234",
+                "login": "peastwater",
+                "displayName": "アズマ21"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:23.329Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "おはよー"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "57b2919c-d175-4268-a6d9-043bb19b69f2",
+              "commenter": {
+                "id": "757745772",
+                "login": "gou_sea",
+                "displayName": "gou_sea"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:23.43Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "おはよー"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDAwOw==",
+                    "setID": "bits",
+                    "version": "1000"
+                  }
+                ],
+                "userColor": "#FF69B4"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "74b825b3-7d2d-490a-8834-7d85a7aaab8d",
+              "commenter": {
+                "id": "140291974",
+                "login": "batturtle123",
+                "displayName": "batturtle123"
+              },
+              "contentOffsetSeconds": 960,
+              "createdAt": "2023-09-25T23:17:23.553Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "555555584;0;1",
+                      "emoteID": "555555584",
+                      "from": 0
+                    },
+                    "text": "\u003c3"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "555555584;3;4",
+                      "emoteID": "555555584",
+                      "from": 3
+                    },
+                    "text": "\u003c3"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#FF0000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "4144d3f3-66b1-4843-b77c-18a3a4ee91f2",
+              "commenter": {
+                "id": "615061159",
+                "login": "thehartoftheparty",
+                "displayName": "thehartoftheparty"
+              },
+              "contentOffsetSeconds": 961,
+              "createdAt": "2023-09-25T23:17:24.161Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "I am sorry to hear you had a horrible day but I hope it is not chocolate related."
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#008000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "6fb92468-544a-49f8-ab81-1973fd94c5cd",
+              "commenter": {
+                "id": "42062225",
+                "login": "unholy_burden",
+                "displayName": "unholy_burden"
+              },
+              "contentOffsetSeconds": 962,
+              "createdAt": "2023-09-25T23:17:24.737Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "you'll get over it henya"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#FF4500"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "e53f1a1c-1eed-4626-986f-da2eeb9da604",
+              "commenter": {
+                "id": "18747271",
+                "login": "hunterwar",
+                "displayName": "Hunterwar"
+              },
+              "contentOffsetSeconds": 962,
+              "createdAt": "2023-09-25T23:17:25.241Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "KEKW doctor i'm dying look how cute my pantsu is"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#B22222"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "b825a84c-f86e-435e-a105-c33cceb06ed2",
+              "commenter": {
+                "id": "57826666",
+                "login": "aldra_e",
+                "displayName": "Aldra_E"
+              },
+              "contentOffsetSeconds": 963,
+              "createdAt": "2023-09-25T23:17:26.362Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Striped underwear?"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Yml0czsxOw==",
+                    "setID": "bits",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#1B64DE"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "52681e74-c94f-424d-8dbe-47a50c19c656",
+              "commenter": {
+                "id": "668399748",
+                "login": "alysticism",
+                "displayName": "Alysticism"
+              },
+              "contentOffsetSeconds": 963,
+              "createdAt": "2023-09-25T23:17:26.511Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d89f850d65024893b8ee2ff57b0ca35e;0;12",
+                      "emoteID": "emotesv2_d89f850d65024893b8ee2ff57b0ca35e",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaCry"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d89f850d65024893b8ee2ff57b0ca35e;14;26",
+                      "emoteID": "emotesv2_d89f850d65024893b8ee2ff57b0ca35e",
+                      "from": 14
+                    },
+                    "text": "henyaHenyaCry"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDA7",
+                    "setID": "bits",
+                    "version": "100"
+                  }
+                ],
+                "userColor": "#D2691E"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "94480283-c483-4f14-bc80-b1259e09fba5",
+              "commenter": {
+                "id": "47270066",
+                "login": "kharnthebefriender",
+                "displayName": "kharnthebefriender"
+              },
+              "contentOffsetSeconds": 963,
+              "createdAt": "2023-09-25T23:17:26.517Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_75c370304eaa47ab888f2552b86a80a6;0;8",
+                      "emoteID": "emotesv2_75c370304eaa47ab888f2552b86a80a6",
+                      "from": 0
+                    },
+                    "text": "henyaZoom"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#FF0000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "b3349609-cadd-4700-b076-47aacb01e49b",
+              "commenter": {
+                "id": "728111550",
+                "login": "pocket_poke",
+                "displayName": "Pocket_Poke"
+              },
+              "contentOffsetSeconds": 964,
+              "createdAt": "2023-09-25T23:17:26.902Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;26;37",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 26
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "cHJlbWl1bTsxOw==",
+                    "setID": "premium",
+                    "version": "1"
+                  }
+                ],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "0b864c90-e7e3-4893-8d60-98f5e978b412",
+              "commenter": {
+                "id": "883986944",
+                "login": "crimsonzench",
+                "displayName": "CrimsonZenCh"
+              },
+              "contentOffsetSeconds": 965,
+              "createdAt": "2023-09-25T23:17:27.857Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "425618;0;2",
+                      "emoteID": "425618",
+                      "from": 0
+                    },
+                    "text": "LUL"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "bm9fYXVkaW87MTs=",
+                    "setID": "no_audio",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#FF0000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "33c3de59-b78b-4e49-a949-766e9ce28057",
+              "commenter": {
+                "id": "936814632",
+                "login": "ebina_desu",
+                "displayName": "Ebina_Desu"
+              },
+              "contentOffsetSeconds": 965,
+              "createdAt": "2023-09-25T23:17:28.17Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;26;37",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 26
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;39;50",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 39
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;52;63",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 52
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjsyOw==",
+                    "setID": "subscriber",
+                    "version": "2"
+                  },
+                  {
+                    "id": "Yml0czsxMDAwOw==",
+                    "setID": "bits",
+                    "version": "1000"
+                  }
+                ],
+                "userColor": "#8A2BE2"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "0e3601f9-28ac-490f-b24e-9292aafb377c",
+              "commenter": {
+                "id": "760466061",
+                "login": "scivia_",
+                "displayName": "scivia_"
+              },
+              "contentOffsetSeconds": 965,
+              "createdAt": "2023-09-25T23:17:28.284Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_e00501547ba146949a70451d2814a025;0;9",
+                      "emoteID": "emotesv2_e00501547ba146949a70451d2814a025",
+                      "from": 0
+                    },
+                    "text": "henyaKappa"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_e00501547ba146949a70451d2814a025;11;20",
+                      "emoteID": "emotesv2_e00501547ba146949a70451d2814a025",
+                      "from": 11
+                    },
+                    "text": "henyaKappa"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "Yml0czsxOw==",
+                    "setID": "bits",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#FFFFFF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "9e4f14d9-c338-4d09-9ee0-5c50d3d4184d",
+              "commenter": {
+                "id": "719452831",
+                "login": "thnxforthemmrs",
+                "displayName": "ThnxForTheMmrs"
+              },
+              "contentOffsetSeconds": 965,
+              "createdAt": "2023-09-25T23:17:28.301Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_f722379926cb4e38a422cbacdf614d61;0;9",
+                      "emoteID": "emotesv2_f722379926cb4e38a422cbacdf614d61",
+                      "from": 0
+                    },
+                    "text": "henyaYabai"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_f722379926cb4e38a422cbacdf614d61;11;20",
+                      "emoteID": "emotesv2_f722379926cb4e38a422cbacdf614d61",
+                      "from": 11
+                    },
+                    "text": "henyaYabai"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_f722379926cb4e38a422cbacdf614d61;22;31",
+                      "emoteID": "emotesv2_f722379926cb4e38a422cbacdf614d61",
+                      "from": 22
+                    },
+                    "text": "henyaYabai"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_f722379926cb4e38a422cbacdf614d61;33;42",
+                      "emoteID": "emotesv2_f722379926cb4e38a422cbacdf614d61",
+                      "from": 33
+                    },
+                    "text": "henyaYabai"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_f722379926cb4e38a422cbacdf614d61;44;53",
+                      "emoteID": "emotesv2_f722379926cb4e38a422cbacdf614d61",
+                      "from": 44
+                    },
+                    "text": "henyaYabai"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_f722379926cb4e38a422cbacdf614d61;55;64",
+                      "emoteID": "emotesv2_f722379926cb4e38a422cbacdf614d61",
+                      "from": 55
+                    },
+                    "text": "henyaYabai"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjsyOw==",
+                    "setID": "subscriber",
+                    "version": "2"
+                  }
+                ],
+                "userColor": "#FF69B4"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "2fb8fceb-70b4-4e01-b3a5-5cbc794b4c5a",
+              "commenter": {
+                "id": "27748225",
+                "login": "ran_braden",
+                "displayName": "ran_braden"
+              },
+              "contentOffsetSeconds": 965,
+              "createdAt": "2023-09-25T23:17:28.656Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "You’re the cutest!"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "Yml0czsxMDAwMDs=",
+                    "setID": "bits",
+                    "version": "10000"
+                  }
+                ],
+                "userColor": "#FF0000"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "2d87ec6b-16c9-4ae6-b16b-d7494a06f31d",
+              "commenter": {
+                "id": "11637146",
+                "login": "synchroscheme",
+                "displayName": "Synchroscheme"
+              },
+              "contentOffsetSeconds": 966,
+              "createdAt": "2023-09-25T23:17:29.159Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "can't die while wearing non-cute pantsu Clueless"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czs1MDAwOw==",
+                    "setID": "bits",
+                    "version": "5000"
+                  }
+                ],
+                "userColor": "#D2691E"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "49c72d6e-ebd8-428d-beb0-f06f43305a04",
+              "commenter": {
+                "id": "731424062",
+                "login": "midwinter_mm",
+                "displayName": "真冬_"
+              },
+              "contentOffsetSeconds": 967,
+              "createdAt": "2023-09-25T23:17:30.153Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "次はユニクロにしとこう"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDA7",
+                    "setID": "bits",
+                    "version": "100"
+                  }
+                ],
+                "userColor": "#0000FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "8a700869-6378-4943-a72b-87184487c9e0",
+              "commenter": {
+                "id": "772770539",
+                "login": "spyder_520",
+                "displayName": "Spyder_520"
+              },
+              "contentOffsetSeconds": 967,
+              "createdAt": "2023-09-25T23:17:30.564Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;26;37",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 26
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;39;50",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 39
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;52;63",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 52
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;65;76",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 65
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;78;89",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 78
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjswOw==",
+                    "setID": "subscriber",
+                    "version": "0"
+                  }
+                ],
+                "userColor": "#0000FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "93853f66-6df0-4ac2-b0be-af8d8d0d86d1",
+              "commenter": {
+                "id": "102521990",
+                "login": "icember",
+                "displayName": "Icember"
+              },
+              "contentOffsetSeconds": 967,
+              "createdAt": "2023-09-25T23:17:30.632Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "What if the EMT Is cute? "
+                  },
+                  {
+                    "emote": {
+                      "id": "25;25;29",
+                      "emoteID": "25",
+                      "from": 25
+                    },
+                    "text": "Kappa"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#1E90FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "838b92b0-6a1a-4537-964f-b0bf2cb49412",
+              "commenter": {
+                "id": "927145720",
+                "login": "undeadhue",
+                "displayName": "Undeadhue"
+              },
+              "contentOffsetSeconds": 968,
+              "createdAt": "2023-09-25T23:17:31.032Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Henya is cute!"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjsyOw==",
+                    "setID": "subscriber",
+                    "version": "2"
+                  }
+                ],
+                "userColor": "#1E90FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "71eb5110-cf52-4395-83e3-4b781988b749",
+              "commenter": {
+                "id": "246360068",
+                "login": "cameronromero_",
+                "displayName": "CameronRomero_"
+              },
+              "contentOffsetSeconds": 968,
+              "createdAt": "2023-09-25T23:17:31.249Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "How can you be worried about pantsu when you're in severe pain lol"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxOw==",
+                    "setID": "bits",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#DAA520"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "29c47c95-1355-4285-80e7-a8256a5e04a9",
+              "commenter": {
+                "id": "824869080",
+                "login": "amaliachoi",
+                "displayName": "amaliachoi"
+              },
+              "contentOffsetSeconds": 968,
+              "createdAt": "2023-09-25T23:17:31.443Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "🤣🤣"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Z2xoZi1wbGVkZ2U7MTs=",
+                    "setID": "glhf-pledge",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#9ACD32"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "b56da291-a239-4cc2-baea-38d62c0d0837",
+              "commenter": {
+                "id": "72273120",
+                "login": "otoshi_gami",
+                "displayName": "Otoshi_Gami"
+              },
+              "contentOffsetSeconds": 969,
+              "createdAt": "2023-09-25T23:17:31.809Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "True that henya "
+                  },
+                  {
+                    "emote": {
+                      "id": "425618;16;18",
+                      "emoteID": "425618",
+                      "from": 16
+                    },
+                    "text": "LUL"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "c3VwZXJ1bHRyYWNvbWJvLTIwMjM7MTs=",
+                    "setID": "superultracombo-2023",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#5F9EA0"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "4987bfc5-a4cd-4956-9d48-06666581d4c0",
+              "commenter": {
+                "id": "96519929",
+                "login": "nickpenrhyn",
+                "displayName": "NickPenrhyn"
+              },
+              "contentOffsetSeconds": 969,
+              "createdAt": "2023-09-25T23:17:32.527Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Ohayo!"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "Yml0czsxMDAwMDA7",
+                    "setID": "bits",
+                    "version": "100000"
+                  }
+                ],
+                "userColor": "#FF69B4"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "98cf5334-91aa-4b3d-961d-e7bac1d1bbf2",
+              "commenter": {
+                "id": "462552128",
+                "login": "matrix3bc",
+                "displayName": "matrix3bc"
+              },
+              "contentOffsetSeconds": 970,
+              "createdAt": "2023-09-25T23:17:32.757Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "So what was it?"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "ddffb83e-83f5-47bc-abb8-8c91ac88676d",
+              "commenter": {
+                "id": "35866843",
+                "login": "ewwel",
+                "displayName": "ewwel"
+              },
+              "contentOffsetSeconds": 970,
+              "createdAt": "2023-09-25T23:17:33.513Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Mom dress me please "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d89f850d65024893b8ee2ff57b0ca35e;20;32",
+                      "emoteID": "emotesv2_d89f850d65024893b8ee2ff57b0ca35e",
+                      "from": 20
+                    },
+                    "text": "henyaHenyaCry"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#5F9EA0"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "7aefcf19-0b0f-4b9c-b523-e114fc36e780",
+              "commenter": {
+                "id": "64628466",
+                "login": "corvidien",
+                "displayName": "CORVIDIEN"
+              },
+              "contentOffsetSeconds": 971,
+              "createdAt": "2023-09-25T23:17:34.434Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "No one does "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;12;29",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 12
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDA7",
+                    "setID": "bits",
+                    "version": "100"
+                  }
+                ],
+                "userColor": "#B22222"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "34fa4ac5-6b33-4d0b-8785-ae7266072768",
+              "commenter": {
+                "id": "144293781",
+                "login": "arekomethia",
+                "displayName": "arekomethia"
+              },
+              "contentOffsetSeconds": 972,
+              "createdAt": "2023-09-25T23:17:35.18Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "Yml0czs1MDAwOw==",
+                    "setID": "bits",
+                    "version": "5000"
+                  }
+                ],
+                "userColor": "#9ACD32"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "29f3d01b-8c83-4c2b-916c-44f08c2c124d",
+              "commenter": {
+                "id": "24347968",
+                "login": "elaments4",
+                "displayName": "Elaments4"
+              },
+              "contentOffsetSeconds": 973,
+              "createdAt": "2023-09-25T23:17:35.949Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;0;11",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 0
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;13;24",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 13
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;26;37",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 26
+                    },
+                    "text": "henyaHeadpat"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;39;50",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 39
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "Yml0czsxMDA7",
+                    "setID": "bits",
+                    "version": "100"
+                  }
+                ],
+                "userColor": "#00FF7F"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "4930fb30-bf45-4168-81a0-88a43e3c0a6a",
+              "commenter": {
+                "id": "454455075",
+                "login": "cep__capatob____________",
+                "displayName": "CEP__CAPATOB____________"
+              },
+              "contentOffsetSeconds": 973,
+              "createdAt": "2023-09-25T23:17:36.237Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "🫖🫖🫖🫖🫖🫖🫖🫖🫖"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "cnBsYWNlLTIwMjM7MTs=",
+                    "setID": "rplace-2023",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#1E90FF"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "ee875936-479b-4aab-8b44-c6867cffc7b7",
+              "commenter": {
+                "id": "57534652",
+                "login": "pomuranian",
+                "displayName": "Pomuranian"
+              },
+              "contentOffsetSeconds": 973,
+              "createdAt": "2023-09-25T23:17:36.453Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;0;17",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 0
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;19;36",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 19
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;38;55",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 38
+                    },
+                    "text": "henyaHenyaomegalul"
+                  },
+                  {
+                    "emote": null,
+                    "text": " "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11;57;74",
+                      "emoteID": "emotesv2_d7e4b00332ff4f528f63efe1875bbe11",
+                      "from": 57
+                    },
+                    "text": "henyaHenyaomegalul"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "Ozs=",
+                    "setID": "",
+                    "version": ""
+                  },
+                  {
+                    "id": "Yml0cy1jaGFyaXR5OzE7",
+                    "setID": "bits-charity",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#066EA1"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "78faf753-f644-4987-861c-2287301c61b4",
+              "commenter": {
+                "id": "891911096",
+                "login": "sirogane000",
+                "displayName": "シロガネハク"
+              },
+              "contentOffsetSeconds": 974,
+              "createdAt": "2023-09-25T23:17:37.176Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "わりとそうｗ"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "b4e8c110-d79d-4fe1-a153-24fc04a79254",
+              "commenter": {
+                "id": "912456919",
+                "login": "dashkoopa17",
+                "displayName": "dashkoopa17"
+              },
+              "contentOffsetSeconds": 975,
+              "createdAt": "2023-09-25T23:17:38.26Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "True"
+                  }
+                ],
+                "userBadges": [],
+                "userColor": null
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "7c0e319d-ecae-49c6-b0c7-e3eaaff9d680",
+              "commenter": {
+                "id": "195601914",
+                "login": "ultra_ltv",
+                "displayName": "ULTRA_LTV"
+              },
+              "contentOffsetSeconds": 975,
+              "createdAt": "2023-09-25T23:17:38.582Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "Just glad you're well! monkaS"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  },
+                  {
+                    "id": "c3ViLWdpZnRlcjsxOw==",
+                    "setID": "sub-gifter",
+                    "version": "1"
+                  }
+                ],
+                "userColor": "#76CC00"
+              }
+            }
+          },
+          {
+            "cursor": "eyJpZCI6ImQyNTEwZmE1LWRhNjUtNDIyMi1iNjA1LWUzZDg4NTkyNjg2NyIsImhrIjoiYnJvYWRjYXN0OjQwNjYxMDE5NDQ3Iiwic2siOiJBQUFBNHp2UENFQVhpRWQ4UHRwRFFBIn0",
+            "node": {
+              "id": "d2510fa5-da65-4222-b605-e3d885926867",
+              "commenter": {
+                "id": "81379661",
+                "login": "kekkou88",
+                "displayName": "kekkou88"
+              },
+              "contentOffsetSeconds": 975,
+              "createdAt": "2023-09-25T23:17:38.661Z",
+              "message": {
+                "fragments": [
+                  {
+                    "emote": null,
+                    "text": "glad you're ok though "
+                  },
+                  {
+                    "emote": {
+                      "id": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b;22;33",
+                      "emoteID": "emotesv2_537ebea7df604d12b8f5c4d82855ab8b",
+                      "from": 22
+                    },
+                    "text": "henyaHeadpat"
+                  }
+                ],
+                "userBadges": [
+                  {
+                    "id": "c3Vic2NyaWJlcjszOw==",
+                    "setID": "subscriber",
+                    "version": "3"
+                  }
+                ],
+                "userColor": "#00FFFF"
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": true,
+          "hasPreviousPage": true
+        }
+      }
+    }
+  }
+}

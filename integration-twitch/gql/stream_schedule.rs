@@ -3,7 +3,7 @@ use reqwest::{Client, Result};
 use serde::{Deserialize, Serialize};
 use vtstats_utils::send_request;
 
-use super::gql_request;
+use super::persisted_gql_request;
 
 static OPERATION: &str = "StreamSchedule";
 static HASH: &str = "d495cb17a67b6f7a8842e10297e57dcd553ea17fe691db435e39a618fe4699cf";
@@ -13,7 +13,7 @@ pub async fn stream_schedule(
     start_at: DateTime<Utc>,
     client: &Client,
 ) -> Result<Response> {
-    let req = gql_request(
+    let req = persisted_gql_request(
         client,
         OPERATION,
         Variables {
@@ -26,7 +26,7 @@ pub async fn stream_schedule(
         HASH,
     );
 
-    let res = send_request!(req)?;
+    let res = send_request!(req, "/gql/StreamSchedule")?;
 
     let res: Response = res.json().await?;
 
@@ -58,39 +58,30 @@ pub struct Data {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
-    pub followers: Followers,
+    pub videos: Videos,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Followers {
-    pub total_count: i32,
+pub struct Videos {
+    pub edges: Vec<Edge>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Edge {
+    pub node: Node,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Node {
+    pub id: String,
+    pub title: String,
+    pub created_at: String,
 }
 
 #[test]
 fn de() {
-    use serde_json::from_str;
-
-    from_str::<Response>(
-        r#"{
-            "data": {
-                "user": {
-                "id": "583341489",
-                "followers": {
-                    "totalCount": 70085,
-                    "__typename": "FollowerConnection"
-                },
-                "isPartner": true,
-                "primaryColorHex": null,
-                "__typename": "User"
-                }
-            },
-            "extensions": {
-                "durationMilliseconds": 42,
-                "operationName": "ChannelAvatar",
-                "requestID": "01H9NBWDNRAJMTYDQDVVYYY39A"
-            }
-        }"#,
-    )
-    .unwrap();
+    serde_json::from_str::<Response>(include_str!("./testdata/stream_schedule.json")).unwrap();
 }

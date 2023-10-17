@@ -31,7 +31,7 @@ pub fn routes(
 async fn twitch_notification(
     notification: Notification,
     pool: PgPool,
-) -> Result<Response, Rejection> {
+) -> anyhow::Result<Response, Rejection> {
     match notification {
         Notification::Event(event) => match event {
             Event::ChannelUpdateEvent(event) => {
@@ -46,7 +46,6 @@ async fn twitch_notification(
                     event.broadcaster_user_login,
                     event.id,
                     event.started_at,
-                    &Client::new(),
                     &pool,
                 )
                 .await
@@ -60,7 +59,6 @@ async fn twitch_notification(
                 handle_stream_offline(
                     event.broadcaster_user_id,
                     event.broadcaster_user_login,
-                    &Client::new(),
                     &pool,
                 )
                 .await
@@ -86,9 +84,10 @@ async fn handle_stream_online(
     platform_channel_login: String,
     platform_stream_id: String,
     stream_start_time: DateTime<Utc>,
-    client: &Client,
     pool: &PgPool,
 ) -> anyhow::Result<()> {
+    let client = vtstats_utils::reqwest::new()?;
+
     let channel =
         get_active_channel_by_platform_id(Platform::Twitch, &platform_channel_id, pool).await?;
 
@@ -97,7 +96,7 @@ async fn handle_stream_online(
         return Ok(());
     };
 
-    let metadata = stream_metadata(&platform_channel_login, client).await?;
+    let metadata = stream_metadata(&platform_channel_login, &client).await?;
 
     let Some(platform_stream) = metadata.data.user.stream else {
         return Ok(());
@@ -143,9 +142,10 @@ async fn handle_stream_online(
 async fn handle_stream_offline(
     platform_channel_id: String,
     platform_channel_login: String,
-    client: &Client,
     pool: &PgPool,
 ) -> anyhow::Result<()> {
+    let client = vtstats_utils::reqwest::new()?;
+
     let channel =
         get_active_channel_by_platform_id(Platform::Twitch, &platform_channel_id, pool).await?;
 
@@ -154,7 +154,7 @@ async fn handle_stream_offline(
         return Ok(());
     };
 
-    let thumbnail_url = match get_thumbnail_url(&platform_channel_login, client).await {
+    let thumbnail_url = match get_thumbnail_url(&platform_channel_login, &client).await {
         Ok(url) => Some(url),
         Err(err) => {
             tracing::warn!("Failed to get thumbnail url of #{}", platform_channel_login);

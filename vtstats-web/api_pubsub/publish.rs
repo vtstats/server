@@ -4,7 +4,6 @@ use integration_youtube::{
     pubsub::Event,
     youtubei::player,
 };
-use reqwest::Client;
 
 use tracing::Span;
 use warp::{http::StatusCode, Rejection};
@@ -25,24 +24,12 @@ pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, R
         Event::Modification {
             platform_channel_id,
             platform_stream_id,
-        } => {
-            handle_modification(
-                &platform_channel_id,
-                &platform_stream_id,
-                &Client::new(),
-                &pool,
-            )
-            .await
-            .map_err(WarpError)?;
-        }
+        } => handle_modification(&platform_channel_id, &platform_stream_id, &pool).await,
         Event::Deletion {
             platform_stream_id, ..
-        } => {
-            handle_deletion(&platform_stream_id, &pool)
-                .await
-                .map_err(WarpError)?;
-        }
+        } => handle_deletion(&platform_stream_id, &pool).await,
     }
+    .map_err(WarpError)?;
 
     Ok(StatusCode::OK)
 }
@@ -50,9 +37,10 @@ pub async fn publish_content(event: Event, pool: PgPool) -> Result<StatusCode, R
 async fn handle_modification(
     platform_channel_id: &str,
     platform_stream_id: &str,
-    client: &Client,
     pool: &PgPool,
 ) -> anyhow::Result<()> {
+    let client = vtstats_utils::reqwest::new()?;
+
     let channel =
         get_active_channel_by_platform_id(Platform::Youtube, platform_channel_id, pool).await?;
 
@@ -61,7 +49,7 @@ async fn handle_modification(
         return Ok(());
     };
 
-    let mut videos = list_videos(platform_stream_id, client).await?;
+    let mut videos = list_videos(platform_stream_id, &client).await?;
 
     let stream: Option<Stream> = videos.pop().and_then(Into::into);
 
@@ -72,7 +60,7 @@ async fn handle_modification(
 
     let mut thumbnail_url = None;
     if youtube_stream.status != StreamStatus::Ended {
-        thumbnail_url = player(platform_stream_id, client)
+        thumbnail_url = player(platform_stream_id, &client)
             .await
             .ok()
             .and_then(|res| Some(res.get_thumbnail_url()?.split_once('?')?.0.to_string()));

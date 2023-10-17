@@ -91,7 +91,7 @@ impl CreateMessageRequest {
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
-        let res = send_request!(req)?;
+        let res = send_request!(req, "/api/v10/channels/:channel_id/messages")?;
 
         let json: Message = res.json().await?;
 
@@ -124,7 +124,7 @@ impl EditMessageRequest {
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
-        let res = send_request!(req)?;
+        let res = send_request!(req, "/api/v10/channels/:channel_id/messages/:message_id")?;
 
         let json: Message = res.json().await?;
 

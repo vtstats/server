@@ -1,0 +1,14 @@
+{
+  "data": {
+    "user": {
+      "id": "1117857350",
+      "stream": null,
+      "__typename": "User"
+    }
+  },
+  "extensions": {
+    "durationMilliseconds": 38,
+    "operationName": "UseViewCount",
+    "requestID": "01H9XC3B66VM13JGDCSQSJZBV6"
+  }
+}

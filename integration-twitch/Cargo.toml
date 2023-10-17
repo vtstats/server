@@ -26,4 +26,5 @@ twitch_message = "0.1.2"
 hmac = "0.12.1"
 sha2 = "0.10.7"
 hex = "0.4.3"
+serde_with = "3.3.0"
 vtstats-database = { path = "../vtstats-database" }

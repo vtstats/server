@@ -2,22 +2,20 @@ use reqwest::{Client, Result};
 use serde::{Deserialize, Serialize};
 use vtstats_utils::send_request;
 
-use super::persisted_gql_request;
+use super::gql_request;
 
-static OPERATION: &str = "ChannelPanels";
-static HASH: &str = "c388999b5fcd8063deafc7f7ad32ebd1cce3d94953c20bf96cffeef643327322";
+static QUERY: &str = "query{video(id:$videoId){title,thumbnailURLs(height:180,width:320),previewThumbnailURL,createdAt,lengthSeconds}}";
 
-pub async fn channel_panels(channel_id: &str, client: &Client) -> Result<Response> {
-    let req = persisted_gql_request(
+pub async fn video_info(video_id: &str, client: &Client) -> Result<Response> {
+    let req = gql_request(
         client,
-        OPERATION,
         Variables {
-            id: channel_id.to_string(),
+            video_id: video_id.to_string(),
         },
-        HASH,
+        QUERY,
     );
 
-    let res = send_request!(req, "/gql/ChannelPanels")?;
+    let res = send_request!(req, "/gql/video")?;
 
     let res: Response = res.json().await?;
 
@@ -27,7 +25,7 @@ pub async fn channel_panels(channel_id: &str, client: &Client) -> Result<Respons
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Variables {
-    pub id: String,
+    pub video_id: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

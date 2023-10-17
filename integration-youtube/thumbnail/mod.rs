@@ -12,7 +12,7 @@ pub async fn get_thumbnail(
     if let Some(url) = response.get_thumbnail_url() {
         let req = client.get(url);
 
-        let res = send_request!(req)?;
+        let res = send_request!(req, "/vi/:videoId.jpg")?;
 
         let (filename, content_type) = if url.contains("vi_webp") {
             (format!("{video_id}.webp"), "image/webp".into())

@@ -66,7 +66,7 @@ impl DiscordApiCache {
                 format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
             );
 
-            let res = send_request!(req)?;
+            let res = send_request!(req, "/api/v10/guilds/:guild_id")?;
 
             let guild: Guild = res.json().await?;
 
@@ -92,7 +92,7 @@ impl DiscordApiCache {
                 format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
             );
 
-            let res = send_request!(req)?;
+            let res = send_request!(req, "/api/v10/guilds/:guild_id/roles")?;
 
             let roles: Vec<Role> = res.json().await?;
 

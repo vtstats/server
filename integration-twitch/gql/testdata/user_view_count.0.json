@@ -1,0 +1,18 @@
+{
+  "data": {
+    "user": {
+      "id": "902183508",
+      "stream": {
+        "id": "39941506117",
+        "viewersCount": 2855,
+        "__typename": "Stream"
+      },
+      "__typename": "User"
+    }
+  },
+  "extensions": {
+    "durationMilliseconds": 44,
+    "operationName": "UseViewCount",
+    "requestID": "01H9XC49J729SJ9GP8Q6F93SZ4"
+  }
+}

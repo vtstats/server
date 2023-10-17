@@ -63,7 +63,7 @@ pub async fn send_message(
 
     let req = client.post(url).form(&message);
 
-    let res = send_request!(req)?;
+    let res = send_request!(req, "/bot:token/sendMessage")?;
 
     let json: MessageResponse = res.json().await?;
 
@@ -81,7 +81,7 @@ pub async fn edit_message(
 
     let req = client.post(url).form(&message);
 
-    let res = send_request!(req)?;
+    let res = send_request!(req, "/bot:token/editMessageText")?;
 
     let json: MessageResponse = res.json().await?;
 

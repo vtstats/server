@@ -1,0 +1,198 @@
+{
+  "data": {
+    "user": {
+      "id": "217871888",
+      "primaryColorHex": null,
+      "lastBroadcast": {
+        "id": "40602906199",
+        "startedAt": "2023-09-10T20:01:30.448526Z",
+        "__typename": "Broadcast"
+      },
+      "broadcastSettings": {
+        "id": "217871888",
+        "title": "今日はちょっとだけ",
+        "__typename": "BroadcastSettings"
+      },
+      "stream": null,
+      "videos": {
+        "edges": [
+          {
+            "node": {
+              "id": "1922082441",
+              "title": "今日はちょっとだけ",
+              "createdAt": "2023-09-10T15:38:39Z",
+              "lengthSeconds": 15766,
+              "viewCount": 192890,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/7b730af32d66b2881fde_kanae_2434_40602906199_1694360312//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "516575",
+                "slug": "valorant",
+                "name": "VALORANT",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1920998243",
+              "title": "【ストグラ】無馬 かな｜!nashima｜!gta｜※鳩禁",
+              "createdAt": "2023-09-09T08:54:46Z",
+              "lengthSeconds": 42446,
+              "viewCount": 659879,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/a844477ed7d32e56c5cf_kanae_2434_40599003479_1694249679//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1920366916",
+              "title": "21時過ぎまで予定",
+              "createdAt": "2023-09-08T17:02:13Z",
+              "lengthSeconds": 10766,
+              "viewCount": 145842,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/88dc70180debca6e4299_kanae_2434_40597674167_1694192527//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1920161533",
+              "title": "21時過ぎまで予定",
+              "createdAt": "2023-09-08T10:44:24Z",
+              "lengthSeconds": 6488,
+              "viewCount": 131071,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/5ee001bdda3834ac674a_kanae_2434_40596505959_1694169859//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1919293373",
+              "title": "このなついちばんアツいパレト",
+              "createdAt": "2023-09-07T09:00:20Z",
+              "lengthSeconds": 41678,
+              "viewCount": 598598,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/843f3fe7d66b9a498bbc_kanae_2434_40593765831_1694077214//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1918517713",
+              "title": "また今日が始まった",
+              "createdAt": "2023-09-06T11:44:45Z",
+              "lengthSeconds": 30182,
+              "viewCount": 458955,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/55e236d77de0abeaa14a_kanae_2434_40591763815_1694000679//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1917789234",
+              "title": "こうはんせんじゃ～～",
+              "createdAt": "2023-09-05T14:49:47Z",
+              "lengthSeconds": 19574,
+              "viewCount": 293856,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/fde89d9b5d920b74bf3f_kanae_2434_40589944391_1693925380//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1917631625",
+              "title": "今日はおかね",
+              "createdAt": "2023-09-05T08:24:55Z",
+              "lengthSeconds": 16616,
+              "viewCount": 314798,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/31bdae685be8db8db863_kanae_2434_40588751719_1693902288//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          },
+          {
+            "node": {
+              "id": "1916799053",
+              "title": "今日はおかね",
+              "createdAt": "2023-09-04T09:51:53Z",
+              "lengthSeconds": 36580,
+              "viewCount": 562407,
+              "previewThumbnailURL": "https://static-cdn.jtvnw.net/cf_vods/d3vd9lfkzbru3h/780b03d6189022234351_kanae_2434_40586389591_1693821106//thumb/thumb0-320x180.jpg",
+              "game": {
+                "id": "32982",
+                "slug": "grand-theft-auto-v",
+                "name": "Grand Theft Auto V",
+                "__typename": "Game"
+              },
+              "__typename": "Video"
+            },
+            "__typename": "VideoEdge"
+          }
+        ],
+        "__typename": "VideoConnection"
+      },
+      "channel": {
+        "id": "217871888",
+        "schedule": null,
+        "__typename": "Channel"
+      },
+      "__typename": "User"
+    }
+  },
+  "extensions": {
+    "durationMilliseconds": 62,
+    "operationName": "StreamSchedule",
+    "requestID": "01HA19NFN6FC0C8GDKWP5K423C",
+    "v": 1
+  }
+}

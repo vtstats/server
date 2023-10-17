@@ -1,0 +1,46 @@
+{
+  "data": {
+    "cheerConfig": {
+      "groups": [
+        {
+          "nodes": [
+            { "prefix": "Cheer" },
+            { "prefix": "BibleThump" },
+            { "prefix": "cheerwhal" },
+            { "prefix": "Corgo" },
+            { "prefix": "Scoops" },
+            { "prefix": "uni" },
+            { "prefix": "ShowLove" },
+            { "prefix": "Party" },
+            { "prefix": "SeemsGood" },
+            { "prefix": "Pride" },
+            { "prefix": "Kappa" },
+            { "prefix": "FrankerZ" },
+            { "prefix": "HeyGuys" },
+            { "prefix": "DansGame" },
+            { "prefix": "EleGiggle" },
+            { "prefix": "TriHard" },
+            { "prefix": "Kreygasm" },
+            { "prefix": "4Head" },
+            { "prefix": "SwiftRage" },
+            { "prefix": "NotLikeThis" },
+            { "prefix": "FailFish" },
+            { "prefix": "VoHiYo" },
+            { "prefix": "PJSalt" },
+            { "prefix": "MrDestructoid" },
+            { "prefix": "bday" },
+            { "prefix": "RIPCheer" },
+            { "prefix": "Shamrock" },
+            { "prefix": "DoodleCheer" },
+            { "prefix": "BitBoss" },
+            { "prefix": "Streamlabs" },
+            { "prefix": "Muxy" },
+            { "prefix": "HolidayCheer" },
+            { "prefix": "Goal" },
+            { "prefix": "Anon" }
+          ]
+        }
+      ]
+    }
+  }
+}

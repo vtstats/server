@@ -59,7 +59,7 @@ impl CreateCommand {
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 
-        let res = send_request!(req)?;
+        let res = send_request!(req, "/api/v10/applications/:application_id/commands")?;
 
         let json: Command = res.json().await?;
 

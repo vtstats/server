@@ -1,0 +1,34 @@
+{
+  "data": {
+    "user": {
+      "id": "151054406",
+      "primaryColorHex": "00FA04",
+      "isPartner": true,
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/4e39c083-2a9a-46dc-95ad-6b74bff0c34b-profile_image-70x70.png",
+      "primaryTeam": {
+        "id": "10123",
+        "name": "vshojo",
+        "displayName": "VShojo",
+        "__typename": "Team"
+      },
+      "squadStream": null,
+      "channel": {
+        "id": "151054406",
+        "chanlets": null,
+        "__typename": "Channel"
+      },
+      "lastBroadcast": {
+        "id": "39912836949",
+        "title": "🐸 space frogs! 💀 !discord !social",
+        "__typename": "Broadcast"
+      },
+      "stream": null,
+      "__typename": "User"
+    }
+  },
+  "extensions": {
+    "durationMilliseconds": 43,
+    "operationName": "StreamMetadata",
+    "requestID": "01H9SW1NW6D00HM2B8TXMC3MY1"
+  }
+}

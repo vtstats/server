@@ -1,0 +1,45 @@
+{
+  "data": {
+    "user": {
+      "id": "883696964",
+      "primaryColorHex": null,
+      "isPartner": false,
+      "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/f6b07858-0629-4710-88fa-b404c695f49c-profile_image-70x70.png",
+      "primaryTeam": {
+        "id": "14086",
+        "name": "nijisanji",
+        "displayName": "にじさんじ",
+        "__typename": "Team"
+      },
+      "squadStream": null,
+      "channel": {
+        "id": "883696964",
+        "chanlets": null,
+        "__typename": "Channel"
+      },
+      "lastBroadcast": {
+        "id": "40595948983",
+        "title": "VALORANT復活！💎１～",
+        "__typename": "Broadcast"
+      },
+      "stream": {
+        "id": "40595948983",
+        "type": "live",
+        "createdAt": "2023-09-08T05:59:46Z",
+        "game": {
+          "id": "516575",
+          "slug": "valorant",
+          "name": "VALORANT",
+          "__typename": "Game"
+        },
+        "__typename": "Stream"
+      },
+      "__typename": "User"
+    }
+  },
+  "extensions": {
+    "durationMilliseconds": 43,
+    "operationName": "StreamMetadata",
+    "requestID": "01H9SW4ZJTC6F25K1ZMKFVD6BT"
+  }
+}

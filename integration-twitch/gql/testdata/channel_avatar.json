@@ -1,0 +1,19 @@
+{
+  "data": {
+    "user": {
+      "id": "583341489",
+      "followers": {
+        "totalCount": 70085,
+        "__typename": "FollowerConnection"
+      },
+      "isPartner": true,
+      "primaryColorHex": null,
+      "__typename": "User"
+    }
+  },
+  "extensions": {
+    "durationMilliseconds": 42,
+    "operationName": "ChannelAvatar",
+    "requestID": "01H9NBWDNRAJMTYDQDVVYYY39A"
+  }
+}
