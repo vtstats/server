@@ -1,11 +1,12 @@
 use chrono::{Duration, DurationRound, Utc};
+use reqwest::Client;
+
 use integration_s3::upload_file;
 use integration_youtube::{
     data_api::videos::list_videos,
     thumbnail::get_thumbnail,
-    youtubei::{updated_metadata, updated_metadata_with_continuation},
+    youtubei::{metadata::Response, updated_metadata, updated_metadata_with_continuation},
 };
-use reqwest::Client;
 use vtstats_database::{
     jobs::queue_send_notification,
     stream_stats::AddStreamViewerStatsQuery,
@@ -22,11 +23,15 @@ pub async fn collect_viewers(
     let mut status = stream.status;
 
     loop {
-        let metadata = if let Some(continuation) = &continuation {
+        let response = if let Some(continuation) = &continuation {
             updated_metadata_with_continuation(continuation, client).await
         } else {
             updated_metadata(&stream.platform_id, client).await
         }?;
+
+        let bytes = response.bytes().await?;
+
+        let metadata: Response = serde_json::from_slice(&bytes)?;
 
         let (Some(timeout), Some(next_continuation)) =
             (metadata.timeout(), metadata.continuation())

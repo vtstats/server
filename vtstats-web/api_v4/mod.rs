@@ -45,7 +45,7 @@ pub fn routes(pool: PgPool) -> impl Filter<Extract = impl Reply, Error = Rejecti
     let api_get_stream = warp::path!("streams")
         .and(warp::query())
         .and(with_pool(pool.clone()))
-        .and_then(list_stream_by_platform_id);
+        .and_then(find_stream_by_id);
 
     let api_scheduled_streams = warp::path!("streams" / "scheduled")
         .and(warp::query())

@@ -5,6 +5,7 @@ use vtstats_database::{
     vtubers::{list_vtubers, VTuber},
     PgPool,
 };
+use warp::http::header::{CACHE_CONTROL, VARY};
 use warp::{reply::Response, Rejection, Reply};
 
 use crate::reject::WarpError;
@@ -25,10 +26,16 @@ pub async fn catalog(pool: PgPool) -> Result<Response, Rejection> {
 
     let groups = list_groups(&pool).await.map_err(Into::<WarpError>::into)?;
 
-    Ok(warp::reply::json(&Catalog {
+    let res = Catalog {
         channels,
         vtubers,
         groups,
-    })
+    };
+
+    Ok(warp::reply::with_header(
+        warp::reply::with_header(warp::reply::json(&res), VARY, "Origin"),
+        CACHE_CONTROL,
+        "max-age=3600", // 1 hour
+    )
     .into_response())
 }

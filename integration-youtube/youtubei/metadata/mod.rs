@@ -8,12 +8,16 @@ use std::env;
 
 use self::proto::get_continuation;
 use self::request::Request;
-use self::response::Response;
 use vtstats_utils::send_request;
 
 use super::context::Context;
 
-pub async fn updated_metadata(video_id: &str, client: &Client) -> anyhow::Result<Response> {
+pub use response::Response;
+
+pub async fn updated_metadata(
+    video_id: &str,
+    client: &Client,
+) -> anyhow::Result<reqwest::Response> {
     let now = Utc::now().timestamp();
 
     let continuation = get_continuation(video_id, now)?;
@@ -24,7 +28,7 @@ pub async fn updated_metadata(video_id: &str, client: &Client) -> anyhow::Result
 pub async fn updated_metadata_with_continuation(
     continuation: &str,
     client: &Client,
-) -> anyhow::Result<Response> {
+) -> anyhow::Result<reqwest::Response> {
     let url = Url::parse_with_params(
         "https://www.youtube.com/youtubei/v1/updated_metadata",
         &[
@@ -40,7 +44,5 @@ pub async fn updated_metadata_with_continuation(
 
     let res = send_request!(req)?;
 
-    let json: Response = res.json().await?;
-
-    Ok(json)
+    Ok(res)
 }

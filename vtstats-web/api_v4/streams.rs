@@ -16,7 +16,7 @@ use crate::reject::WarpError;
 #[serde_as]
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ReqQuery {
+pub struct ListReqQuery {
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, i32>")]
     pub channel_ids: Vec<i32>,
     #[serde(default, with = "ts_milliseconds_option")]
@@ -29,7 +29,7 @@ pub struct ReqQuery {
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ReqQuery_ {
+pub struct FindByIdReqQuery {
     #[serde(default)]
     platform_id: Option<String>,
     #[serde(default)]
@@ -38,8 +38,8 @@ pub struct ReqQuery_ {
     id: Option<i32>,
 }
 
-pub async fn list_stream_by_platform_id(
-    query: ReqQuery_,
+pub async fn find_stream_by_id(
+    query: FindByIdReqQuery,
     pool: PgPool,
 ) -> Result<Response, Rejection> {
     let stream = match (query.id, query.platform, query.platform_id) {
@@ -58,7 +58,10 @@ pub async fn list_stream_by_platform_id(
     Ok(warp::reply::json(&stream).into_response())
 }
 
-pub async fn list_scheduled_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+pub async fn list_scheduled_streams(
+    query: ListReqQuery,
+    pool: PgPool,
+) -> Result<Response, Rejection> {
     let streams = filter_streams_order_by_schedule_time_asc(
         &query.channel_ids,
         StreamStatus::Scheduled,
@@ -72,17 +75,19 @@ pub async fn list_scheduled_streams(query: ReqQuery, pool: PgPool) -> Result<Res
     Ok(warp::reply::json(&streams).into_response())
 }
 
-pub async fn list_live_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+pub async fn list_live_streams(query: ListReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+    let keyword = query
+        .keyword
+        .as_ref()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty());
+
     let streams = filter_streams_order_by_start_time_desc(
         &query.channel_ids,
         StreamStatus::Live,
         query.start_at,
         query.end_at,
-        query
-            .keyword
-            .as_ref()
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty()),
+        keyword,
         pool,
     )
     .await
@@ -91,17 +96,19 @@ pub async fn list_live_streams(query: ReqQuery, pool: PgPool) -> Result<Response
     Ok(warp::reply::json(&streams).into_response())
 }
 
-pub async fn list_ended_streams(query: ReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+pub async fn list_ended_streams(query: ListReqQuery, pool: PgPool) -> Result<Response, Rejection> {
+    let keyword = query
+        .keyword
+        .as_ref()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty());
+
     let streams = filter_streams_order_by_start_time_desc(
         &query.channel_ids,
         StreamStatus::Ended,
         query.start_at,
         query.end_at,
-        query
-            .keyword
-            .as_ref()
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty()),
+        keyword,
         pool,
     )
     .await

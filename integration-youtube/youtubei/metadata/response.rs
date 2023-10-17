@@ -1,22 +1,24 @@
 use serde::de::IgnoredAny;
 use serde::Deserialize;
+use serde_with::serde_as;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Response {
+pub struct Response<'a> {
     #[serde(default)]
-    pub actions: Vec<Action>,
+    pub actions: Vec<Action<'a>>,
     #[serde(default)]
-    pub continuation: Option<Continuation>,
+    pub continuation: Option<Continuation<'a>>,
 }
 
-impl Response {
+impl<'a> Response<'a> {
     pub fn timeout(&self) -> Option<Duration> {
-        self.continuation.as_ref().map(|c| match c {
-            Continuation::TimedContinuationData(data) => Duration::from_millis(data.timeout_ms),
-        })
+        self.continuation
+            .as_ref()
+            .map(|c| Duration::from_millis(c.timed_continuation_data.timeout_ms))
     }
 
     pub fn is_waiting(&self) -> bool {
@@ -77,9 +79,9 @@ impl Response {
     }
 
     pub fn continuation(&self) -> Option<&str> {
-        self.continuation.as_ref().map(|c| match c {
-            Continuation::TimedContinuationData(data) => data.continuation.as_str(),
-        })
+        self.continuation
+            .as_ref()
+            .map(|c| c.timed_continuation_data.continuation.as_ref())
     }
 
     pub fn unknown(&self) -> Vec<String> {
@@ -93,28 +95,30 @@ impl Response {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub enum Continuation {
-    TimedContinuationData(TimedContinuationData),
+pub struct Continuation<'a> {
+    pub timed_continuation_data: TimedContinuationData<'a>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct TimedContinuationData {
+#[serde_as]
+pub struct TimedContinuationData<'a> {
     pub timeout_ms: u64,
-    pub continuation: String,
+    #[serde_as(as = "BorrowCow")]
+    pub continuation: Cow<'a, str>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Action {
+pub struct Action<'a> {
     #[serde(default)]
-    pub update_viewership_action: Option<UpdateViewershipAction>,
+    pub update_viewership_action: Option<UpdateViewershipAction<'a>>,
     #[serde(default)]
-    pub update_toggle_button_text_action: Option<UpdateToggleButtonTextAction>,
+    pub update_toggle_button_text_action: Option<UpdateToggleButtonTextAction<'a>>,
     #[serde(default)]
     pub update_date_text_action: IgnoredAny,
     #[serde(default)]
-    pub update_title_action: Option<UpdateTitleAction>,
+    pub update_title_action: Option<UpdateTitleAction<'a>>,
     #[serde(default)]
     pub update_description_action: IgnoredAny,
     #[serde(flatten)]
@@ -123,59 +127,67 @@ pub struct Action {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateViewershipAction {
+pub struct UpdateViewershipAction<'a> {
     #[serde(default)]
-    pub view_count: Option<UpdateViewershipActionViewCount>,
+    pub view_count: Option<UpdateViewershipActionViewCount<'a>>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateViewershipActionViewCount {
-    pub video_view_count_renderer: VideoViewCountRenderer,
+pub struct UpdateViewershipActionViewCount<'a> {
+    pub video_view_count_renderer: VideoViewCountRenderer<'a>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct VideoViewCountRenderer {
+pub struct VideoViewCountRenderer<'a> {
     #[serde(default)]
-    pub view_count: Option<VideoViewCountRendererViewCount>,
+    pub view_count: Option<VideoViewCountRendererViewCount<'a>>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct VideoViewCountRendererViewCount {
-    pub simple_text: String,
+#[serde_as]
+pub struct VideoViewCountRendererViewCount<'a> {
+    #[serde_as(as = "BorrowCow")]
+    pub simple_text: Cow<'a, str>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateTitleAction {
-    pub title: UpdateTitleActionTitle,
+pub struct UpdateTitleAction<'a> {
+    pub title: UpdateTitleActionTitle<'a>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateTitleActionTitle {
-    pub runs: Vec<UpdateTitleActionTitleRun>,
+pub struct UpdateTitleActionTitle<'a> {
+    pub runs: Vec<UpdateTitleActionTitleRun<'a>>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateTitleActionTitleRun {
-    pub text: String,
+#[serde_as]
+pub struct UpdateTitleActionTitleRun<'a> {
+    #[serde_as(as = "BorrowCow")]
+    pub text: Cow<'a, str>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateToggleButtonTextAction {
-    pub button_id: String,
-    pub default_text: UpdateToggleButtonTextActionDefaultText,
+#[serde_as]
+pub struct UpdateToggleButtonTextAction<'a> {
+    #[serde_as(as = "BorrowCow")]
+    pub button_id: Cow<'a, str>,
+    pub default_text: UpdateToggleButtonTextActionDefaultText<'a>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateToggleButtonTextActionDefaultText {
-    pub simple_text: String,
+#[serde_as]
+pub struct UpdateToggleButtonTextActionDefaultText<'a> {
+    #[serde_as(as = "BorrowCow")]
+    pub simple_text: Cow<'a, str>,
 }
 
 #[test]
