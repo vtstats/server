@@ -1,5 +1,5 @@
 [package]
-name = "vtstats-worker"
+name = "vtstats-api"
 version = "0.1.0"
 authors = ["PoiScript <poiscript@gmail.com>"]
 edition = "2021"
@@ -11,31 +11,36 @@ path = "lib.rs"
 [dependencies]
 metrics = "0.21.1"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
+bytes = "1.4.0"
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
-futures = "0.3.28"
-serde = { version = "1.0.164", features = ["derive"] }
-serde_json = { version = "1.0.97", features = ["arbitrary_precision"] }
-tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
-tracing = "0.1.37"
+hex = "0.4.3"
+hmac = "0.12.1"
 reqwest = { version = "0.11.18", default-features = false, features = [
     "json",
-    "rustls-tls",
-    "brotli",
-    "deflate",
-    "gzip",
+    "rustls-tls"
 ] }
-rust_decimal = { version = "1.32.0", default-features = false, features = [
-    "serde-arbitrary-precision",
-    "serde-float",
-] }
+serde = { version = "1.0.164", features = ["derive"] }
+serde_json = "1.0.97"
+serde_with = "3.0.0"
+tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
+tracing = "0.1.37"
+tracing-futures = "0.2.5"
 vtstats-database = { path = "../vtstats-database" }
 vtstats-utils = { path = "../vtstats-utils" }
-integration-bilibili = { path = "../integration-bilibili" }
+integration-googleauth = { path = "../integration-googleauth" }
 integration-discord = { path = "../integration-discord" }
-integration-s3 = { path = "../integration-s3" }
 integration-twitch = { path = "../integration-twitch" }
 integration-youtube = { path = "../integration-youtube" }
-axum = "0.6.20"
+integration-s3 = { path = "../integration-s3" }
+integration-telegram = { path = "../integration-telegram" }
+axum = { version = "0.6.20", features = ["macros"] }
+tower-http = { version = "0.4.4", features = [
+    "cors",
+    "util",
+    "map-request-body",
+    "trace"
+] }
+tower = "0.4.13"
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

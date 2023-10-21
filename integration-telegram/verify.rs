@@ -1,11 +1,22 @@
-use warp::{Filter, Rejection};
+use axum::{
+    body::HttpBody,
+    http::{Request, StatusCode},
+    middleware::Next,
+    response::{IntoResponse, Response},
+};
 
-use crate::updates::Update;
+pub async fn verify<B: HttpBody>(req: Request<B>, next: Next<B>) -> Response {
+    let Some(expected) = req.headers().get("x-telegram-bot-api-secret-token") else {
+        return StatusCode::BAD_REQUEST.into_response();
+    };
 
-pub fn verify_request() -> impl Filter<Extract = (Update,), Error = Rejection> + Copy {
-    warp::header::exact(
-        "x-telegram-bot-api-secret-token",
-        option_env!("TELEGRAM_SECRET_TOKEN").unwrap_or_default(),
-    )
-    .and(warp::body::json())
+    let Ok(token) = std::env::var("TELEGRAM_SECRET_TOKEN") else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+
+    if expected.as_bytes() != token.as_bytes() {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    next.run(req).await
 }

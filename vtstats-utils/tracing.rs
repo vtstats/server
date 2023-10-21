@@ -19,7 +19,7 @@ use tracing_subscriber::{
 
 pub fn init() {
     let filter_layer = filter_fn(|metadata| {
-        (metadata.target().starts_with("vtstat") || metadata.target().starts_with("integration"))
+        (metadata.target().starts_with("vtstats") || metadata.target().starts_with("integration"))
             && metadata.name() != "Ignored"
     });
 
@@ -32,7 +32,7 @@ pub fn init() {
         .expect("failed to initialize tracing subscriber");
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
 struct JsonMessage {
     target: &'static str,
     level: &'static str,
@@ -124,20 +124,25 @@ where
     }
 
     fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
+        let mut msg = JsonMessage::new(event.metadata());
+        event.record(&mut msg);
+
         if let Some(id) = ctx.current_span().id() {
             let span = ctx.span(id).expect("span not found");
+            let extensions = span.extensions();
 
-            let mut msg = JsonMessage::new(event.metadata());
-            event.record(&mut msg);
-
-            if let Some(span_msg) = span.extensions().get::<JsonMessage>() {
-                let mut span_fields = span_msg.fields.clone();
-                span_fields.remove("message");
-                msg.fields.append(&mut span_fields);
+            if let Some(span_msg) = extensions.get::<JsonMessage>() {
+                msg.fields.extend(
+                    span_msg
+                        .fields
+                        .iter()
+                        // inherit fields from span expect "message" field
+                        .filter_map(|(k, v)| (*k != "message").then(|| (*k, v.clone()))),
+                );
             }
-
-            msg.print(&self.stdout);
         }
+
+        msg.print(&self.stdout);
     }
 
     fn on_record(&self, id: &Id, values: &Record<'_>, ctx: Context<'_, S>) {

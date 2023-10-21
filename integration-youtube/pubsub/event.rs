@@ -1,3 +1,11 @@
+use axum::{
+    async_trait,
+    body::BoxBody,
+    extract::FromRequest,
+    http::Request,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use roxmltree::Document;
 use std::str::FromStr;
 
@@ -12,6 +20,30 @@ pub enum Event {
         platform_channel_id: String,
         platform_stream_id: String,
     },
+}
+
+#[async_trait]
+impl<S> FromRequest<S, BoxBody> for Event
+where
+    S: Send + Sync,
+{
+    type Rejection = Response;
+
+    async fn from_request(req: Request<BoxBody>, _: &S) -> Result<Self, Self::Rejection> {
+        let (_, body) = req.into_parts();
+
+        let body = match hyper::body::to_bytes(body).await {
+            Ok(x) => x,
+            Err(err) => {
+                tracing::error!("{}", err);
+                return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
+            }
+        };
+
+        let body = String::from_utf8_lossy(&body);
+
+        Event::from_str(&body).map_err(|_err| StatusCode::INTERNAL_SERVER_ERROR.into_response())
+    }
 }
 
 impl FromStr for Event {

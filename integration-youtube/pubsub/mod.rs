@@ -4,4 +4,4 @@ mod validate;
 
 pub use event::Event;
 pub use subscribe::SubscribeYouTubePubsubQuery;
-pub use validate::validate;
+pub use validate::verify;

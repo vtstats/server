@@ -20,14 +20,14 @@ async fn main() -> anyhow::Result<()> {
             let (tx1, rx1) = oneshot::channel::<()>();
             let (tx2, rx2) = oneshot::channel::<()>();
             tokio::try_join!(
-                vtstats_web::main(rx1),
+                vtstats_api::main(rx1),
                 vtstats_worker::main(rx2),
                 vtstats_utils::shutdown([tx1, tx2])
             )?;
         }
-        "web" => {
+        "api" => {
             let (tx, rx) = oneshot::channel::<()>();
-            tokio::try_join!(vtstats_web::main(rx), vtstats_utils::shutdown([tx]))?;
+            tokio::try_join!(vtstats_api::main(rx), vtstats_utils::shutdown([tx]))?;
         }
         "worker" => {
             let (tx, rx) = oneshot::channel::<()>();

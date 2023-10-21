@@ -13,7 +13,7 @@ tokio = { version = "1.28.2", features = [
     "sync",
     "rt-multi-thread",
 ] }
-vtstats-web = { path = "./vtstats-web" }
+vtstats-api = { path = "./vtstats-api" }
 vtstats-worker = { path = "./vtstats-worker" }
 vtstats-database = { path = "./vtstats-database" }
 vtstats-utils = { path = "./vtstats-utils" }
@@ -34,7 +34,7 @@ members = [
     "integration-youtube",
     "vtstats-database",
     "vtstats-utils",
-    "vtstats-web",
+    "vtstats-api",
     "vtstats-worker",
 ]
 resolver = "2"

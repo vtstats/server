@@ -5,4 +5,4 @@ pub mod message;
 pub mod validate;
 
 pub use cache::DiscordApiCache;
-pub use validate::validate;
+pub use validate::verify;

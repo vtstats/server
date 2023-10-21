@@ -1,4 +1,4 @@
-use reqwest::{Client, Result};
+use reqwest::{header::AUTHORIZATION, Client, Result};
 use serde::{Deserialize, Serialize};
 
 use vtstats_utils::send_request;
@@ -55,7 +55,7 @@ impl CreateCommand {
         );
 
         let req = client.post(url).json(&self).header(
-            warp::http::header::AUTHORIZATION,
+            AUTHORIZATION,
             format!("Bot {}", std::env::var("DISCORD_BOT_TOKEN").unwrap()),
         );
 

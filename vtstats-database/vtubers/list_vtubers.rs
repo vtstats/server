@@ -3,8 +3,6 @@ use serde::Serialize;
 use serde_with::skip_serializing_none;
 use sqlx::{PgPool, Result};
 
-pub struct ListVtubersQuery;
-
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 #[skip_serializing_none]
@@ -19,14 +17,6 @@ pub struct VTuber {
     pub debuted_at: Option<DateTime<Utc>>,
     #[serde(with = "ts_milliseconds_option")]
     pub retired_at: Option<DateTime<Utc>>,
-}
-
-impl ListVtubersQuery {
-    pub async fn execute(self, pool: &PgPool) -> Result<Vec<VTuber>> {
-        let query = sqlx::query_as!(VTuber, "SELECT * FROM vtubers").fetch_all(pool);
-
-        crate::otel::execute_query!("SELECT", "vtubers", query)
-    }
 }
 
 pub async fn list_vtubers(pool: &PgPool) -> Result<Vec<VTuber>> {

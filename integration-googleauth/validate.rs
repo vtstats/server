@@ -1,11 +1,20 @@
-use std::{env, sync::Arc};
-
+use axum::{
+    body::HttpBody,
+    http::Request,
+    http::StatusCode,
+    middleware::Next,
+    response::{IntoResponse, Response},
+};
 use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
-use reqwest::{header::HeaderValue, Client, ClientBuilder};
+use once_cell::sync::Lazy;
+use reqwest::{
+    header::{HeaderValue, AUTHORIZATION},
+    Client,
+};
 use serde::Deserialize;
+use std::{env, sync::Arc};
 use tokio::sync::Mutex;
-use warp::{Filter, Rejection};
 
 use vtstats_utils::send_request;
 
@@ -27,25 +36,13 @@ pub struct GoogleCerts {
     client: Client,
 }
 
-#[derive(Deserialize, Debug)]
-struct Claims {
-    pub email: String,
-    pub email_verified: bool,
-}
-
 impl GoogleCerts {
-    pub fn new() -> Arc<Mutex<Self>> {
-        Arc::new(Mutex::new(GoogleCerts {
+    fn new() -> Self {
+        GoogleCerts {
             keys: vec![],
             expire: Utc::now(),
-            client: ClientBuilder::new()
-                .http1_only()
-                .brotli(true)
-                .deflate(true)
-                .gzip(true)
-                .build()
-                .expect("create http client"),
-        }))
+            client: vtstats_utils::reqwest::new().expect("create http client"),
+        }
     }
 
     fn is_expired(&self) -> bool {
@@ -97,46 +94,47 @@ impl GoogleCerts {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct NeedLogin;
-
-impl warp::reject::Reject for NeedLogin {}
-
-impl warp::Reply for NeedLogin {
-    fn into_response(self) -> warp::reply::Response {
-        warp::reply::with_status(warp::reply(), warp::http::StatusCode::UNAUTHORIZED)
-            .into_response()
-    }
+#[derive(Deserialize, Debug)]
+struct Claims {
+    pub email: String,
+    pub email_verified: bool,
 }
 
-pub fn validate(
-    certs: Arc<Mutex<GoogleCerts>>,
-) -> impl Filter<Extract = (), Error = Rejection> + Clone {
-    warp::header::optional::<String>(warp::http::header::AUTHORIZATION.as_str())
-        .and_then(move |auth: Option<String>| {
-            let certs = certs.clone();
-            async move {
-                let auth = auth.ok_or_else(|| warp::reject::custom(NeedLogin))?;
+static GOOGLE_CERTS: Lazy<Arc<Mutex<GoogleCerts>>> =
+    Lazy::new(|| Arc::new(Mutex::new(GoogleCerts::new())));
 
-                let mut certs = certs.lock().await;
+pub async fn verify<B: HttpBody>(request: Request<B>, next: Next<B>) -> Response {
+    let Some(auth) = request
+        .headers()
+        .get(AUTHORIZATION)
+        .and_then(|v| v.to_str().ok())
+    else {
+        tracing::warn!("Header authorization is not present");
+        return StatusCode::BAD_REQUEST.into_response();
+    };
 
-                if certs.is_expired() {
-                    certs.refresh().await.map_err(|_| warp::reject())?;
-                }
+    let mut certs = GOOGLE_CERTS.lock().await;
 
-                let claims = certs.validate(&auth).map_err(|_| warp::reject())?;
+    if certs.is_expired() && certs.refresh().await.is_err() {
+        tracing::warn!("Failed to fetch google certs keys");
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
 
-                let emails =
-                    env::var("ADMIN_USER_EMAIL").map_err(|_| warp::reject::custom(NeedLogin))?;
+    let Ok(claims) = certs.validate(auth) else {
+        tracing::warn!("Failed to validate claims");
+        return StatusCode::FORBIDDEN.into_response();
+    };
 
-                if claims.email_verified && emails.split(',').any(|email| email == claims.email) {
-                    return Ok(());
-                }
+    let Ok(emails) = env::var("ADMIN_USER_EMAIL") else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
 
-                Err(warp::reject::custom(NeedLogin))
-            }
-        })
-        .untuple_one()
+    if !claims.email_verified || emails.split(',').all(|email| email != claims.email) {
+        tracing::warn!("Not an admin user");
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    next.run(request).await
 }
 
 fn get_max_age(value: &HeaderValue) -> Option<i64> {
