@@ -2,7 +2,11 @@ use axum::{
     extract::State, http::header::CONTENT_TYPE, response::IntoResponse, routing::get, Router,
 };
 use std::fmt::Write;
-use vtstats_database::{vtubers::list_vtubers, PgPool};
+
+use tokio::try_join;
+use vtstats_database::{
+    channels::Platform, streams::list_stream_ids, vtubers::list_vtuber_ids, PgPool,
+};
 
 use crate::error::ApiResult;
 
@@ -16,13 +20,20 @@ async fn sitemap(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
 
     let mut res = String::new();
 
-    let vtubers = list_vtubers(&pool).await?;
+    let (vtuber_ids, stream_ids) = try_join!(list_vtuber_ids(&pool), list_stream_ids(&pool))?;
 
-    for vtuber in vtubers {
-        let _ = writeln!(res, "{HOSTNAME}/vtuber/{}", vtuber.vtuber_id);
+    for id in vtuber_ids {
+        let _ = writeln!(res, "{HOSTNAME}/vtuber/{id}");
     }
 
-    // TODO streams
+    for record in stream_ids {
+        let platform = match record.platform {
+            Platform::Youtube => "youtube",
+            Platform::Bilibili => "bilibili",
+            Platform::Twitch => "twitch",
+        };
+        let _ = writeln!(res, "{HOSTNAME}/{platform}-stream/{}", record.platform_id);
+    }
 
     Ok(([(CONTENT_TYPE, "text/plain")], res))
 }

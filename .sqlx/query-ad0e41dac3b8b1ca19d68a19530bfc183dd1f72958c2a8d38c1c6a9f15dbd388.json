@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT platform \"platform: _\", platform_id FROM streams",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "platform: _",
+        "type_info": {
+          "Custom": {
+            "name": "platform",
+            "kind": {
+              "Enum": [
+                "youtube",
+                "bilibili",
+                "twitch"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "platform_id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "ad0e41dac3b8b1ca19d68a19530bfc183dd1f72958c2a8d38c1c6a9f15dbd388"
+}

@@ -19,3 +19,20 @@ pub use self::start_stream::*;
 pub use self::stream_times::*;
 pub use self::update_stream_title::*;
 pub use self::upsert_stream::*;
+
+use crate::channels::Platform;
+use sqlx::{PgPool, Result};
+
+pub struct Record {
+    pub platform: Platform,
+    pub platform_id: String,
+}
+
+pub async fn list_stream_ids(pool: &PgPool) -> Result<Vec<Record>> {
+    let query = sqlx::query_as!(
+        Record,
+        "SELECT platform \"platform: _\", platform_id FROM streams"
+    )
+    .fetch_all(pool);
+    crate::otel::execute_query!("SELECT", "vtubers", query)
+}
