@@ -4,6 +4,7 @@ mod list;
 pub use insert::*;
 pub use list::*;
 
+use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::types::JsonValue;
 
@@ -21,6 +22,8 @@ pub enum ChannelStatsKind {
 pub struct ChannelStatsSummary {
     pub channel_id: i32,
     pub kind: ChannelStatsKind,
+    #[serde(with = "ts_milliseconds")]
+    pub updated_at: DateTime<Utc>,
     pub value: JsonValue,
     pub value_1_day_ago: JsonValue,
     pub value_7_days_ago: JsonValue,

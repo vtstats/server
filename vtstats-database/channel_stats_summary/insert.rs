@@ -23,14 +23,15 @@ pub async fn insert(
                 VALUES ($1, $2, $3) \
                 ON CONFLICT (channel_id, time) DO UPDATE \
                 SET count = GREATEST(excluded.count, s.count)",
-                channel_id,
-                time,
-                value
+                channel_id, // $1
+                time,       // $2
+                value,      // $3
             )
             .execute(pool);
             crate::otel::execute_query!("INSERT", "channel_subscriber_stats", query)?;
+
             let query = sqlx::query!(
-                "UPDATE channel_stats_summary SET value = $1, \
+                "UPDATE channel_stats_summary SET value = $1, updated_at = $6, \
                 value_1_day_ago = COALESCE((SELECT to_jsonb(count) FROM channel_subscriber_stats WHERE time = $2 AND channel_id = $5), value_1_day_ago), \
                 value_7_days_ago = COALESCE((SELECT to_jsonb(count) FROM channel_subscriber_stats WHERE time = $3 AND channel_id = $5), value_7_days_ago), \
                 value_30_days_ago = COALESCE((SELECT to_jsonb(count) FROM channel_subscriber_stats WHERE time = $4 AND channel_id = $5), value_30_days_ago) \
@@ -40,6 +41,7 @@ pub async fn insert(
                 time - Duration::days(7), // $3
                 time - Duration::days(30), // $4
                 channel_id, // $5
+                time, // $6
             )
             .execute(pool);
             crate::otel::execute_query!("UPDATE", "channel_stats_summary", query)?;
@@ -50,14 +52,15 @@ pub async fn insert(
                 VALUES ($1, $2, $3) \
                 ON CONFLICT (channel_id, time) DO UPDATE \
                 SET count = GREATEST(excluded.count, s.count)",
-                channel_id,
-                time,
-                value
+                channel_id, // $1
+                time,       // $2
+                value,      // $3
             )
             .execute(pool);
             crate::otel::execute_query!("INSERT", "channel_view_stats", query)?;
+
             let query = sqlx::query!(
-                "UPDATE channel_stats_summary SET value = $1, \
+                "UPDATE channel_stats_summary SET value = $1, updated_at = $6, \
                 value_1_day_ago = COALESCE((SELECT to_jsonb(count) FROM channel_view_stats WHERE time = $2 AND channel_id = $5), value_1_day_ago), \
                 value_7_days_ago = COALESCE((SELECT to_jsonb(count) FROM channel_view_stats WHERE time = $3 AND channel_id = $5), value_7_days_ago), \
                 value_30_days_ago = COALESCE((SELECT to_jsonb(count) FROM channel_view_stats WHERE time = $4 AND channel_id = $5), value_30_days_ago) \
@@ -67,6 +70,7 @@ pub async fn insert(
                 time - Duration::days(7), // $3
                 time - Duration::days(30), // $4
                 channel_id, // $5
+                time, // $6
             )
             .execute(pool);
             crate::otel::execute_query!("UPDATE", "channel_stats_summary", query)?;
@@ -78,14 +82,15 @@ pub async fn insert(
                 VALUES ($1, $2, $3) \
                 ON CONFLICT (channel_id, time) DO UPDATE \
                 SET value = excluded.value",
-                channel_id,
-                time,
-                &value
+                channel_id, // $1
+                time,       // $2
+                &value,     // $3
             )
             .execute(pool);
             crate::otel::execute_query!("INSERT", "channel_revenue_stats", query)?;
+
             let query = sqlx::query!(
-                "UPDATE channel_stats_summary SET value = $1, \
+                "UPDATE channel_stats_summary SET value = $1, updated_at = $6, \
                 value_1_day_ago = COALESCE((SELECT value FROM channel_revenue_stats WHERE time = $2 AND channel_id = $5), value_1_day_ago), \
                 value_7_days_ago = COALESCE((SELECT value FROM channel_revenue_stats WHERE time = $3 AND channel_id = $5), value_7_days_ago), \
                 value_30_days_ago = COALESCE((SELECT value FROM channel_revenue_stats WHERE time = $4 AND channel_id = $5), value_30_days_ago) \
@@ -95,6 +100,7 @@ pub async fn insert(
                 time - Duration::days(7), // $3
                 time - Duration::days(30), // $4
                 channel_id, // $5
+                time, // $6
             )
             .execute(pool);
             crate::otel::execute_query!("UPDATE", "channel_stats_summary", query)?;
