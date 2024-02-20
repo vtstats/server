@@ -6,6 +6,7 @@ use serde::Deserialize;
 use integration_s3::upload_file;
 use integration_youtube::youtubei;
 use vtstats_database::{
+    channel_stats_summary::{self, ChannelStatsKind},
     channels::{CreateChannel, Platform},
     vtubers::UpsertVTuber,
     PgPool,
@@ -18,7 +19,7 @@ use super::ActionResponse;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateVTuberPayload {
+pub struct Payload {
     pub vtuber_id: String,
     pub native_name: String,
     #[serde(default)]
@@ -34,7 +35,7 @@ pub struct CreateVTuberPayload {
 
 pub async fn create_vtuber(
     State(pool): State<PgPool>,
-    Json(payload): Json<CreateVTuberPayload>,
+    Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     let client = vtstats_utils::reqwest::new()?;
 
@@ -68,20 +69,28 @@ pub async fn create_vtuber(
     .execute(&mut *tx)
     .await?;
 
-    CreateChannel {
+    let channel_id = CreateChannel {
         platform: Platform::Youtube,
         platform_id: payload.youtube_channel_id,
         vtuber_id: payload.vtuber_id.clone(),
+        kind: None,
     }
     .execute(&mut *tx)
     .await?;
+
+    channel_stats_summary::create(channel_id, ChannelStatsKind::View, &mut *tx).await?;
+    channel_stats_summary::create(channel_id, ChannelStatsKind::Subscriber, &mut *tx).await?;
+    channel_stats_summary::create(channel_id, ChannelStatsKind::Revenue, &mut *tx).await?;
 
     tx.commit().await?;
 
     Ok((
         StatusCode::CREATED,
         Json(ActionResponse {
-            msg: format!("VTuber {:?} was created.", payload.vtuber_id),
+            msg: format!(
+                "VTuber {:?} and channel {} was created.",
+                payload.vtuber_id, channel_id
+            ),
         }),
     ))
 }

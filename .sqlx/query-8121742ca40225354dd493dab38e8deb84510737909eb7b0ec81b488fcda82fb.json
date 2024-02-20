@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO channel_stats_summary (channel_id, kind, value, value_1_day_ago, value_7_days_ago, value_30_days_ago) VALUES ($1, $2, $3, $3, $3, $3) ON CONFLICT (channel_id, kind) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        {
+          "Custom": {
+            "name": "channel_stats_kind",
+            "kind": {
+              "Enum": [
+                "subscriber",
+                "view",
+                "revenue"
+              ]
+            }
+          }
+        },
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8121742ca40225354dd493dab38e8deb84510737909eb7b0ec81b488fcda82fb"
+}

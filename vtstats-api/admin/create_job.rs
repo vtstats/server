@@ -11,7 +11,7 @@ use crate::{admin::ActionResponse, error::ApiResult};
 #[derive(Deserialize)]
 #[serde(rename = "UPPER_CASE")]
 #[serde(tag = "kind")]
-pub enum CreateJobPayload {
+pub enum Payload {
     HealthCheck,
     RefreshYoutubeRss,
     SubscribeYoutubePubsub,
@@ -20,15 +20,15 @@ pub enum CreateJobPayload {
 
 pub async fn create_job(
     State(pool): State<PgPool>,
-    Json(payload): Json<CreateJobPayload>,
+    Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     let job_id = PushJobQuery {
         next_run: Some(Utc::now()),
         payload: match payload {
-            CreateJobPayload::HealthCheck => JobPayload::HealthCheck,
-            CreateJobPayload::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
-            CreateJobPayload::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
-            CreateJobPayload::UpdateChannelStats => JobPayload::UpdateChannelStats,
+            Payload::HealthCheck => JobPayload::HealthCheck,
+            Payload::RefreshYoutubeRss => JobPayload::RefreshYoutubeRss,
+            Payload::SubscribeYoutubePubsub => JobPayload::SubscribeYoutubePubsub,
+            Payload::UpdateChannelStats => JobPayload::UpdateChannelStats,
         },
     }
     .execute(&pool)

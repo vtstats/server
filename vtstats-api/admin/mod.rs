@@ -1,3 +1,4 @@
+mod create_channel;
 mod create_job;
 mod create_vtuber;
 mod re_run_job;
@@ -24,8 +25,9 @@ use vtstats_database::{
 use crate::error::ApiResult;
 
 use self::{
-    create_job::create_job, create_vtuber::create_vtuber, re_run_job::re_run_job,
-    rename_vtuber_id::rename_vtuber_id, update_groups::update_groups, update_vtuber::update_vtuber,
+    create_channel::create_channel, create_job::create_job, create_vtuber::create_vtuber,
+    re_run_job::re_run_job, rename_vtuber_id::rename_vtuber_id, update_groups::update_groups,
+    update_vtuber::update_vtuber,
 };
 
 pub fn router(pool: PgPool) -> Router {
@@ -44,7 +46,7 @@ pub fn router(pool: PgPool) -> Router {
             get(list_vtubers).put(create_vtuber).post(update_vtuber),
         )
         .route("/vtubers/rename", post(rename_vtuber_id))
-        .route("/channels", get(list_channels))
+        .route("/channels", get(list_channels).put(create_channel))
         .route("/groups", get(list_groups).post(update_groups))
         .layer(middleware::from_fn(verify))
         .with_state(pool)

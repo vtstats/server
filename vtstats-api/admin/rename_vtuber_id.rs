@@ -4,14 +4,14 @@ use vtstats_database::PgPool;
 use crate::{admin::ActionResponse, error::ApiResult};
 
 #[derive(serde::Deserialize)]
-pub struct RenameBody {
+pub struct Payload {
     before: String,
     after: String,
 }
 
 pub async fn rename_vtuber_id(
     State(pool): State<PgPool>,
-    Json(body): Json<RenameBody>,
+    Json(body): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     vtstats_database::vtubers::alert_vtuber_id(&body.before, &body.after, pool).await?;
 

@@ -6,13 +6,13 @@ use crate::{admin::ActionResponse, error::ApiResult};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ReRuneJobPayload {
+pub struct Payload {
     job_id: i32,
 }
 
 pub async fn re_run_job(
     State(pool): State<PgPool>,
-    Json(payload): Json<ReRuneJobPayload>,
+    Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     vtstats_database::jobs::re_run_job(payload.job_id, &pool).await?;
 

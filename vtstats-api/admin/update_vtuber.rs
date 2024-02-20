@@ -10,7 +10,7 @@ use super::ActionResponse;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateVTuberPayload {
+pub struct Payload {
     pub vtuber_id: String,
     pub native_name: String,
     #[serde(default)]
@@ -25,7 +25,7 @@ pub struct UpdateVTuberPayload {
 
 pub async fn update_vtuber(
     State(pool): State<PgPool>,
-    Json(payload): Json<UpdateVTuberPayload>,
+    Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     UpsertVTuber {
         vtuber_id: payload.vtuber_id.clone(),
