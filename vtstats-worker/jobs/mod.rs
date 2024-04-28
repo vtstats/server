@@ -7,7 +7,7 @@ pub mod subscribe_youtube_pubsub;
 pub mod update_exchange_rates;
 
 use chrono::{DateTime, Utc};
-use metrics::{decrement_gauge, histogram, increment_gauge};
+use metrics::{gauge, histogram};
 use reqwest::Client;
 use std::time::Instant;
 use tokio::sync::mpsc::Sender;
@@ -50,11 +50,11 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
         let start = Instant::now();
         let last_run = Utc::now();
 
-        increment_gauge!(
+        gauge!(
             "worker_jobs_running_count",
-            1.,
             "kind" => job_type,
-        );
+        )
+        .increment(1.);
 
         let result = match payload {
             HealthCheck => health_check::execute().await,
@@ -76,15 +76,15 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
         let status = if result.is_ok() { "ok" } else { "err" };
         histogram!(
             "worker_jobs_elapsed_seconds",
-            start.elapsed(),
             "kind" => job_type,
             "status" => status
-        );
-        decrement_gauge!(
+        )
+        .record(start.elapsed());
+        gauge!(
             "worker_jobs_running_count",
-            1.,
             "kind" => job_type,
-        );
+        )
+        .decrement(1.);
 
         let query = match result {
             Ok(JobResult::Next { run }) => UpdateJobQuery {

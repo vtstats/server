@@ -36,7 +36,7 @@
                 "health_check",
                 "refresh_youtube_rss",
                 "subscribe_youtube_pubsub",
-                "update_youtube_channel_view_and_subscriber",
+                "update_channel_stats",
                 "update_bilibili_channel_view_and_subscriber",
                 "update_youtube_channel_donation",
                 "update_exchange_rates",

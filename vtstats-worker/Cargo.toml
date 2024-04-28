@@ -9,7 +9,7 @@ publish = false
 path = "lib.rs"
 
 [dependencies]
-metrics = "0.21.1"
+metrics = "0.22"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 futures = "0.3.28"
@@ -17,7 +17,7 @@ serde = { version = "1.0.164", features = ["derive"] }
 serde_json = { version = "1.0.97", features = ["arbitrary_precision"] }
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"
-reqwest = { version = "0.11.18", default-features = false, features = [
+reqwest = { version = "0.12", default-features = false, features = [
     "json",
     "rustls-tls",
     "brotli",
@@ -35,7 +35,7 @@ integration-discord = { path = "../integration-discord" }
 integration-s3 = { path = "../integration-s3" }
 integration-twitch = { path = "../integration-twitch" }
 integration-youtube = { path = "../integration-youtube" }
-axum = "0.6.20"
+axum = "0.7.5"
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

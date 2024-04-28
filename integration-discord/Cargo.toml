@@ -15,7 +15,7 @@ bytes = "1.4.0"
 ed25519-dalek = { version = "2.0.0-rc.2", default-features = false }
 hex = "0.4.3"
 once_cell = "1.18.0"
-reqwest = { version = "0.11.18", default-features = false, features = [
+reqwest = { version = "0.12", default-features = false, features = [
     "json",
     "rustls-tls",
 ] }
@@ -26,7 +26,7 @@ vtstats-utils = { path = "../vtstats-utils" }
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"
-axum = "0.6.20"
-hyper = "0.14.27"
+axum = "0.7.5"
 tower = "0.4.13"
-tower-http = "0.4.4"
+tower-http = "0.5.2"
+http-body-util = "0.1.0"

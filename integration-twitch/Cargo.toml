@@ -11,7 +11,7 @@ path = "lib.rs"
 [dependencies]
 bytes = "1.4.0"
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
-reqwest = { version = "0.11.18", default-features = false, features = [
+reqwest = { version = "0.12", default-features = false, features = [
     "json",
     "rustls-tls",
 ] }
@@ -27,6 +27,5 @@ sha2 = "0.10.7"
 hex = "0.4.3"
 serde_with = "3.3.0"
 vtstats-database = { path = "../vtstats-database" }
-axum = "0.6.20"
-axum-extra = "0.8.0"
-hyper = "0.14.27"
+axum = "0.7.5"
+http-body-util = "0.1.0"

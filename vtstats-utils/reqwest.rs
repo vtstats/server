@@ -94,18 +94,16 @@ async fn execute_with_metrics(req: Request, client: &Client, path: String) -> Re
     client
         .execute(req)
         .await
-        // TODO: use `inspect` once stable
-        .map(|res| {
+        .inspect(|res| {
             let status_code = res.status().as_str().to_string();
             histogram!(
                 "http_client_requests_elapsed_seconds",
-                start.elapsed(),
                 "method" => method.clone(),
                 "path" => path.clone(),
                 "host" => host.clone(),
                 "status_code" => status_code,
-            );
-            res
+            )
+            .record(start.elapsed());
         })
         .and_then(|r| r.error_for_status())
 }

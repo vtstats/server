@@ -9,8 +9,6 @@ use axum::{
 use chrono::{DateTime, Utc};
 use integration_s3::upload_file;
 use reqwest::Client;
-use tower::ServiceBuilder;
-use tower_http::ServiceBuilderExt;
 use tracing::Span;
 use vtstats_database::{
     channels::{get_active_channel_by_platform_id, Platform},
@@ -26,11 +24,7 @@ use crate::error::ApiResult;
 pub fn router(pool: PgPool) -> Router {
     Router::new()
         .route("/", post(twitch_notification))
-        .layer(
-            ServiceBuilder::new()
-                .map_request_body(axum::body::boxed)
-                .layer(axum::middleware::from_fn(verify)),
-        )
+        .layer(axum::middleware::from_fn(verify))
         .with_state(pool)
 }
 

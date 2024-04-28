@@ -1,14 +1,14 @@
 use axum::{
     async_trait,
-    body::{self, BoxBody, Full},
-    extract::FromRequest,
-    http::Request,
+    body::Body,
+    extract::{FromRequest, Request},
     http::StatusCode,
     middleware::Next,
-    response::IntoResponse,
-    response::Response,
+    response::{IntoResponse, Response},
 };
+use bytes::Bytes;
 use hmac::{Hmac, Mac};
+use http_body_util::BodyExt;
 use serde::Deserialize;
 use sha2::Sha256;
 use std::env;
@@ -27,41 +27,39 @@ pub enum Notification {
 }
 
 #[async_trait]
-impl<S> FromRequest<S, BoxBody> for Notification
+impl<S> FromRequest<S> for Notification
 where
     S: Send + Sync,
 {
     type Rejection = Response;
 
-    async fn from_request(req: Request<BoxBody>, _: &S) -> Result<Self, Self::Rejection> {
-        let (parts, body) = req.into_parts();
-
-        let Some(message_type) = parts.headers.get("Twitch-Eventsub-Message-Type") else {
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+        let Some(message_type) = req
+            .headers()
+            .get("Twitch-Eventsub-Message-Type")
+            .map(|val| val.to_owned())
+        else {
             return Err(StatusCode::BAD_REQUEST.into_response());
         };
 
-        let body = match hyper::body::to_bytes(body).await {
-            Ok(b) => b,
-            Err(err) => {
-                tracing::error!("{}", err);
-                return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
-            }
-        };
+        let bytes = Bytes::from_request(req, state)
+            .await
+            .map_err(|err| err.into_response())?;
 
         match message_type.as_bytes() {
-            b"notification" => Ok(Notification::Event(serde_json::from_slice(&body).unwrap())),
+            b"notification" => Ok(Notification::Event(serde_json::from_slice(&bytes).unwrap())),
             b"webhook_callback_verification" => Ok(Notification::Verification(
-                serde_json::from_slice(&body).unwrap(),
+                serde_json::from_slice(&bytes).unwrap(),
             )),
             b"revocation" => Ok(Notification::Revocation(
-                serde_json::from_slice(&body).unwrap(),
+                serde_json::from_slice(&bytes).unwrap(),
             )),
             _ => Err(StatusCode::BAD_REQUEST.into_response()),
         }
     }
 }
 
-pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
+pub async fn verify(req: Request, next: Next) -> Response {
     let (parts, body) = req.into_parts();
 
     let Some(message_id) = parts.headers.get("Twitch-Eventsub-Message-Id") else {
@@ -80,8 +78,8 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
 
     let message_timestamp = parts.headers.get("Twitch-Eventsub-Message-Timestamp");
 
-    let bytes = match hyper::body::to_bytes(body).await {
-        Ok(x) => x,
+    let bytes = match body.collect().await {
+        Ok(x) => x.to_bytes(),
         Err(err) => {
             tracing::error!("{}", err.to_string());
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -102,7 +100,7 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
         return StatusCode::FORBIDDEN.into_response();
     }
 
-    let req = Request::from_parts(parts, body::boxed(Full::from(bytes)));
+    let req = Request::from_parts(parts, Body::from(bytes));
 
     next.run(req).await
 }

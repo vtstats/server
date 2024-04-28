@@ -1,11 +1,11 @@
 use axum::{
-    body::HttpBody,
-    http::{Request, StatusCode},
+    extract::Request,
+    http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
 };
 
-pub async fn verify<B: HttpBody>(req: Request<B>, next: Next<B>) -> Response {
+pub async fn verify(req: Request, next: Next) -> Response {
     let Some(expected) = req.headers().get("x-telegram-bot-api-secret-token") else {
         return StatusCode::BAD_REQUEST.into_response();
     };

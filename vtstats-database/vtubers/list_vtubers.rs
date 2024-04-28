@@ -3,9 +3,9 @@ use serde::Serialize;
 use serde_with::skip_serializing_none;
 use sqlx::{PgPool, Result};
 
+#[skip_serializing_none]
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-#[skip_serializing_none]
 pub struct VTuber {
     pub vtuber_id: String,
     pub native_name: String,

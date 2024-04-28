@@ -1,6 +1,5 @@
 use axum::{
-    body::HttpBody,
-    http::Request,
+    extract::Request,
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
@@ -103,7 +102,7 @@ struct Claims {
 static GOOGLE_CERTS: Lazy<Arc<Mutex<GoogleCerts>>> =
     Lazy::new(|| Arc::new(Mutex::new(GoogleCerts::new())));
 
-pub async fn verify<B: HttpBody>(request: Request<B>, next: Next<B>) -> Response {
+pub async fn verify(request: Request, next: Next) -> Response {
     let Some(auth) = request
         .headers()
         .get(AUTHORIZATION)

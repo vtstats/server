@@ -11,8 +11,8 @@ pub struct Message {
 }
 
 /// https://discord.com/developers/docs/resources/channel#embed-object
-#[derive(Serialize, Default, Clone)]
 #[skip_serializing_none]
+#[derive(Serialize, Default, Clone)]
 pub struct Embed {
     pub timestamp: Option<String>,
     pub title: Option<String>,

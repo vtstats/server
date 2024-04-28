@@ -18,10 +18,9 @@ macro_rules! execute_query {
 
             metrics::histogram!(
                 "postgres_queries_elapsed_seconds",
-                start.elapsed(),
                 "operation" => $operation,
                 "table" => $table,
-            );
+            ).record(start.elapsed());
 
             // TODO: use `inspect_err` once stable
             if let Err(err) = &result {

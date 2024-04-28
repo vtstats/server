@@ -1,13 +1,15 @@
 use axum::{
-    extract::MatchedPath,
-    http::{header, header::REFERER, Method, Request},
+    extract::{MatchedPath, Request},
+    http::{
+        header::{self, REFERER},
+        Method,
+    },
     middleware::{from_fn, Next},
     response::{IntoResponse, Response},
     Router,
 };
 use std::{env, net::SocketAddr, time::Duration, time::Instant};
 use tokio::sync::oneshot::Receiver;
-use tower::ServiceBuilder;
 use tower_http::{
     cors::{AllowOrigin, CorsLayer},
     trace::TraceLayer,
@@ -41,9 +43,7 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
         .nest("/api/discord", discord::router(pool.clone()))
         .nest("/api/pubsub", pubsub::router(pool.clone()))
         .nest("/api/sitemap", sitemap::router(pool.clone()))
-        .nest("/api/twitch", twitch::router(pool.clone()));
-
-    let layers = ServiceBuilder::new()
+        .nest("/api/twitch", twitch::router(pool.clone()))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|req: &Request<_>| {
@@ -88,10 +88,14 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
         )
         .layer(from_fn(track_metrics));
 
-    tracing::warn!("API server is listening on {address}");
+    let listener = tokio::net::TcpListener::bind(address).await.unwrap();
 
-    axum::Server::bind(&address)
-        .serve(app.layer(layers).into_make_service())
+    tracing::warn!(
+        "API server is listening on {}",
+        listener.local_addr().unwrap()
+    );
+
+    axum::serve(listener, app)
         .with_graceful_shutdown(async {
             shutdown_rx.await.ok();
         })
@@ -102,7 +106,7 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn track_metrics<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
+async fn track_metrics(req: Request, next: Next) -> impl IntoResponse {
     let Some(matched_path) = req.extensions().get::<MatchedPath>() else {
         return next.run(req).await;
     };
@@ -115,11 +119,11 @@ async fn track_metrics<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
 
     metrics::histogram!(
         "http_server_requests_elapsed_seconds",
-        start.elapsed(),
         "method" => method.as_str().to_string(),
         "status_code" => response.status().as_str().to_string(),
         "path" => path.clone()
-    );
+    )
+    .record(start.elapsed());
 
     response
 }

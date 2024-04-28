@@ -1,10 +1,12 @@
 use axum::{
-    body::{self, BoxBody, Full},
-    http::{Request, StatusCode},
+    body::Body,
+    extract::Request,
+    http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
 };
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+use http_body_util::BodyExt;
 use once_cell::sync::Lazy;
 
 static VERIFYING_KEY: Lazy<VerifyingKey> = Lazy::new(|| {
@@ -22,7 +24,7 @@ static VERIFYING_KEY: Lazy<VerifyingKey> = Lazy::new(|| {
 /// verify if this request is actually came from discord
 ///
 /// https://discord.com/developers/docs/interactions/receiving-and-responding#security-and-authorization
-pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
+pub async fn verify(req: Request, next: Next) -> Response {
     let (parts, body) = req.into_parts();
 
     let Some(sign) = parts.headers.get("X-Signature-Ed25519") else {
@@ -35,8 +37,8 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
         return StatusCode::BAD_REQUEST.into_response();
     };
 
-    let bytes = match hyper::body::to_bytes(body).await {
-        Ok(x) => x,
+    let bytes = match body.collect().await {
+        Ok(x) => x.to_bytes(),
         Err(err) => {
             tracing::error!("{}", err.to_string());
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -56,7 +58,7 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
         return StatusCode::FORBIDDEN.into_response();
     }
 
-    let req = Request::from_parts(parts, body::boxed(Full::from(bytes)));
+    let req = Request::from_parts(parts, Body::from(bytes));
 
     next.run(req).await
 }
@@ -64,16 +66,11 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
 #[tokio::test]
 async fn test_verify() {
     use axum::{body::Body, routing::post, Router};
-    use tower::{ServiceBuilder, ServiceExt};
-    use tower_http::ServiceBuilderExt;
-
-    let layer = ServiceBuilder::new()
-        .map_request_body(axum::body::boxed)
-        .layer(axum::middleware::from_fn(verify));
+    use tower::ServiceExt;
 
     let app = Router::new()
         .route("/", post(|| async move { "hello" }))
-        .layer(layer);
+        .layer(axum::middleware::from_fn(verify));
 
     let req = |sign: Option<&str>, timestamp: Option<&str>, body: Option<&str>| -> Request<Body> {
         let mut req = Request::builder().uri("/");

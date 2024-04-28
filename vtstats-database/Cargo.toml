@@ -9,7 +9,7 @@ publish = false
 path = "lib.rs"
 
 [dependencies]
-metrics = "0.21.1"
+metrics = "0.22"
 chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = { version = "1.0.97", features = ["arbitrary_precision"] }

@@ -4,8 +4,6 @@ use axum::routing::post;
 use axum::{Json, Router};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tower::ServiceBuilder;
-use tower_http::ServiceBuilderExt;
 
 use integration_discord::interaction::{
     ApplicationCommandData, Interaction, InteractionCallbackData, InteractionResponse, Member,
@@ -28,11 +26,7 @@ struct DiscordRouteState {
 pub fn router(pool: PgPool) -> Router {
     Router::new()
         .route("/", post(discord_interactions))
-        .layer(
-            ServiceBuilder::new()
-                .map_request_body(axum::body::boxed)
-                .layer(axum::middleware::from_fn(verify)),
-        )
+        .layer(axum::middleware::from_fn(verify))
         .with_state(DiscordRouteState {
             pool,
             cache: DiscordApiCache::new(),

@@ -1,8 +1,7 @@
 use axum::{
     async_trait,
-    body::BoxBody,
-    extract::FromRequest,
-    http::Request,
+    body::Bytes,
+    extract::{FromRequest, Request},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
@@ -23,24 +22,18 @@ pub enum Event {
 }
 
 #[async_trait]
-impl<S> FromRequest<S, BoxBody> for Event
+impl<S> FromRequest<S> for Event
 where
     S: Send + Sync,
 {
     type Rejection = Response;
 
-    async fn from_request(req: Request<BoxBody>, _: &S) -> Result<Self, Self::Rejection> {
-        let (_, body) = req.into_parts();
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+        let bytes = Bytes::from_request(req, state)
+            .await
+            .map_err(|err| err.into_response())?;
 
-        let body = match hyper::body::to_bytes(body).await {
-            Ok(x) => x,
-            Err(err) => {
-                tracing::error!("{}", err);
-                return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
-            }
-        };
-
-        let body = String::from_utf8_lossy(&body);
+        let body = String::from_utf8_lossy(&bytes);
 
         Event::from_str(&body).map_err(|_err| StatusCode::INTERNAL_SERVER_ERROR.into_response())
     }

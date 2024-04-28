@@ -1,15 +1,19 @@
 use axum::{
-    body, body::BoxBody, body::Full, http::Request, http::StatusCode, middleware::Next,
-    response::IntoResponse, response::Response,
+    body::Body,
+    extract::Request,
+    http::StatusCode,
+    middleware::Next,
+    response::{IntoResponse, Response},
 };
 use hmac::{Hmac, Mac};
+use http_body_util::BodyExt;
 use sha1::Sha1;
 use std::env;
 
 /// verify if this request is came from pubsubhubbub
 ///
 /// https://pubsubhubbub.github.io/PubSubHubbub/pubsubhubbub-core-0.4.html#authednotify
-pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
+pub async fn verify(req: Request, next: Next) -> Response {
     let (parts, body) = req.into_parts();
 
     let Some(signature) = parts.headers.get("x-hub-signature") else {
@@ -21,8 +25,8 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
         return StatusCode::BAD_REQUEST.into_response();
     };
 
-    let bytes = match hyper::body::to_bytes(body).await {
-        Ok(x) => x,
+    let bytes = match body.collect().await {
+        Ok(x) => x.to_bytes(),
         Err(err) => {
             tracing::error!("{}", err.to_string());
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -41,7 +45,7 @@ pub async fn verify(req: Request<BoxBody>, next: Next<BoxBody>) -> Response {
         return StatusCode::FORBIDDEN.into_response();
     }
 
-    let req = Request::from_parts(parts, body::boxed(Full::from(bytes)));
+    let req = Request::from_parts(parts, Body::from(bytes));
 
     next.run(req).await
 }
