@@ -3,7 +3,6 @@
 #![warn(clippy::unwrap_used)]
 
 use chrono::{DateTime, Duration, TimeZone, Utc};
-use std::env;
 use tokio::{
     sync::mpsc::{channel, Sender},
     sync::oneshot::Receiver,
@@ -11,8 +10,9 @@ use tokio::{
 };
 use vtstats_database::{
     jobs::{next_queued, pull_jobs},
-    PgListener, PgPool, PgPoolOptions,
+    PgListener, PgPool,
 };
+use vtstats_utils::context::AppContext;
 
 pub mod jobs;
 
@@ -37,32 +37,24 @@ pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
 }
 
 async fn execute(shutdown_complete_tx: Sender<()>) -> anyhow::Result<()> {
-    let database_url = &env::var("DATABASE_URL")?;
+    let ctx = AppContext::new().await?;
 
-    let pool = PgPoolOptions::new()
-        .max_lifetime(std::time::Duration::from_secs(10 * 60)) // 10 minutes
-        .connect(database_url)
-        .await?;
-
-    let mut listener = PgListener::connect(database_url).await?;
+    let mut listener = PgListener::connect(&ctx.database_url).await?;
 
     listener.listen("vt_new_job_queued").await?;
-
-    let client = vtstats_utils::reqwest::new()?;
 
     tracing::warn!("Start executing jobs...");
 
     loop {
-        for job in pull_jobs(&pool).await? {
+        for job in pull_jobs(&ctx.pool).await? {
             tokio::spawn(jobs::execute(
                 job,
-                pool.clone(),
-                client.clone(),
+                ctx.clone(),
                 shutdown_complete_tx.clone(),
             ));
         }
 
-        waiting(&pool, &mut listener).await?;
+        waiting(&ctx.pool, &mut listener).await?;
     }
 }
 

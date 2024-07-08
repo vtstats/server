@@ -1,3 +1,4 @@
+pub mod context;
 pub mod currency;
 pub mod metrics;
 pub mod panic;

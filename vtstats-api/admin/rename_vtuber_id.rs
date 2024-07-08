@@ -1,7 +1,6 @@
 use axum::{extract::State, response::IntoResponse, Json};
-use vtstats_database::PgPool;
 
-use crate::{admin::ActionResponse, error::ApiResult};
+use crate::{admin::ActionResponse, error::ApiResult, AppContext};
 
 #[derive(serde::Deserialize)]
 pub struct Payload {
@@ -10,10 +9,10 @@ pub struct Payload {
 }
 
 pub async fn rename_vtuber_id(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Json(body): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
-    vtstats_database::vtubers::alert_vtuber_id(&body.before, &body.after, pool).await?;
+    vtstats_database::vtubers::alert_vtuber_id(&body.before, &body.after, state.pool).await?;
 
     Ok(Json(ActionResponse {
         msg: format!("VTuber {:?} was renamed to {:?}.", body.before, body.after),

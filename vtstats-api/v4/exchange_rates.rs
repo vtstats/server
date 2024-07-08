@@ -1,11 +1,11 @@
 use axum::{extract::State, http::header::CACHE_CONTROL, response::IntoResponse, Json};
 
-use vtstats_database::{exchange_rates::list_exchange_rates, PgPool};
+use vtstats_database::exchange_rates::list_exchange_rates;
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
-pub async fn exchange_rates(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
-    let res = list_exchange_rates(&pool).await?;
+pub async fn exchange_rates(State(state): State<AppContext>) -> ApiResult<impl IntoResponse> {
+    let res = list_exchange_rates(&state.pool).await?;
 
     Ok((
         [(CACHE_CONTROL, "max-age=864000")], // 10 days

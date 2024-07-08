@@ -6,9 +6,10 @@ use integration_youtube::pubsub::verify;
 
 pub use publish::publish_content;
 pub use verify::verify_intent;
-use vtstats_database::PgPool;
 
-pub fn router(pool: PgPool) -> Router {
+use crate::AppContext;
+
+pub fn router(state: AppContext) -> Router {
     Router::new()
         .route(
             "/",
@@ -16,5 +17,5 @@ pub fn router(pool: PgPool) -> Router {
                 .layer(middleware::from_fn(verify))
                 .get(verify_intent),
         )
-        .with_state(pool)
+        .with_state(state)
 }

@@ -17,20 +17,19 @@ use vtstats_database::{
     streams::{
         delete_stream, end_stream, get_stream_by_platform_id, StreamStatus, UpsertStreamQuery,
     },
-    PgPool,
 };
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
-pub async fn publish_content(State(pool): State<PgPool>, event: Event) -> ApiResult<Response> {
+pub async fn publish_content(State(ctx): State<AppContext>, event: Event) -> ApiResult<Response> {
     match event {
         Event::Modification {
             platform_channel_id,
             platform_stream_id,
-        } => handle_modification(&platform_channel_id, &platform_stream_id, &pool).await,
+        } => handle_modification(&platform_channel_id, &platform_stream_id, ctx).await,
         Event::Deletion {
             platform_stream_id, ..
-        } => handle_deletion(&platform_stream_id, &pool).await,
+        } => handle_deletion(&platform_stream_id, ctx).await,
     }?;
 
     Ok(StatusCode::OK.into_response())
@@ -39,19 +38,18 @@ pub async fn publish_content(State(pool): State<PgPool>, event: Event) -> ApiRes
 async fn handle_modification(
     platform_channel_id: &str,
     platform_stream_id: &str,
-    pool: &PgPool,
+    ctx: AppContext,
 ) -> anyhow::Result<()> {
-    let client = vtstats_utils::reqwest::new()?;
-
     let channel =
-        get_active_channel_by_platform_id(Platform::Youtube, platform_channel_id, pool).await?;
+        get_active_channel_by_platform_id(Platform::Youtube, platform_channel_id, &ctx.pool)
+            .await?;
 
     let Some(channel) = channel else {
         tracing::warn!("Cannot find youtube channel of {}", platform_channel_id);
         return Ok(());
     };
 
-    let mut videos = list_videos(platform_stream_id, &client).await?;
+    let mut videos = list_videos(platform_stream_id, &ctx.client).await?;
 
     let stream: Option<Stream> = videos.pop().and_then(Into::into);
 
@@ -62,7 +60,7 @@ async fn handle_modification(
 
     let mut thumbnail_url = None;
     if youtube_stream.status != StreamStatus::Ended {
-        thumbnail_url = player(platform_stream_id, &client)
+        thumbnail_url = player(platform_stream_id, &ctx.client)
             .await
             .ok()
             .and_then(|res| Some(res.get_thumbnail_url()?.split_once('?')?.0.to_string()));
@@ -80,7 +78,7 @@ async fn handle_modification(
         start_time: youtube_stream.start_time,
         end_time: youtube_stream.end_time,
     }
-    .execute(pool)
+    .execute(&ctx.pool, &ctx.search)
     .await?;
 
     Span::current().record("stream_id", stream_id);
@@ -93,7 +91,7 @@ async fn handle_modification(
         youtube_stream.end_time,
     ) {
         (Some(time), None, None) | (_, Some(time), None) => {
-            queue_collect_youtube_stream_metadata(std::cmp::max(now, time), stream_id, pool)
+            queue_collect_youtube_stream_metadata(std::cmp::max(now, time), stream_id, &ctx.pool)
                 .await?;
         }
         _ => {}
@@ -101,13 +99,14 @@ async fn handle_modification(
 
     let next = now.duration_trunc(Duration::seconds(5))? + Duration::seconds(5);
 
-    queue_send_notification(next, stream_id, pool).await?;
+    queue_send_notification(next, stream_id, &ctx.pool).await?;
 
     Ok(())
 }
 
-async fn handle_deletion(platform_stream_id: &str, pool: &PgPool) -> anyhow::Result<()> {
-    let stream = get_stream_by_platform_id(Platform::Youtube, platform_stream_id, pool).await?;
+async fn handle_deletion(platform_stream_id: &str, ctx: AppContext) -> anyhow::Result<()> {
+    let stream =
+        get_stream_by_platform_id(Platform::Youtube, platform_stream_id, &ctx.pool).await?;
 
     let Some(stream) = stream else {
         return Ok(());
@@ -117,9 +116,9 @@ async fn handle_deletion(platform_stream_id: &str, pool: &PgPool) -> anyhow::Res
 
     if stream.status == StreamStatus::Scheduled {
         tracing::warn!("delete schedule stream {}", stream.platform_id);
-        delete_stream(stream.stream_id, pool).await?;
+        delete_stream(stream.stream_id, &ctx.pool, &ctx.search).await?;
     } else {
-        end_stream(stream.stream_id, pool).await?;
+        end_stream(stream.stream_id, &ctx.pool, &ctx.search).await?;
     }
 
     Ok(())

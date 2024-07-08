@@ -17,12 +17,9 @@ use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use integration_googleauth::verify;
-use vtstats_database::{
-    streams::{Column, ListYouTubeStreamsQuery, Ordering},
-    PgPool,
-};
+use vtstats_database::streams::{Column, ListYouTubeStreamsQuery, Ordering};
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 use self::{
     create_channel::create_channel, create_job::create_job, create_vtuber::create_vtuber,
@@ -30,7 +27,7 @@ use self::{
     update_vtuber::update_vtuber,
 };
 
-pub fn router(pool: PgPool) -> Router {
+pub fn router(pool: AppContext) -> Router {
     Router::new()
         // jobs
         .route("/jobs", get(list_jobs).put(create_job))
@@ -59,26 +56,26 @@ pub struct ListParameter {
     status: Option<String>,
 }
 
-async fn list_groups(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
-    let groups = vtstats_database::groups::list_groups(&pool).await?;
+async fn list_groups(State(state): State<AppContext>) -> ApiResult<impl IntoResponse> {
+    let groups = vtstats_database::groups::list_groups(&state.pool).await?;
     Ok(Json(groups))
 }
 
 async fn list_jobs(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Query(parameter): Query<ListParameter>,
 ) -> ApiResult<impl IntoResponse> {
     let jobs = vtstats_database::jobs::list_jobs_order_by_updated_at(
         parameter.status.unwrap_or_else(|| "queued".into()),
         parameter.end_at,
-        &pool,
+        &state.pool,
     )
     .await?;
     Ok(Json(jobs))
 }
 
 async fn list_streams(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Query(parameter): Query<ListParameter>,
 ) -> ApiResult<impl IntoResponse> {
     let status = match parameter.status.as_deref() {
@@ -94,34 +91,36 @@ async fn list_streams(
         status: &[status.into()],
         ..Default::default()
     }
-    .execute(&pool)
+    .execute(&state.pool)
     .await?;
 
     Ok(Json(streams))
 }
 
-async fn list_channels(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
-    let channels = vtstats_database::channels::list_channels(&pool).await?;
+async fn list_channels(State(state): State<AppContext>) -> ApiResult<impl IntoResponse> {
+    let channels = vtstats_database::channels::list_channels(&state.pool).await?;
     Ok(Json(channels))
 }
 
 async fn list_notifications(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Query(parameter): Query<ListParameter>,
 ) -> ApiResult<impl IntoResponse> {
-    let notifications = vtstats_database::subscriptions::list(parameter.end_at, &pool).await?;
+    let notifications =
+        vtstats_database::subscriptions::list(parameter.end_at, &state.pool).await?;
     Ok(Json(notifications))
 }
 
-async fn list_subscriptions(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
+async fn list_subscriptions(State(state): State<AppContext>) -> ApiResult<impl IntoResponse> {
     let subscriptions =
-        vtstats_database::subscriptions::list_subscriptions::list_subscriptions(&pool).await?;
+        vtstats_database::subscriptions::list_subscriptions::list_subscriptions(&state.pool)
+            .await?;
 
     Ok(Json(subscriptions))
 }
 
-async fn list_vtubers(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
-    let vtubers = vtstats_database::vtubers::list_vtubers(&pool).await?;
+async fn list_vtubers(State(state): State<AppContext>) -> ApiResult<impl IntoResponse> {
+    let vtubers = vtstats_database::vtubers::list_vtubers(&state.pool).await?;
 
     Ok(Json(vtubers))
 }

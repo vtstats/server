@@ -17,24 +17,26 @@ use vtstats_database::subscriptions::{
 };
 use vtstats_database::PgPool;
 
+use crate::AppContext;
+
 #[derive(Clone)]
 struct DiscordRouteState {
-    pool: PgPool,
+    state: AppContext,
     cache: Arc<Mutex<DiscordApiCache>>,
 }
 
-pub fn router(pool: PgPool) -> Router {
+pub fn router(state: AppContext) -> Router {
     Router::new()
         .route("/", post(discord_interactions))
         .layer(axum::middleware::from_fn(verify))
         .with_state(DiscordRouteState {
-            pool,
+            state,
             cache: DiscordApiCache::new(),
         })
 }
 
 async fn discord_interactions(
-    State(DiscordRouteState { pool, cache }): State<DiscordRouteState>,
+    State(DiscordRouteState { state, cache }): State<DiscordRouteState>,
     Json(update): Json<Interaction>,
 ) -> impl IntoResponse {
     match update {
@@ -52,7 +54,7 @@ async fn discord_interactions(
                 &data,
                 app_permissions,
                 member,
-                &pool,
+                &state.pool,
                 cache,
             )
             .await

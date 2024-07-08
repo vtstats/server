@@ -5,9 +5,9 @@ use axum::{
 };
 use serde_with::{formats::CommaSeparator, serde_as, StringWithSeparator};
 
-use vtstats_database::{streams as db, PgPool};
+use vtstats_database::streams as db;
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 #[serde_as]
 #[derive(serde::Deserialize)]
@@ -19,9 +19,9 @@ pub struct ReqQuery {
 
 pub async fn stream_times(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let times = db::stream_times(&query.channel_ids, &pool).await?;
+    let times = db::stream_times(&query.channel_ids, &state.pool).await?;
 
     Ok(Json(times))
 }

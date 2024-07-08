@@ -11,9 +11,9 @@ use vtstats_database::streams::{
     filter_streams_order_by_schedule_time_asc, filter_streams_order_by_start_time_desc,
     get_stream_by_id, get_stream_by_platform_id, StreamStatus,
 };
-use vtstats_database::PgPool;
 
 use crate::error::ApiResult;
+use crate::AppContext;
 
 #[serde_as]
 #[derive(serde::Deserialize)]
@@ -42,12 +42,12 @@ pub struct FindByIdReqQuery {
 
 pub async fn find_stream_by_id(
     Query(query): Query<FindByIdReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
     let stream = match (query.id, query.platform, query.platform_id) {
-        (Some(id), None, None) => get_stream_by_id(id, &pool).await,
+        (Some(id), None, None) => get_stream_by_id(id, &state.pool).await,
         (None, Some(platform), Some(platform_id)) => {
-            get_stream_by_platform_id(platform, &platform_id, &pool).await
+            get_stream_by_platform_id(platform, &platform_id, &state.pool).await
         }
         _ => return Ok(StatusCode::UNPROCESSABLE_ENTITY.into_response()),
     }?;
@@ -61,14 +61,14 @@ pub async fn find_stream_by_id(
 
 pub async fn list_scheduled_streams(
     Query(query): Query<ListReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
     let streams = filter_streams_order_by_schedule_time_asc(
         &query.channel_ids,
         StreamStatus::Scheduled,
         query.start_at,
         query.end_at,
-        pool,
+        state.pool,
     )
     .await?;
 
@@ -77,7 +77,7 @@ pub async fn list_scheduled_streams(
 
 pub async fn list_live_streams(
     Query(query): Query<ListReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
     let keyword = query
         .keyword
@@ -91,7 +91,7 @@ pub async fn list_live_streams(
         query.start_at,
         query.end_at,
         keyword,
-        pool,
+        state.pool,
     )
     .await?;
 
@@ -100,7 +100,7 @@ pub async fn list_live_streams(
 
 pub async fn list_ended_streams(
     Query(query): Query<ListReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
     let keyword = query
         .keyword
@@ -114,7 +114,7 @@ pub async fn list_ended_streams(
         query.start_at,
         query.end_at,
         keyword,
-        pool,
+        state.pool,
     )
     .await?;
 

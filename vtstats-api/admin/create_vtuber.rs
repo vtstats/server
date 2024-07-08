@@ -9,11 +9,10 @@ use vtstats_database::{
     channel_stats_summary::{self, ChannelStatsKind},
     channels::{CreateChannel, Platform},
     vtubers::UpsertVTuber,
-    PgPool,
 };
 use vtstats_utils::send_request;
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 use super::ActionResponse;
 
@@ -34,12 +33,10 @@ pub struct Payload {
 }
 
 pub async fn create_vtuber(
-    State(pool): State<PgPool>,
+    State(ctx): State<AppContext>,
     Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
-    let client = vtstats_utils::reqwest::new()?;
-
-    let mut channel = youtubei::browse_channel(&payload.youtube_channel_id, &client).await?;
+    let mut channel = youtubei::browse_channel(&payload.youtube_channel_id, &ctx.client).await?;
 
     let mut thumbnail_url = channel
         .metadata
@@ -50,12 +47,12 @@ pub async fn create_vtuber(
         .map(|t| t.url);
 
     if let Some(url) = thumbnail_url.take() {
-        if let Ok(url) = upload_thumbnail(&url, &payload.vtuber_id, &client).await {
+        if let Ok(url) = upload_thumbnail(&url, &payload.vtuber_id, &ctx.client).await {
             thumbnail_url = Some(url);
         }
     }
 
-    let mut tx = pool.begin().await?;
+    let mut tx = ctx.pool.begin().await?;
 
     UpsertVTuber {
         vtuber_id: payload.vtuber_id.clone(),

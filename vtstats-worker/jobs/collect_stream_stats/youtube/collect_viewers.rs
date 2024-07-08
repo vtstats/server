@@ -22,6 +22,7 @@ pub async fn collect_viewers(
     stream: &Stream,
     client: &Client,
     pool: &PgPool,
+    client_: vtstats_search::Client,
 ) -> anyhow::Result<()> {
     let st = get_stream_by_id(stream.stream_id, pool).await?;
 
@@ -52,7 +53,7 @@ pub async fn collect_viewers(
             // stream not found
             if status == StreamStatus::Scheduled {
                 tracing::warn!("delete schedule stream {}", stream.platform_id);
-                delete_stream(stream.stream_id, pool).await?;
+                delete_stream(stream.stream_id, pool, &client_).await?;
 
                 return Ok(());
             } else {
@@ -121,7 +122,7 @@ pub async fn collect_viewers(
                     "delete schedule stream, platform_id={}",
                     stream.platform_id
                 );
-                delete_stream(stream.stream_id, pool).await?;
+                delete_stream(stream.stream_id, pool, &client_).await?;
                 return Ok(());
             } else {
                 let mut videos = list_videos(&stream.platform_id, client).await?;
@@ -154,6 +155,7 @@ pub async fn collect_viewers(
                 Utc::now(),
                 metadata.like_count(),
                 pool,
+                &client_
             )
             .await?;
             status = StreamStatus::Live;

@@ -1,5 +1,5 @@
 # NOTE: use the same version of debian in both builder and runtime
-FROM lukemathwalker/cargo-chef:0.1.60-rust-1.69.0-slim-bullseye AS chef
+FROM lukemathwalker/cargo-chef:0.1.67-rust-1.78-slim-bullseye AS chef
 WORKDIR app
 RUN apt update && apt install lld clang -y
 

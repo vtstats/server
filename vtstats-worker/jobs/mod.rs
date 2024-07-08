@@ -8,22 +8,19 @@ pub mod update_exchange_rates;
 
 use chrono::{DateTime, Utc};
 use metrics::{gauge, histogram};
-use reqwest::Client;
 use std::time::Instant;
 use tokio::sync::mpsc::Sender;
 use tracing::Instrument;
+use vtstats_utils::context::AppContext;
 
-use vtstats_database::{
-    jobs::{Job, JobPayload::*, JobStatus, UpdateJobQuery},
-    PgPool,
-};
+use vtstats_database::jobs::{Job, JobPayload::*, JobStatus, UpdateJobQuery};
 
 pub enum JobResult {
     Completed,
     Next { run: DateTime<Utc> },
 }
 
-pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_tx: Sender<()>) {
+pub async fn execute(job: Job, ctx: AppContext, _shutdown_complete_tx: Sender<()>) {
     let job_id = job.job_id;
     let payload = job.payload;
     let next_run = job.next_run;
@@ -58,19 +55,37 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
 
         let result = match payload {
             HealthCheck => health_check::execute().await,
-            RefreshYoutubeRss => refresh_youtube_rss::execute(&pool, client).await,
-            SubscribeYoutubePubsub => subscribe_youtube_pubsub::execute(&pool, client).await,
-            UpdateChannelStats => collect_channel_stats::execute(&pool, &client).await,
+            RefreshYoutubeRss => {
+                refresh_youtube_rss::execute(&ctx.pool, ctx.client, ctx.search).await
+            }
+            SubscribeYoutubePubsub => {
+                subscribe_youtube_pubsub::execute(&ctx.pool, ctx.client).await
+            }
+            UpdateChannelStats => collect_channel_stats::execute(&ctx.pool, &ctx.client).await,
             CollectYoutubeStreamMetadata(payload) => {
-                collect_stream_stats::execute(&pool, client, payload.stream_id, next_run).await
+                collect_stream_stats::execute(
+                    &ctx.pool,
+                    ctx.client,
+                    ctx.search,
+                    payload.stream_id,
+                    next_run,
+                )
+                .await
             }
             CollectTwitchStreamMetadata(payload) => {
-                collect_stream_stats::execute(&pool, client, payload.stream_id, next_run).await
+                collect_stream_stats::execute(
+                    &ctx.pool,
+                    ctx.client,
+                    ctx.search,
+                    payload.stream_id,
+                    next_run,
+                )
+                .await
             }
             SendNotification(payload) => {
-                send_notification::execute(&pool, client, payload.stream_id).await
+                send_notification::execute(&ctx.pool, ctx.client, payload.stream_id).await
             }
-            UpdateExchangeRates => update_exchange_rates::execute(&pool, client).await,
+            UpdateExchangeRates => update_exchange_rates::execute(&ctx.pool, ctx.client).await,
         };
 
         let status = if result.is_ok() { "ok" } else { "err" };
@@ -111,7 +126,7 @@ pub async fn execute(job: Job, pool: PgPool, client: Client, _shutdown_complete_
             }
         };
 
-        if let Err(err) = query.execute(&pool).await {
+        if let Err(err) = query.execute(&ctx.pool).await {
             tracing::error!("[Database Error] {err:?}");
         }
     }

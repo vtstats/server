@@ -17,6 +17,7 @@ pub mod youtube;
 pub async fn execute(
     pool: &PgPool,
     client: Client,
+    client_: vtstats_search::Client,
     stream_id: i32,
     next_run: Option<DateTime<Utc>>,
 ) -> anyhow::Result<JobResult> {
@@ -46,7 +47,7 @@ pub async fn execute(
         }
         Platform::Youtube => {
             tokio::select! {
-                res = youtube::collect_viewers(&stream, &client, pool) => {
+                res = youtube::collect_viewers(&stream, &client, pool, client_) => {
                     res.map(|_| JobResult::Completed)
                 },
                 res = youtube::collect_chats(&channel, &stream, &client, pool) => {

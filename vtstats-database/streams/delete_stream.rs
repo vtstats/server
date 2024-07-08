@@ -1,6 +1,7 @@
+use meilisearch_sdk::client::Client;
 use sqlx::{PgPool, Result};
 
-pub async fn delete_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
+pub async fn delete_stream(stream_id: i32, pool: &PgPool, client: &Client) -> Result<()> {
     let mut tx = pool.begin().await?;
 
     let query =
@@ -29,5 +30,11 @@ pub async fn delete_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
 
     crate::otel::execute_query!("DELETE", "streams", query)?;
 
-    tx.commit().await
+    tx.commit().await?;
+
+    if let Err(err) = super::melisearch::delete(stream_id, client).await {
+        eprintln!("meili: {err:?}");
+    }
+
+    Ok(())
 }

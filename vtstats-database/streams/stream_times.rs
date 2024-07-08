@@ -12,14 +12,14 @@ async fn stream_times_start_at(
     pool: &PgPool,
 ) -> Result<Vec<(i64, i64)>> {
     let query = sqlx::query!(
-        r#"
-  SELECT start_time, end_time
-    FROM streams
-   WHERE channel_id = ANY($1)
-     AND start_time > $2
-     AND end_time IS NOT NULL
+        "
+  SELECT start_time, end_time \
+    FROM streams \
+   WHERE channel_id = ANY($1) \
+     AND start_time > $2 \
+     AND end_time IS NOT NULL \
 ORDER BY start_time DESC
-        "#,
+        ",
         channel_ids, // $1
         start_at,    // $2
     )

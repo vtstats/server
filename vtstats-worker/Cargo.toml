@@ -30,6 +30,7 @@ rust_decimal = { version = "1.32.0", default-features = false, features = [
 ] }
 vtstats-database = { path = "../vtstats-database" }
 vtstats-utils = { path = "../vtstats-utils" }
+vtstats-search = { path = "../vtstats-search" }
 integration-bilibili = { path = "../integration-bilibili" }
 integration-discord = { path = "../integration-discord" }
 integration-s3 = { path = "../integration-s3" }

@@ -8,12 +8,9 @@ use axum::{
 use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::Serialize;
 use tracing::Span;
-use vtstats_database::{
-    stream_events::{list_stream_events, StreamEventKind},
-    PgPool,
-};
+use vtstats_database::stream_events::{list_stream_events, StreamEventKind};
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 use self::types::{refine, RefinedStreamEventValue};
 
@@ -34,9 +31,9 @@ pub struct StreamEvent {
 
 pub async fn stream_events(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let events = list_stream_events(query.stream_id, &pool).await?;
+    let events = list_stream_events(query.stream_id, &state.pool).await?;
 
     let events: Vec<_> = events
         .into_iter()

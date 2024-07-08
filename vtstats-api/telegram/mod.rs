@@ -11,7 +11,7 @@ use vtstats_database::{
 use crate::reject::WarpError;
 
 async fn telegram_updates(
-    State(pool): State<PgPool>,
+    State(pool): State<AppContext>,
     Json(update): Json<Update>,
 ) -> Result<impl IntoResponse, WarpError> {
     Ok(Json(UpdateResponse {
@@ -171,7 +171,7 @@ async fn execute_command(chat_id: i64, text: String, pool: &PgPool) -> anyhow::R
     }
 }
 
-pub fn router(pool: PgPool) -> Router {
+pub fn router(pool: AppContext) -> Router {
     Router::new()
         .route("/", post(telegram_updates))
         .layer(middleware::from_fn(verify))

@@ -1,16 +1,15 @@
-use chrono::{DateTime, Utc};
-use sqlx::{PgPool, Postgres, QueryBuilder, Result};
-
 use chrono::serde::{ts_milliseconds, ts_milliseconds_option};
-use serde::Serialize;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
+use sqlx::{PgPool, Postgres, QueryBuilder, Result};
 
 use crate::channels::Platform;
 
 type UtcTime = DateTime<Utc>;
 
 #[skip_serializing_none]
-#[derive(Debug, Serialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct Stream {
     pub platform: Platform,
@@ -35,7 +34,7 @@ pub struct Stream {
     pub status: StreamStatus,
 }
 
-#[derive(Debug, sqlx::Type, Serialize, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, sqlx::Type, Deserialize, Serialize, PartialEq, Eq, Clone, Copy)]
 #[sqlx(type_name = "stream_status", rename_all = "lowercase")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[derive(Default)]
@@ -46,8 +45,9 @@ pub enum StreamStatus {
     Ended,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Column {
+    #[default]
     StartTime,
     EndTime,
     ScheduleTime,
@@ -66,9 +66,10 @@ impl Column {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Ordering {
     Asc,
+    #[default]
     Desc,
 }
 

@@ -2,9 +2,9 @@ use axum::{extract::State, response::IntoResponse, Json};
 use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde::Deserialize;
 
-use vtstats_database::{vtubers::UpsertVTuber, PgPool};
+use vtstats_database::vtubers::UpsertVTuber;
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 use super::ActionResponse;
 
@@ -24,7 +24,7 @@ pub struct Payload {
 }
 
 pub async fn update_vtuber(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     UpsertVTuber {
@@ -36,7 +36,7 @@ pub async fn update_vtuber(
         retired_at: payload.retired_at,
         thumbnail_url: None,
     }
-    .execute(&pool)
+    .execute(&state.pool)
     .await?;
 
     Ok(Json(ActionResponse {

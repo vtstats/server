@@ -15,7 +15,7 @@ use tower_http::{
     trace::TraceLayer,
 };
 use tracing::{field::Empty, Span};
-use vtstats_database::PgPoolOptions;
+use vtstats_utils::context::AppContext;
 
 // utils
 mod error;
@@ -30,20 +30,17 @@ mod twitch;
 mod v4;
 
 pub async fn main(shutdown_rx: Receiver<()>) -> anyhow::Result<()> {
-    let pool = PgPoolOptions::new()
-        .max_lifetime(Duration::from_secs(10 * 60)) // 10 minutes
-        .connect(&env::var("DATABASE_URL")?)
-        .await?;
-
     let address = env::var("SERVER_ADDRESS")?.parse::<SocketAddr>()?;
 
+    let state = AppContext::new().await?;
+
     let app = Router::new()
-        .nest("/api/v4", v4::router(pool.clone()))
-        .nest("/api/admin", admin::router(pool.clone()))
-        .nest("/api/discord", discord::router(pool.clone()))
-        .nest("/api/pubsub", pubsub::router(pool.clone()))
-        .nest("/api/sitemap", sitemap::router(pool.clone()))
-        .nest("/api/twitch", twitch::router(pool.clone()))
+        .nest("/api/v4", v4::router(state.clone()))
+        .nest("/api/admin", admin::router(state.clone()))
+        .nest("/api/discord", discord::router(state.clone()))
+        .nest("/api/pubsub", pubsub::router(state.clone()))
+        .nest("/api/sitemap", sitemap::router(state.clone()))
+        .nest("/api/twitch", twitch::router(state.clone()))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|req: &Request<_>| {

@@ -18,7 +18,7 @@ tracing = "0.1.37"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
-jsonwebtoken = { version = "8.3.0", default-features = false }
+jsonwebtoken = { version = "9.3.0", default-features = false }
 tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 vtstats-utils = { path = "../vtstats-utils" }
 axum = "0.7.5"

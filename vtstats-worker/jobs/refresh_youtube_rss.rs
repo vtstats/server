@@ -16,7 +16,11 @@ use vtstats_database::{
 
 use super::JobResult;
 
-pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult> {
+pub async fn execute(
+    pool: &PgPool,
+    client: Client,
+    client_: vtstats_search::Client,
+) -> anyhow::Result<JobResult> {
     let now = Utc::now().duration_trunc(Duration::hours(1))?;
 
     let now_str = now.to_string();
@@ -114,7 +118,7 @@ pub async fn execute(pool: &PgPool, client: Client) -> anyhow::Result<JobResult>
             start_time: stream.start_time,
             end_time: stream.end_time,
         }
-        .execute(pool)
+        .execute(pool, &client_)
         .await?;
     }
 

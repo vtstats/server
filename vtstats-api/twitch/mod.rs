@@ -14,14 +14,13 @@ use vtstats_database::{
     channels::{get_active_channel_by_platform_id, Platform},
     jobs::queue_collect_twitch_stream_metadata,
     streams::{end_twitch_stream, StreamStatus, UpsertStreamQuery},
-    PgPool,
 };
 
 use integration_twitch::{gql::stream_metadata, verify, Event, Notification};
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
-pub fn router(pool: PgPool) -> Router {
+pub fn router(pool: AppContext) -> Router {
     Router::new()
         .route("/", post(twitch_notification))
         .layer(axum::middleware::from_fn(verify))
@@ -29,7 +28,7 @@ pub fn router(pool: PgPool) -> Router {
 }
 
 async fn twitch_notification(
-    State(pool): State<PgPool>,
+    State(ctx): State<AppContext>,
     notification: Notification,
 ) -> ApiResult<Response> {
     match notification {
@@ -46,7 +45,7 @@ async fn twitch_notification(
                     event.broadcaster_user_login,
                     event.id,
                     event.started_at,
-                    &pool,
+                    ctx,
                 )
                 .await?;
 
@@ -55,12 +54,8 @@ async fn twitch_notification(
             Event::StreamOfflineEvent(event) => {
                 tracing::info!("twitch stream.offline: {:?}", event);
 
-                handle_stream_offline(
-                    event.broadcaster_user_id,
-                    event.broadcaster_user_login,
-                    &pool,
-                )
-                .await?;
+                handle_stream_offline(event.broadcaster_user_id, event.broadcaster_user_login, ctx)
+                    .await?;
 
                 Ok(StatusCode::NO_CONTENT.into_response())
             }
@@ -83,19 +78,18 @@ async fn handle_stream_online(
     platform_channel_login: String,
     platform_stream_id: String,
     stream_start_time: DateTime<Utc>,
-    pool: &PgPool,
+    ctx: AppContext,
 ) -> anyhow::Result<()> {
-    let client = vtstats_utils::reqwest::new()?;
-
     let channel =
-        get_active_channel_by_platform_id(Platform::Twitch, &platform_channel_id, pool).await?;
+        get_active_channel_by_platform_id(Platform::Twitch, &platform_channel_id, &ctx.pool)
+            .await?;
 
     let Some(channel) = channel else {
         tracing::warn!("Cannot find twitch channel of #{}", platform_channel_login);
         return Ok(());
     };
 
-    let metadata = stream_metadata(&platform_channel_login, &client).await?;
+    let metadata = stream_metadata(&platform_channel_login, &ctx.client).await?;
 
     let Some(platform_stream) = metadata.data.user.stream else {
         return Ok(());
@@ -128,12 +122,12 @@ async fn handle_stream_online(
         start_time: Some(stream_start_time),
         end_time: None,
     }
-    .execute(pool)
+    .execute(&ctx.pool, &ctx.search)
     .await?;
 
     Span::current().record("stream_id", stream_id);
 
-    queue_collect_twitch_stream_metadata(Utc::now(), stream_id, pool).await?;
+    queue_collect_twitch_stream_metadata(Utc::now(), stream_id, &ctx.pool).await?;
 
     Ok(())
 }
@@ -141,19 +135,18 @@ async fn handle_stream_online(
 async fn handle_stream_offline(
     platform_channel_id: String,
     platform_channel_login: String,
-    pool: &PgPool,
+    ctx: AppContext,
 ) -> anyhow::Result<()> {
-    let client = vtstats_utils::reqwest::new()?;
-
     let channel =
-        get_active_channel_by_platform_id(Platform::Twitch, &platform_channel_id, pool).await?;
+        get_active_channel_by_platform_id(Platform::Twitch, &platform_channel_id, &ctx.pool)
+            .await?;
 
     let Some(channel) = channel else {
         tracing::warn!("Cannot find twitch channel of #{}", platform_channel_login);
         return Ok(());
     };
 
-    let thumbnail_url = match get_thumbnail_url(&platform_channel_login, &client).await {
+    let thumbnail_url = match get_thumbnail_url(&platform_channel_login, &ctx.client).await {
         Ok(url) => Some(url),
         Err(err) => {
             tracing::warn!("Failed to get thumbnail url of #{}", platform_channel_login);
@@ -162,7 +155,7 @@ async fn handle_stream_offline(
         }
     };
 
-    end_twitch_stream(channel.channel_id, thumbnail_url, pool).await?;
+    end_twitch_stream(channel.channel_id, thumbnail_url, &ctx.pool, &ctx.search).await?;
 
     Ok(())
 }

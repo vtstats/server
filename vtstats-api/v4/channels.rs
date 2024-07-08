@@ -5,12 +5,9 @@ use axum::{
 };
 use serde_with::{formats::CommaSeparator, serde_as, StringWithSeparator};
 
-use vtstats_database::{
-    channel_stats_summary::{self, ChannelStatsKind},
-    PgPool,
-};
+use vtstats_database::channel_stats_summary::{self, ChannelStatsKind};
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 #[serde_as]
 #[derive(serde::Deserialize)]
@@ -23,9 +20,9 @@ pub struct ReqQuery {
 
 pub async fn channel_stats_summary(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let channels = channel_stats_summary::list(&query.channel_ids, query.kind, &pool).await?;
+    let channels = channel_stats_summary::list(&query.channel_ids, query.kind, &state.pool).await?;
 
     Ok(Json(channels))
 }

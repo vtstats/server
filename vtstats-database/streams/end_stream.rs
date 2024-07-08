@@ -1,12 +1,32 @@
 use chrono::{DateTime, Utc};
+use meilisearch_sdk::client::Client;
 use sqlx::{PgPool, Result};
 
-pub async fn end_stream(stream_id: i32, pool: &PgPool) -> Result<()> {
+use super::StreamStatus;
+
+pub async fn end_stream(stream_id: i32, pool: &PgPool, client: &Client) -> Result<()> {
+    let now = Utc::now();
+
     let query = sqlx::query!(
-        "UPDATE streams SET status = 'ended', end_time = NOW() WHERE stream_id = $1",
+        "UPDATE streams SET status = 'ended', end_time = $1 WHERE stream_id = $2",
+        now,
         stream_id
     )
     .execute(pool);
+
+    if let Err(err) = super::melisearch::add_or_update(
+        super::melisearch::Document {
+            stream_id,
+            end_time: Some(now),
+            status: Some(StreamStatus::Ended),
+            ..Default::default()
+        },
+        client,
+    )
+    .await
+    {
+        eprintln!("meili: {err:?}");
+    }
 
     crate::otel::execute_query!("UPDATE", "streams", query)?;
 
@@ -17,17 +37,39 @@ pub async fn end_twitch_stream(
     channel_id: i32,
     thumbnail_url: Option<String>,
     pool: &PgPool,
+    client: &Client,
 ) -> Result<()> {
+    let now = Utc::now();
+
     let query = sqlx::query!(
         "UPDATE streams \
-        SET status = 'ended', end_time = NOW(), thumbnail_url = COALESCE($1, thumbnail_url) \
-        WHERE channel_id = $2 AND status = 'live'",
+        SET status = 'ended', end_time = $1, thumbnail_url = COALESCE($2, thumbnail_url) \
+        WHERE channel_id = $3 AND status = 'live' \
+        RETURNING stream_id",
+        now,
         thumbnail_url,
         channel_id
     )
-    .execute(pool);
+    .fetch_optional(pool);
 
-    crate::otel::execute_query!("UPDATE", "streams", query)?;
+    let rec = crate::otel::execute_query!("UPDATE", "streams", query)?;
+
+    if let Some(rec) = rec {
+        if let Err(err) = super::melisearch::add_or_update(
+            super::melisearch::Document {
+                stream_id: rec.stream_id,
+                end_time: Some(now),
+                status: Some(StreamStatus::Ended),
+                thumbnail_url,
+                ..Default::default()
+            },
+            client,
+        )
+        .await
+        {
+            eprintln!("meili: {err:?}");
+        }
+    }
 
     Ok(())
 }

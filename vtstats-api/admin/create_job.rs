@@ -1,12 +1,9 @@
 use axum::{extract::State, response::IntoResponse, Json};
 use chrono::Utc;
 use serde::Deserialize;
-use vtstats_database::{
-    jobs::{JobPayload, PushJobQuery},
-    PgPool,
-};
+use vtstats_database::jobs::{JobPayload, PushJobQuery};
 
-use crate::{admin::ActionResponse, error::ApiResult};
+use crate::{admin::ActionResponse, error::ApiResult, AppContext};
 
 #[derive(Deserialize)]
 #[serde(rename = "UPPER_CASE")]
@@ -19,7 +16,7 @@ pub enum Payload {
 }
 
 pub async fn create_job(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
     let job_id = PushJobQuery {
@@ -31,7 +28,7 @@ pub async fn create_job(
             Payload::UpdateChannelStats => JobPayload::UpdateChannelStats,
         },
     }
-    .execute(&pool)
+    .execute(&state.pool)
     .await?;
 
     Ok(Json(ActionResponse {

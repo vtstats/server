@@ -32,9 +32,10 @@ members = [
     "integration-telegram",
     "integration-twitch",
     "integration-youtube",
-    "vtstats-database",
-    "vtstats-utils",
     "vtstats-api",
+    "vtstats-database",
+    "vtstats-search",
+    "vtstats-utils",
     "vtstats-worker",
 ]
 resolver = "2"

@@ -4,9 +4,9 @@ use axum::{
     Json,
 };
 use tracing::Span;
-use vtstats_database::{stream_stats as db, PgPool};
+use vtstats_database::stream_stats as db;
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,9 +16,9 @@ pub struct ReqQuery {
 
 pub async fn stream_viewer_stats(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let stats = db::stream_viewer_stats(query.stream_id, &pool).await?;
+    let stats = db::stream_viewer_stats(query.stream_id, &state.pool).await?;
 
     Span::current().record("stream_id", query.stream_id);
 
@@ -27,9 +27,9 @@ pub async fn stream_viewer_stats(
 
 pub async fn stream_chat_stats(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let stats = db::stream_chat_stats(query.stream_id, &pool).await?;
+    let stats = db::stream_chat_stats(query.stream_id, &state.pool).await?;
 
     Span::current().record("stream_id", query.stream_id);
 

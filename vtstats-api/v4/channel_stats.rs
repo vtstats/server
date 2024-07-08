@@ -5,9 +5,9 @@ use axum::{
     Json,
 };
 use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
-use vtstats_database::{channel_stats as db, PgPool};
+use vtstats_database::channel_stats as db;
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,41 +41,44 @@ impl ReqQuery {
 
 pub async fn channel_subscriber_stats(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<Response> {
     if let Some(res) = query.invalid_response() {
         return Ok(res);
     }
 
     let res =
-        db::channel_subscriber_stats(query.channel_id, query.start_at, query.end_at, &pool).await?;
+        db::channel_subscriber_stats(query.channel_id, query.start_at, query.end_at, &state.pool)
+            .await?;
 
     Ok(Json(res).into_response())
 }
 
 pub async fn channel_view_stats(
     Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
-) -> ApiResult<Response> {
-    if let Some(res) = query.invalid_response() {
-        return Ok(res);
-    }
-
-    let res = db::channel_view_stats(query.channel_id, query.start_at, query.end_at, &pool).await?;
-
-    Ok(Json(res).into_response())
-}
-
-pub async fn channel_revenue_stats(
-    Query(query): Query<ReqQuery>,
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
 ) -> ApiResult<Response> {
     if let Some(res) = query.invalid_response() {
         return Ok(res);
     }
 
     let res =
-        db::channel_revenue_stats(query.channel_id, query.start_at, query.end_at, &pool).await?;
+        db::channel_view_stats(query.channel_id, query.start_at, query.end_at, &state.pool).await?;
+
+    Ok(Json(res).into_response())
+}
+
+pub async fn channel_revenue_stats(
+    Query(query): Query<ReqQuery>,
+    State(state): State<AppContext>,
+) -> ApiResult<Response> {
+    if let Some(res) = query.invalid_response() {
+        return Ok(res);
+    }
+
+    let res =
+        db::channel_revenue_stats(query.channel_id, query.start_at, query.end_at, &state.pool)
+            .await?;
 
     Ok(Json(res).into_response())
 }

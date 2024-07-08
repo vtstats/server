@@ -17,7 +17,7 @@ hex = "0.4.3"
 hmac = "0.12.1"
 reqwest = { version = "0.12", default-features = false, features = [
     "json",
-    "rustls-tls"
+    "rustls-tls",
 ] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
@@ -26,6 +26,7 @@ tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"
 tracing-futures = "0.2.5"
 vtstats-database = { path = "../vtstats-database" }
+vtstats-search = { path = "../vtstats-search" }
 vtstats-utils = { path = "../vtstats-utils" }
 integration-googleauth = { path = "../integration-googleauth" }
 integration-discord = { path = "../integration-discord" }
@@ -38,7 +39,7 @@ tower-http = { version = "0.5.2", features = [
     "cors",
     "util",
     "map-request-body",
-    "trace"
+    "trace",
 ] }
 tower = "0.4.13"
 

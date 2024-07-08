@@ -4,10 +4,9 @@ use vtstats_database::{
     channels::{list_channels, Channel},
     groups::{list_groups, Group},
     vtubers::{list_vtubers, VTuber},
-    PgPool,
 };
 
-use crate::error::ApiResult;
+use crate::{error::ApiResult, AppContext};
 
 #[derive(Serialize)]
 pub struct Catalog {
@@ -16,12 +15,12 @@ pub struct Catalog {
     groups: Vec<Group>,
 }
 
-pub async fn catalog(State(pool): State<PgPool>) -> ApiResult<impl IntoResponse> {
-    let vtubers = list_vtubers(&pool).await?;
+pub async fn catalog(State(state): State<AppContext>) -> ApiResult<impl IntoResponse> {
+    let vtubers = list_vtubers(&state.pool).await?;
 
-    let channels = list_channels(&pool).await?;
+    let channels = list_channels(&state.pool).await?;
 
-    let groups = list_groups(&pool).await?;
+    let groups = list_groups(&state.pool).await?;
 
     let res = Catalog {
         channels,

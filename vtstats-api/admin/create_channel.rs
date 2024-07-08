@@ -4,8 +4,8 @@ use serde::Deserialize;
 use vtstats_database::{
     channel_stats_summary::{self, ChannelStatsKind},
     channels::{CreateChannel, Platform},
-    PgPool,
 };
+use vtstats_utils::context::AppContext;
 
 use crate::error::ApiResult;
 
@@ -21,10 +21,10 @@ pub struct Payload {
 }
 
 pub async fn create_channel(
-    State(pool): State<PgPool>,
+    State(state): State<AppContext>,
     Json(payload): Json<Payload>,
 ) -> ApiResult<impl IntoResponse> {
-    let mut tx = pool.begin().await?;
+    let mut tx = state.pool.begin().await?;
 
     let channel_id = CreateChannel {
         platform: payload.platform,
