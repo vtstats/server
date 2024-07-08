@@ -1,3 +1,5 @@
+use std::cmp;
+
 use chrono::{Duration, DurationRound, Utc};
 use reqwest::Client;
 
@@ -10,7 +12,9 @@ use integration_youtube::{
 use vtstats_database::{
     jobs::queue_send_notification,
     stream_stats::AddStreamViewerStatsQuery,
-    streams::{delete_stream, end_stream_with_values, start_stream, Stream, StreamStatus},
+    streams::{
+        delete_stream, end_stream_with_values, get_stream_by_id, start_stream, Stream, StreamStatus,
+    },
     PgPool,
 };
 
@@ -19,6 +23,15 @@ pub async fn collect_viewers(
     client: &Client,
     pool: &PgPool,
 ) -> anyhow::Result<()> {
+    let st = get_stream_by_id(stream.stream_id, pool).await?;
+
+    let mut last_max = st.as_ref().and_then(|st| st.viewer_max).unwrap_or_default();
+    let mut last_avg = st.as_ref().and_then(|st| st.viewer_avg).unwrap_or_default();
+    let start = st
+        .as_ref()
+        .and_then(|st| st.start_time)
+        .unwrap_or_else(|| Utc::now().duration_trunc(Duration::seconds(15)).unwrap());
+
     let mut continuation: Option<String> = None;
     let mut status = stream.status;
 
@@ -80,13 +93,24 @@ pub async fn collect_viewers(
 
         // record view stats
         if let Some(viewer) = metadata.view_count() {
+            let time = Utc::now().duration_trunc(Duration::seconds(15))?;
+
+            let count = ((time - start).num_seconds() / 15) as i32;
+
+            let max = cmp::max(last_max, viewer);
+            let avg = (last_avg * count + viewer) / (count + 1);
+
             AddStreamViewerStatsQuery {
-                time: Utc::now().duration_trunc(Duration::seconds(15))?,
+                time,
                 count: viewer,
                 stream_id: stream.stream_id,
+                max,
+                avg,
             }
             .execute(pool)
             .await?;
+
+            (last_max, last_avg) = (max, avg);
         }
 
         // stream has ended

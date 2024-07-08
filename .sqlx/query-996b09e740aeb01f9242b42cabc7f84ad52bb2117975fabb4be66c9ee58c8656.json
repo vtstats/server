@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE streams SET viewer_max = $1, viewer_avg = $2, updated_at = $3 WHERE stream_id = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "996b09e740aeb01f9242b42cabc7f84ad52bb2117975fabb4be66c9ee58c8656"
+}

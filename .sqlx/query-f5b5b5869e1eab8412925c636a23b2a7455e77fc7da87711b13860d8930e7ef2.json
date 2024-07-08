@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO stream_viewer_stats AS s (stream_id, time, count) VALUES ($1, $2, $3) ON CONFLICT (stream_id, time) DO UPDATE SET count = GREATEST(excluded.count, s.count)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f5b5b5869e1eab8412925c636a23b2a7455e77fc7da87711b13860d8930e7ef2"
+}

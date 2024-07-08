@@ -5,17 +5,17 @@ pub struct AddStreamViewerStatsQuery {
     pub stream_id: i32,
     pub time: DateTime<Utc>,
     pub count: i32,
+    pub max: i32,
+    pub avg: i32,
 }
 
 impl AddStreamViewerStatsQuery {
     pub async fn execute(self, pool: &PgPool) -> Result<()> {
         let query = sqlx::query!(
-            r#"
-INSERT INTO stream_viewer_stats AS s (stream_id, time, count)
-     VALUES ($1, $2, $3)
-ON CONFLICT (stream_id, time) DO UPDATE
-        SET count = GREATEST(excluded.count, s.count)
-            "#,
+            "INSERT INTO stream_viewer_stats AS s (stream_id, time, count) \
+            VALUES ($1, $2, $3) \
+            ON CONFLICT (stream_id, time) DO UPDATE \
+            SET count = GREATEST(excluded.count, s.count)",
             self.stream_id,
             self.time,
             self.count,
@@ -25,16 +25,11 @@ ON CONFLICT (stream_id, time) DO UPDATE
         crate::otel::execute_query!("INSERT", "stream_viewer_stats", query)?;
 
         let query = sqlx::query!(
-            r#"
-     UPDATE streams
-        SET viewer_max = GREATEST(viewer_max, $1),
-            viewer_avg = (SELECT AVG(count) FROM stream_viewer_stats WHERE stream_id = $2),
-            updated_at = $3
-      WHERE stream_id = $2
-            "#,
-            self.count,
-            self.stream_id,
+            "UPDATE streams SET viewer_max = $1, viewer_avg = $2, updated_at = $3 WHERE stream_id = $4",
+            self.max,
+            self.avg,
             self.time,
+            self.stream_id,
         )
         .execute(pool);
 
@@ -55,6 +50,8 @@ async fn test(pool: PgPool) -> Result<()> {
         stream_id: 1,
         time,
         count: 40,
+        avg: 40,
+        max: 40,
     }
     .execute(&pool)
     .await?;
@@ -63,6 +60,8 @@ async fn test(pool: PgPool) -> Result<()> {
         stream_id: 1,
         time: time + Duration::seconds(15),
         count: 20,
+        avg: 20,
+        max: 20,
     }
     .execute(&pool)
     .await?;
@@ -71,6 +70,8 @@ async fn test(pool: PgPool) -> Result<()> {
         stream_id: 1,
         time,
         count: 20,
+        avg: 20,
+        max: 20,
     }
     .execute(&pool)
     .await?;
