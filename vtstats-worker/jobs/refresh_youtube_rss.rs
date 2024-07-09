@@ -1,6 +1,5 @@
 use chrono::{Duration, DurationRound, Utc};
 use futures::{stream, TryStreamExt};
-use reqwest::Client;
 
 use integration_s3::upload_file;
 use integration_youtube::{
@@ -11,21 +10,17 @@ use integration_youtube::{
 use vtstats_database::{
     channels::{list_active_channels_by_platform, Platform},
     streams::{ListYouTubeStreamsQuery, UpsertStreamQuery},
-    PgPool,
 };
+use vtstats_utils::context::AppContext;
 
 use super::JobResult;
 
-pub async fn execute(
-    pool: &PgPool,
-    client: Client,
-    client_: vtstats_search::Client,
-) -> anyhow::Result<JobResult> {
+pub async fn execute(ctx: &AppContext) -> anyhow::Result<JobResult> {
     let now = Utc::now().duration_trunc(Duration::hours(1))?;
 
     let now_str = now.to_string();
 
-    let youtube_channels = list_active_channels_by_platform(Platform::Youtube, pool).await?;
+    let youtube_channels = list_active_channels_by_platform(Platform::Youtube, &ctx.pool).await?;
 
     let feeds = stream::unfold(youtube_channels.iter(), |mut iter| async {
         let channel = iter.next()?;
@@ -33,7 +28,7 @@ pub async fn execute(
             channel_id: channel.platform_id.to_string(),
             ts: now_str.clone(),
         }
-        .execute(&client)
+        .execute(&ctx.client)
         .await;
         Some((res, iter))
     })
@@ -50,7 +45,7 @@ pub async fn execute(
         limit: None,
         ..Default::default()
     }
-    .execute(pool)
+    .execute(&ctx.pool)
     .await?;
 
     let missing = video_ids
@@ -70,7 +65,7 @@ pub async fn execute(
 
     // youtube limits 50 streams per request
     for chunk in missing.chunks(50) {
-        let videos = list_videos(&chunk.join(","), &client).await?;
+        let videos = list_videos(&chunk.join(","), &ctx.client).await?;
         streams.extend(videos.into_iter().filter_map(Into::into));
     }
 
@@ -90,9 +85,9 @@ pub async fn execute(
             continue;
         };
 
-        let thumbnail_url = match get_thumbnail(&stream.id, &client).await {
+        let thumbnail_url = match get_thumbnail(&stream.id, &ctx.client).await {
             Ok((filename, content_type, bytes)) => {
-                match upload_file(&filename, bytes, &content_type, &client).await {
+                match upload_file(&filename, bytes, &content_type, &ctx.client).await {
                     Ok(thumbnail_url) => Some(thumbnail_url),
                     Err(err) => {
                         tracing::error!(exception.stacktrace = ?err, message= %err);
@@ -118,7 +113,7 @@ pub async fn execute(
             start_time: stream.start_time,
             end_time: stream.end_time,
         }
-        .execute(pool, &client_)
+        .execute(&ctx.pool, &ctx.search)
         .await?;
     }
 

@@ -26,7 +26,6 @@ tokio = { version = "1.28.2", features = ["macros", "signal", "sync"] }
 tracing = "0.1.37"
 tracing-futures = "0.2.5"
 vtstats-database = { path = "../vtstats-database" }
-vtstats-search = { path = "../vtstats-search" }
 vtstats-utils = { path = "../vtstats-utils" }
 integration-googleauth = { path = "../integration-googleauth" }
 integration-discord = { path = "../integration-discord" }

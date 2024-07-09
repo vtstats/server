@@ -1,13 +1,12 @@
 use chrono::{DateTime, Utc};
 
 use integration_twitch::gql::channel_panels;
-use reqwest::Client;
 use tokio::signal::unix;
 use vtstats_database::{
     channels::{get_channel_by_id, Platform},
     streams::{get_stream_by_id, StreamStatus},
-    PgPool,
 };
+use vtstats_utils::context::AppContext;
 
 use super::JobResult;
 
@@ -15,13 +14,11 @@ pub mod twitch;
 pub mod youtube;
 
 pub async fn execute(
-    pool: &PgPool,
-    client: Client,
-    client_: vtstats_search::Client,
     stream_id: i32,
+    ctx: &AppContext,
     next_run: Option<DateTime<Utc>>,
 ) -> anyhow::Result<JobResult> {
-    let Some(stream) = get_stream_by_id(stream_id, pool).await? else {
+    let Some(stream) = get_stream_by_id(stream_id, &ctx.pool).await? else {
         return Ok(JobResult::Completed);
     };
 
@@ -30,7 +27,7 @@ pub async fn execute(
         return Ok(JobResult::Completed);
     }
 
-    let Some(channel) = get_channel_by_id(stream.channel_id, pool).await? else {
+    let Some(channel) = get_channel_by_id(stream.channel_id, &ctx.pool).await? else {
         return Ok(JobResult::Completed);
     };
 
@@ -47,10 +44,10 @@ pub async fn execute(
         }
         Platform::Youtube => {
             tokio::select! {
-                res = youtube::collect_viewers(&stream, &client, pool, client_) => {
+                res = youtube::collect_viewers(&stream, &ctx) => {
                     res.map(|_| JobResult::Completed)
                 },
-                res = youtube::collect_chats(&channel, &stream, &client, pool) => {
+                res = youtube::collect_chats(&channel, &stream, &ctx.client, &ctx.pool) => {
                     res.map(|_| JobResult::Completed)
                 },
                 _ = sigint.recv() => {
@@ -64,17 +61,17 @@ pub async fn execute(
             }
         }
         Platform::Twitch => {
-            let res = channel_panels(&channel.platform_id, &client).await?;
+            let res = channel_panels(&channel.platform_id, &ctx.client).await?;
             let channel_login = &res.data.user.login;
 
             tokio::select! {
-                res = twitch::check_if_online(stream_id, pool) => {
+                res = twitch::check_if_online(stream_id, &ctx.pool) => {
                     res.map(|_| JobResult::Completed)
                 },
-                res = twitch::collect_chats(stream_id, channel_login, pool) => {
+                res = twitch::collect_chats(stream_id, channel_login, &ctx.pool) => {
                     res.map(|_| JobResult::Completed)
                 },
-                res = twitch::collect_viewers(stream_id, channel_login, &client, pool) => {
+                res = twitch::collect_viewers(stream_id, channel_login, &ctx.client, &ctx.pool) => {
                     res.map(|_| JobResult::Completed)
                 },
                 _ = sigint.recv() => {

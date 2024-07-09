@@ -5,7 +5,7 @@ use axum::{
 };
 use serde_with::{formats::CommaSeparator, serde_as, StringWithSeparator};
 
-use vtstats_database::channel_stats_summary::{self, ChannelStatsKind};
+use vtstats_database::channel_stats::ChannelStatsKind;
 
 use crate::{error::ApiResult, AppContext};
 
@@ -22,7 +22,9 @@ pub async fn channel_stats_summary(
     Query(query): Query<ReqQuery>,
     State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let channels = channel_stats_summary::list(&query.channel_ids, query.kind, &state.pool).await?;
+    use vtstats_database::channel_stats::channel_stats_summary;
+
+    let channels = channel_stats_summary(&query.channel_ids, query.kind, &state.search).await?;
 
     Ok(Json(channels))
 }

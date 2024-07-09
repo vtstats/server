@@ -1,32 +1,37 @@
 use chrono::{DateTime, Duration, Utc};
 use rust_decimal::Decimal;
 use std::collections::HashMap;
-
 use vtstats_database::{
-    channel_stats_summary::{insert, list, AddChannelStats, ChannelStatsKind},
+    channel_stats::channel_stats_summary,
+    channel_stats::{channel_revenue_stats_insert, ChannelStatsKind},
     channels::Channel,
     stream_events::list_twitch_channel_revenue_events,
-    PgPool,
 };
+use vtstats_utils::context::AppContext;
 
-pub async fn run(channels: &[Channel], time: DateTime<Utc>, pool: &PgPool) -> anyhow::Result<()> {
+pub async fn run(
+    channels: &[Channel],
+    time: DateTime<Utc>,
+    ctx: &AppContext,
+) -> anyhow::Result<()> {
     let channel_ids: Vec<_> = channels.iter().map(|c| c.channel_id).collect();
 
-    let revenue_stats = list(&channel_ids, ChannelStatsKind::Revenue, pool).await?;
+    let revenue_stats =
+        channel_stats_summary(&channel_ids, ChannelStatsKind::Revenue, &ctx.search).await?;
 
     let mut revenue_stats = revenue_stats
         .into_iter()
         .map(|s| {
-            if s.value.is_null() {
-                Ok((s.channel_id, HashMap::new()))
+            if let Some(value) = s.value {
+                serde_json::from_value(value).map(|v| (s.channel_id, v))
             } else {
-                serde_json::from_value(s.value).map(|v| (s.channel_id, v))
+                Ok((s.channel_id, HashMap::new()))
             }
         })
         .collect::<Result<Vec<(i32, HashMap<String, Decimal>)>, _>>()?;
 
     let revenue_events =
-        list_twitch_channel_revenue_events(time - Duration::hours(1), pool).await?;
+        list_twitch_channel_revenue_events(time - Duration::hours(1), &ctx.pool).await?;
 
     for event in revenue_events {
         let Some(mut amount) = event.amount.and_then(|s| s.parse::<Decimal>().ok()) else {
@@ -50,7 +55,7 @@ pub async fn run(channels: &[Channel], time: DateTime<Utc>, pool: &PgPool) -> an
     }
 
     for (channel_id, value) in revenue_stats {
-        insert(time, channel_id, AddChannelStats::Revenue(value), pool).await?;
+        channel_revenue_stats_insert(time, channel_id, value, &ctx.pool, &ctx.search).await?;
     }
 
     Ok(())

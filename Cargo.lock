@@ -2919,7 +2919,6 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "vtstats-database",
- "vtstats-search",
  "vtstats-utils",
 ]
 
@@ -2939,18 +2938,6 @@ dependencies = [
  "sqlx",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "vtstats-search"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "meilisearch-sdk",
- "serde",
- "serde_json",
- "serde_with",
- "vtstats-database",
 ]
 
 [[package]]
@@ -2997,7 +2984,6 @@ dependencies = [
  "tokio",
  "tracing",
  "vtstats-database",
- "vtstats-search",
  "vtstats-utils",
 ]
 

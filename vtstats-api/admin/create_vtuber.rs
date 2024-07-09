@@ -6,7 +6,6 @@ use serde::Deserialize;
 use integration_s3::upload_file;
 use integration_youtube::youtubei;
 use vtstats_database::{
-    channel_stats_summary::{self, ChannelStatsKind},
     channels::{CreateChannel, Platform},
     vtubers::UpsertVTuber,
 };
@@ -74,10 +73,6 @@ pub async fn create_vtuber(
     }
     .execute(&mut *tx)
     .await?;
-
-    channel_stats_summary::create(channel_id, ChannelStatsKind::View, &mut *tx).await?;
-    channel_stats_summary::create(channel_id, ChannelStatsKind::Subscriber, &mut *tx).await?;
-    channel_stats_summary::create(channel_id, ChannelStatsKind::Revenue, &mut *tx).await?;
 
     tx.commit().await?;
 

@@ -6,7 +6,6 @@ pub mod json;
 pub mod otel;
 
 pub mod channel_stats;
-pub mod channel_stats_summary;
 pub mod channels;
 pub mod exchange_rates;
 pub mod groups;

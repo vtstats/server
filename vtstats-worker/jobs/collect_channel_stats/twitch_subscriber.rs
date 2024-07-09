@@ -1,25 +1,19 @@
 use chrono::{DateTime, Utc};
 use futures::TryFutureExt;
-use reqwest::Client;
-
 use integration_twitch::gql::{channel_avatar, channel_panels};
-use vtstats_database::{
-    channel_stats_summary::{insert, AddChannelStats},
-    channels::Channel,
-    PgPool,
-};
+use vtstats_database::{channel_stats::channel_subscriber_stats_insert, channels::Channel};
+use vtstats_utils::context::AppContext;
 
 pub async fn run(
     channels: &[Channel],
-    client: &Client,
     time: DateTime<Utc>,
-    pool: &PgPool,
+    ctx: &AppContext,
 ) -> anyhow::Result<()> {
     let mut subscriber_stats = Vec::<(i32, i32)>::with_capacity(channels.len());
 
     for channel in channels {
-        match channel_panels(&channel.platform_id, client)
-            .and_then(|res| channel_avatar(res.data.user.login, client))
+        match channel_panels(&channel.platform_id, &ctx.client)
+            .and_then(|res| channel_avatar(res.data.user.login, &ctx.client))
             .await
         {
             Ok(res) => {
@@ -36,7 +30,7 @@ pub async fn run(
     }
 
     for (channel_id, value) in subscriber_stats {
-        insert(time, channel_id, AddChannelStats::Subscriber(value), pool).await?;
+        channel_subscriber_stats_insert(time, channel_id, value, &ctx.pool, &ctx.search).await?;
     }
 
     Ok(())

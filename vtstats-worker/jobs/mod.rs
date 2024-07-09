@@ -55,32 +55,16 @@ pub async fn execute(job: Job, ctx: AppContext, _shutdown_complete_tx: Sender<()
 
         let result = match payload {
             HealthCheck => health_check::execute().await,
-            RefreshYoutubeRss => {
-                refresh_youtube_rss::execute(&ctx.pool, ctx.client, ctx.search).await
-            }
+            RefreshYoutubeRss => refresh_youtube_rss::execute(&ctx).await,
             SubscribeYoutubePubsub => {
                 subscribe_youtube_pubsub::execute(&ctx.pool, ctx.client).await
             }
-            UpdateChannelStats => collect_channel_stats::execute(&ctx.pool, &ctx.client).await,
+            UpdateChannelStats => collect_channel_stats::execute(&ctx).await,
             CollectYoutubeStreamMetadata(payload) => {
-                collect_stream_stats::execute(
-                    &ctx.pool,
-                    ctx.client,
-                    ctx.search,
-                    payload.stream_id,
-                    next_run,
-                )
-                .await
+                collect_stream_stats::execute(payload.stream_id, &ctx, next_run).await
             }
             CollectTwitchStreamMetadata(payload) => {
-                collect_stream_stats::execute(
-                    &ctx.pool,
-                    ctx.client,
-                    ctx.search,
-                    payload.stream_id,
-                    next_run,
-                )
-                .await
+                collect_stream_stats::execute(payload.stream_id, &ctx, next_run).await
             }
             SendNotification(payload) => {
                 send_notification::execute(&ctx.pool, ctx.client, payload.stream_id).await

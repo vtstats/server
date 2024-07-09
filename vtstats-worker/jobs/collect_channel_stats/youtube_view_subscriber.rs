@@ -1,18 +1,15 @@
 use chrono::{DateTime, Utc};
-use reqwest::Client;
-
 use integration_youtube::data_api::channels::list_channels;
 use vtstats_database::{
-    channel_stats_summary::{insert, AddChannelStats},
+    channel_stats::{channel_subscriber_stats_insert, channel_view_stats_insert},
     channels::Channel,
-    PgPool,
 };
+use vtstats_utils::context::AppContext;
 
 pub async fn run(
     channels: &[Channel],
-    client: &Client,
     time: DateTime<Utc>,
-    pool: &PgPool,
+    ctx: &AppContext,
 ) -> anyhow::Result<()> {
     let mut view_stats = Vec::<(i32, i32)>::with_capacity(channels.len());
 
@@ -28,7 +25,7 @@ pub async fn run(
             acc
         });
 
-        let response = list_channels(&channel_ids, client).await?;
+        let response = list_channels(&channel_ids, &ctx.client).await?;
 
         for item in response.items {
             let channel = chunk.iter().find(|ch| ch.platform_id == item.id);
@@ -52,11 +49,11 @@ pub async fn run(
 
     // view stats
     for (channel_id, value) in view_stats {
-        insert(time, channel_id, AddChannelStats::View(value), pool).await?;
+        channel_view_stats_insert(time, channel_id, value, &ctx.pool, &ctx.search).await?;
     }
 
     for (channel_id, value) in subscriber_stats {
-        insert(time, channel_id, AddChannelStats::Subscriber(value), pool).await?;
+        channel_subscriber_stats_insert(time, channel_id, value, &ctx.pool, &ctx.search).await?;
     }
 
     Ok(())

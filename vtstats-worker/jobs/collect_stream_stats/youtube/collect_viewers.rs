@@ -17,14 +17,10 @@ use vtstats_database::{
     },
     PgPool,
 };
+use vtstats_utils::context::AppContext;
 
-pub async fn collect_viewers(
-    stream: &Stream,
-    client: &Client,
-    pool: &PgPool,
-    client_: vtstats_search::Client,
-) -> anyhow::Result<()> {
-    let st = get_stream_by_id(stream.stream_id, pool).await?;
+pub async fn collect_viewers(stream: &Stream, ctx: &AppContext) -> anyhow::Result<()> {
+    let st = get_stream_by_id(stream.stream_id, &ctx.pool).await?;
 
     let mut last_max = st.as_ref().and_then(|st| st.viewer_max).unwrap_or_default();
     let mut last_avg = st.as_ref().and_then(|st| st.viewer_avg).unwrap_or_default();
@@ -38,9 +34,9 @@ pub async fn collect_viewers(
 
     loop {
         let response = if let Some(continuation) = &continuation {
-            updated_metadata_with_continuation(continuation, client).await
+            updated_metadata_with_continuation(continuation, &ctx.client).await
         } else {
-            updated_metadata(&stream.platform_id, client).await
+            updated_metadata(&stream.platform_id, &ctx.client).await
         }?;
 
         let bytes = response.bytes().await?;
@@ -53,11 +49,11 @@ pub async fn collect_viewers(
             // stream not found
             if status == StreamStatus::Scheduled {
                 tracing::warn!("delete schedule stream {}", stream.platform_id);
-                delete_stream(stream.stream_id, pool, &client_).await?;
+                delete_stream(stream.stream_id, &ctx.pool, &ctx.search).await?;
 
                 return Ok(());
             } else {
-                let mut videos = list_videos(&stream.platform_id, client).await?;
+                let mut videos = list_videos(&stream.platform_id, &ctx.client).await?;
                 let video: Option<integration_youtube::data_api::videos::Stream> =
                     videos.pop().and_then(Into::into);
 
@@ -68,7 +64,7 @@ pub async fn collect_viewers(
                             "delete schedule stream, platform_id={}",
                             stream.platform_id
                         );
-                        end_youtube_stream(stream, video, client, pool).await?;
+                        end_youtube_stream(stream, video, &ctx.client, &ctx.pool).await?;
                         return Ok(());
                     }
                     _ => {
@@ -108,7 +104,7 @@ pub async fn collect_viewers(
                 max,
                 avg,
             }
-            .execute(pool)
+            .execute(&ctx.pool)
             .await?;
 
             (last_max, last_avg) = (max, avg);
@@ -122,16 +118,16 @@ pub async fn collect_viewers(
                     "delete schedule stream, platform_id={}",
                     stream.platform_id
                 );
-                delete_stream(stream.stream_id, pool, &client_).await?;
+                delete_stream(stream.stream_id, &ctx.pool, &ctx.search).await?;
                 return Ok(());
             } else {
-                let mut videos = list_videos(&stream.platform_id, client).await?;
+                let mut videos = list_videos(&stream.platform_id, &ctx.client).await?;
                 let video: Option<integration_youtube::data_api::videos::Stream> =
                     videos.pop().and_then(Into::into);
 
                 match video {
                     Some(video) if video.end_time.is_some() => {
-                        end_youtube_stream(stream, video, client, pool).await?;
+                        end_youtube_stream(stream, video, &ctx.client, &ctx.pool).await?;
                         return Ok(());
                     }
                     _ => {
@@ -154,8 +150,8 @@ pub async fn collect_viewers(
                 metadata.title().as_deref(),
                 Utc::now(),
                 metadata.like_count(),
-                pool,
-                &client_
+                &ctx.pool,
+                &ctx.search,
             )
             .await?;
             status = StreamStatus::Live;

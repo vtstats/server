@@ -45,6 +45,7 @@ pub async fn add_or_update<'a>(patch: Document<'a>, client: &Client) -> Result<(
 
     Ok(())
 }
+
 pub async fn delete(stream_id: i32, client: &Client) -> Result<(), Error> {
     let index = client.index("streams");
 

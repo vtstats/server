@@ -34,7 +34,6 @@ members = [
     "integration-youtube",
     "vtstats-api",
     "vtstats-database",
-    "vtstats-search",
     "vtstats-utils",
     "vtstats-worker",
 ]
