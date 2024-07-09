@@ -17,17 +17,22 @@ pub struct Stream {
     pub stream_id: i32,
     pub channel_id: i32,
     pub title: String,
+    #[serde(default)]
     pub highlighted_title: Option<String>,
     pub vtuber_id: String,
+    #[serde(default)]
     pub thumbnail_url: Option<String>,
-    #[serde(with = "ts_milliseconds_option")]
+    #[serde(default, with = "ts_milliseconds_option")]
     pub schedule_time: Option<UtcTime>,
-    #[serde(with = "ts_milliseconds_option")]
+    #[serde(default, with = "ts_milliseconds_option")]
     pub start_time: Option<UtcTime>,
-    #[serde(with = "ts_milliseconds_option")]
+    #[serde(default, with = "ts_milliseconds_option")]
     pub end_time: Option<UtcTime>,
+    #[serde(default)]
     pub viewer_avg: Option<i32>,
+    #[serde(default)]
     pub viewer_max: Option<i32>,
+    #[serde(default)]
     pub like_max: Option<i32>,
     #[serde(with = "ts_milliseconds")]
     pub updated_at: UtcTime,
