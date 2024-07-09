@@ -20,7 +20,7 @@ pub struct Document<'q> {
     pub stream_id: i32,
     pub vtuber_id: Option<&'q str>,
     pub platform: Option<Platform>,
-    pub platform_stream_id: Option<&'q str>,
+    pub platform_id: Option<&'q str>,
     pub channel_id: Option<i32>,
     pub title: Option<&'q str>,
     pub status: Option<StreamStatus>,

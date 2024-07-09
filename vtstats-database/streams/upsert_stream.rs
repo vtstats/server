@@ -71,7 +71,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
             super::meilisearch::Document {
                 stream_id: record.stream_id,
                 platform: Some(self.platform),
-                platform_stream_id: Some(self.platform_stream_id),
+                platform_id: Some(self.platform_stream_id),
                 channel_id: Some(self.channel_id),
                 title: Some(self.title),
                 status: Some(self.status),
