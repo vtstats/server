@@ -2,18 +2,11 @@ use std::cmp;
 
 use chrono::{Duration, DurationRound, Utc};
 use integration_twitch::gql::use_view_count;
-use reqwest::Client;
-use vtstats_database::{
-    stream_stats::AddStreamViewerStatsQuery, streams::get_stream_by_id, PgPool,
-};
+use vtstats_database::{stream_stats::AddStreamViewerStatsQuery, streams::get_stream_by_id};
+use vtstats_utils::context::AppContext;
 
-pub async fn collect_viewers(
-    stream_id: i32,
-    login: &str,
-    client: &Client,
-    pool: &PgPool,
-) -> anyhow::Result<()> {
-    let st = get_stream_by_id(stream_id, pool).await?;
+pub async fn collect_viewers(stream_id: i32, login: &str, ctx: &AppContext) -> anyhow::Result<()> {
+    let st = get_stream_by_id(stream_id, &ctx.pool).await?;
 
     let mut last_max = st.as_ref().and_then(|st| st.viewer_max).unwrap_or_default();
     let mut last_avg = st.as_ref().and_then(|st| st.viewer_avg).unwrap_or_default();
@@ -23,7 +16,7 @@ pub async fn collect_viewers(
         .unwrap_or_else(|| Utc::now().duration_trunc(Duration::seconds(15)).unwrap());
 
     loop {
-        let res = use_view_count(login.to_string(), client).await?;
+        let res = use_view_count(login.to_string(), &ctx.client).await?;
 
         if let Some(stream) = res.data.user.stream {
             let time = Utc::now().duration_trunc(Duration::seconds(15))?;
@@ -40,7 +33,19 @@ pub async fn collect_viewers(
                 max,
                 avg,
             }
-            .execute(pool)
+            .execute(&ctx.pool)
+            .await?;
+
+            vtstats_database::streams::meilisearch::add_or_update(
+                vtstats_database::streams::meilisearch::Document {
+                    stream_id,
+                    updated_at: time,
+                    viewer_max: Some(max),
+                    viewer_avg: Some(avg),
+                    ..Default::default()
+                },
+                &ctx.search,
+            )
             .await?;
 
             (last_max, last_avg) = (max, avg);

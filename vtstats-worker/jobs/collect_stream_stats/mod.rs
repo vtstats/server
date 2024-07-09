@@ -71,7 +71,7 @@ pub async fn execute(
                 res = twitch::collect_chats(stream_id, channel_login, &ctx.pool) => {
                     res.map(|_| JobResult::Completed)
                 },
-                res = twitch::collect_viewers(stream_id, channel_login, &ctx.client, &ctx.pool) => {
+                res = twitch::collect_viewers(stream_id, channel_login, ctx) => {
                     res.map(|_| JobResult::Completed)
                 },
                 _ = sigint.recv() => {

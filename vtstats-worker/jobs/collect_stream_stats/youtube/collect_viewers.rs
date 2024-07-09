@@ -107,6 +107,18 @@ pub async fn collect_viewers(stream: &Stream, ctx: &AppContext) -> anyhow::Resul
             .execute(&ctx.pool)
             .await?;
 
+            vtstats_database::streams::meilisearch::add_or_update(
+                vtstats_database::streams::meilisearch::Document {
+                    stream_id: stream.stream_id,
+                    updated_at: time,
+                    viewer_max: Some(max),
+                    viewer_avg: Some(avg),
+                    ..Default::default()
+                },
+                &ctx.search,
+            )
+            .await?;
+
             (last_max, last_avg) = (max, avg);
         }
 

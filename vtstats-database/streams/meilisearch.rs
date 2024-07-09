@@ -34,6 +34,10 @@ pub struct Document<'q> {
     #[serde(with = "ts_milliseconds")]
     pub updated_at: DateTime<Utc>,
     pub like_max: Option<i32>,
+    #[serde(default)]
+    pub viewer_avg: Option<i32>,
+    #[serde(default)]
+    pub viewer_max: Option<i32>,
 }
 
 pub async fn add_or_update<'a>(patch: Document<'a>, client: &Client) -> Result<(), Error> {
