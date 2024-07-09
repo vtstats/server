@@ -41,7 +41,7 @@ pub async fn add_or_update<'a>(patch: Document<'a>, client: &Client) -> Result<(
     let index = client.index("streams");
 
     let _task = index
-        .add_or_update(&[&patch], Some(&patch.stream_id.to_string()))
+        .add_or_update(&[&patch], Some("stream_id".into()))
         .await?;
 
     Ok(())
