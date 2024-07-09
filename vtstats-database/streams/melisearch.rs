@@ -2,18 +2,14 @@ use crate::{
     channels::Platform,
     streams::{Stream, StreamStatus},
 };
-use chrono::{DateTime, Utc};
+use chrono::{serde::ts_milliseconds, serde::ts_milliseconds_option, DateTime, Utc};
 use meilisearch_sdk::{
     documents::{DocumentQuery, DocumentsQuery, DocumentsResults},
     errors::Error,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_with::skip_serializing_none;
-use std::{
-    cmp::{max, min},
-    fmt::Display,
-    fmt::Write,
-};
+use std::{fmt::Display, fmt::Write};
 
 // re-export client
 pub use meilisearch_sdk::client::Client;
@@ -31,9 +27,13 @@ pub struct Document<'q> {
     pub title: Option<&'q str>,
     pub status: Option<StreamStatus>,
     pub thumbnail_url: Option<String>,
+    #[serde(with = "ts_milliseconds_option")]
     pub schedule_time: Option<DateTime<Utc>>,
+    #[serde(with = "ts_milliseconds_option")]
     pub start_time: Option<DateTime<Utc>>,
+    #[serde(with = "ts_milliseconds_option")]
     pub end_time: Option<DateTime<Utc>>,
+    #[serde(with = "ts_milliseconds")]
     pub updated_at: DateTime<Utc>,
     pub like_max: Option<i32>,
 }
@@ -114,7 +114,7 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
             StreamStatus::Live => "live",
             StreamStatus::Ended => "ended",
         },
-        ArrayFilter("channel_id", &search.channel_ids)
+        ArrayFieldFilter("channel_id", &search.channel_ids)
     );
 
     if let Some(start_at) = search.start_at {
@@ -145,66 +145,9 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
     Ok(result.hits.into_iter().map(|x| x.result).collect())
 }
 
-pub async fn stream_times(
-    channel_ids: &[i32],
-    start_at: DateTime<Utc>,
-    client: &Client,
-) -> Result<Vec<(i64, i64)>, Error> {
-    if channel_ids.is_empty() {
-        return Ok(vec![]);
-    }
+pub struct ArrayFieldFilter<'a>(pub &'a str, pub &'a [i32]);
 
-    #[derive(Deserialize)]
-    struct Result {
-        start_time: DateTime<Utc>,
-        end_time: DateTime<Utc>,
-    }
-
-    let index = client.index("streams");
-
-    let result: DocumentsResults<_> = DocumentsQuery::new(&index)
-        .with_filter(&format!(
-            "{} AND start_time > {start_at} AND end_time IS NOT NULL",
-            ArrayFilter("channel_id", channel_ids)
-        ))
-        .with_limit(usize::MAX)
-        .with_fields(["start_time", "end_time"])
-        .execute::<Result>()
-        .await?;
-
-    let mut streams = result.results;
-
-    streams.sort_by(|a, b| a.start_time.cmp(&b.start_time));
-
-    let mut result = Vec::<(i64, i64)>::new();
-
-    for stream in streams {
-        let start = stream.start_time.timestamp();
-        let end = stream.end_time.timestamp();
-        let one_hour: i64 = 60 * 60;
-
-        let mut time = end - (end % one_hour);
-
-        while (start - time) < one_hour {
-            let duration = min(time + one_hour, end) - max(start, time);
-
-            match result.last_mut() {
-                Some(last) if last.0 == time => {
-                    last.1 += duration;
-                }
-                _ => result.push((time, duration)),
-            }
-
-            time -= one_hour;
-        }
-    }
-
-    Ok(result)
-}
-
-struct ArrayFilter<'a>(&'a str, &'a [i32]);
-
-impl<'a> Display for ArrayFilter<'a> {
+impl<'a> Display for ArrayFieldFilter<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.1.is_empty() {
             return Ok(());
