@@ -1,41 +1,59 @@
-use chrono::{DateTime, Duration, Utc};
-use sqlx::{PgPool, Result};
+use chrono::{serde::ts_milliseconds, DateTime, Duration, Utc};
+use meilisearch_sdk::{
+    client::Client,
+    documents::{DocumentsQuery, DocumentsResults},
+};
+use serde::Deserialize;
 use std::cmp::{max, min};
 
-pub async fn stream_times(channel_ids: &[i32], pool: &PgPool) -> Result<Vec<(i64, i64)>> {
-    stream_times_start_at(channel_ids, Utc::now() - Duration::weeks(44), pool).await
+use super::meilisearch::ArrayFieldFilter;
+
+pub async fn stream_times(channel_ids: &[i32], client: &Client) -> anyhow::Result<Vec<(i64, i64)>> {
+    stream_times_start_at(channel_ids, Utc::now() - Duration::weeks(44), client).await
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Document {
+    #[serde(with = "ts_milliseconds")]
+    start_time: DateTime<Utc>,
+    #[serde(with = "ts_milliseconds")]
+    end_time: DateTime<Utc>,
 }
 
 async fn stream_times_start_at(
     channel_ids: &[i32],
     start_at: DateTime<Utc>,
-    pool: &PgPool,
-) -> Result<Vec<(i64, i64)>> {
-    let query = sqlx::query!(
-        "
-  SELECT start_time, end_time \
-    FROM streams \
-   WHERE channel_id = ANY($1) \
-     AND start_time > $2 \
-     AND end_time IS NOT NULL \
-ORDER BY start_time DESC
-        ",
-        channel_ids, // $1
-        start_at,    // $2
-    )
-    .fetch_all(pool);
+    client: &Client,
+) -> anyhow::Result<Vec<(i64, i64)>> {
+    if channel_ids.is_empty() {
+        return Ok(vec![]);
+    }
 
-    let records = crate::otel::execute_query!("SELECT", "streams", query)?;
+    let index = client.index("streams");
+
+    let filter = format!(
+        "{} AND startTime > {} AND endTime IS NOT NULL",
+        ArrayFieldFilter("channelId", channel_ids),
+        start_at.timestamp_millis()
+    );
+
+    let result: DocumentsResults<_> = DocumentsQuery::new(&index)
+        .with_filter(&filter)
+        .with_limit(1_000_000)
+        .with_fields(["startTime", "endTime"])
+        .execute::<Document>()
+        .await?;
+
+    let mut streams = result.results;
+
+    streams.sort_by(|a, b| b.start_time.cmp(&a.start_time));
 
     let mut result = Vec::<(i64, i64)>::new();
 
-    for record in records {
-        let (Some(start), Some(end)) = (record.start_time, record.end_time) else {
-            continue;
-        };
-
-        let start = start.timestamp();
-        let end = end.timestamp();
+    for stream in streams {
+        let start = stream.start_time.timestamp();
+        let end = stream.end_time.timestamp();
         let one_hour: i64 = 60 * 60;
 
         let mut time = end - (end % one_hour);
@@ -55,46 +73,4 @@ ORDER BY start_time DESC
     }
 
     Ok(result)
-}
-
-#[cfg(test)]
-#[sqlx::test(fixtures("channels"))]
-async fn test(pool: PgPool) -> Result<()> {
-    use chrono::TimeZone;
-
-    sqlx::query!(
-        r#"
-INSERT INTO streams (platform, vtuber_id, platform_id, title, channel_id, schedule_time, start_time, end_time, status)
-     VALUES ('youtube', 'vtuber1', 'id1', 'title1', 1, NULL, to_timestamp(1800), to_timestamp(8000), 'ended'),
-            ('youtube', 'vtuber1', 'id2', 'title2', 1, NULL, to_timestamp(10000), to_timestamp(12000), 'ended'),
-            ('youtube', 'vtuber1', 'id3', 'title3', 1, NULL, to_timestamp(15000), to_timestamp(17000), 'ended');
-        "#
-    )
-    .execute(&pool)
-    .await?;
-
-    let big_bang = Utc.timestamp_opt(0, 0).single().unwrap();
-
-    {
-        let times = stream_times_start_at(&[2], big_bang, &pool).await?;
-
-        assert!(times.is_empty());
-    }
-
-    {
-        let times = stream_times_start_at(&[1], big_bang, &pool).await?;
-
-        assert_eq!(
-            times,
-            vec![
-                (14400, 2000),
-                (10800, 1200),
-                (7200, 1600),
-                (3600, 3600),
-                (0, 1800),
-            ]
-        );
-    }
-
-    Ok(())
 }

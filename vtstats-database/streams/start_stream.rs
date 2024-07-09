@@ -34,8 +34,8 @@ pub async fn start_stream(
     let rec = crate::otel::execute_query!("UPDATE", "streams", query)?;
 
     if let Some(rec) = rec {
-        if let Err(err) = super::melisearch::add_or_update(
-            super::melisearch::Document {
+        if let Err(err) = super::meilisearch::add_or_update(
+            super::meilisearch::Document {
                 stream_id,
                 title,
                 updated_at: now,

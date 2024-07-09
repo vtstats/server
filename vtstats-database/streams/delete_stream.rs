@@ -32,7 +32,7 @@ pub async fn delete_stream(stream_id: i32, pool: &PgPool, client: &Client) -> Re
 
     tx.commit().await?;
 
-    if let Err(err) = super::melisearch::delete(stream_id, client).await {
+    if let Err(err) = super::meilisearch::delete(stream_id, client).await {
         eprintln!("meili: {err:?}");
     }
 

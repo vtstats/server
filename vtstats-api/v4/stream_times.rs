@@ -21,7 +21,7 @@ pub async fn stream_times(
     Query(query): Query<ReqQuery>,
     State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let times = db::stream_times(&query.channel_ids, &state.pool).await?;
+    let times = db::stream_times(&query.channel_ids, &state.search).await?;
 
     Ok(Json(times))
 }

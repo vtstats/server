@@ -3,10 +3,7 @@ use crate::{
     streams::{Stream, StreamStatus},
 };
 use chrono::{serde::ts_milliseconds, serde::ts_milliseconds_option, DateTime, Utc};
-use meilisearch_sdk::{
-    documents::{DocumentQuery, DocumentsQuery, DocumentsResults},
-    errors::Error,
-};
+use meilisearch_sdk::errors::Error;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 use std::{fmt::Display, fmt::Write};
@@ -18,6 +15,7 @@ use super::{Column, Ordering};
 
 #[skip_serializing_none]
 #[derive(Default, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Document<'q> {
     pub stream_id: i32,
     pub vtuber_id: Option<&'q str>,
@@ -42,45 +40,11 @@ pub async fn add_or_update<'a>(patch: Document<'a>, client: &Client) -> Result<(
     let index = client.index("streams");
 
     let _task = index
-        .add_or_update(&[&patch], Some("stream_id".into()))
+        .add_or_update(&[&patch], Some("streamId".into()))
         .await?;
 
     Ok(())
 }
-
-pub async fn find_by_platform_id(
-    platform_id: String,
-    platform: Platform,
-    client: &Client,
-) -> Result<Option<Stream>, Error> {
-    let index = client.index("streams");
-
-    let mut documents: DocumentsResults<_> = DocumentsQuery::new(&index)
-        .with_filter(&format!(
-            "platform_id = '{platform_id}' AND platform = '{}'",
-            match platform {
-                Platform::Youtube => "youtube",
-                Platform::Bilibili => "bilibili",
-                Platform::Twitch => "twitch",
-            }
-        ))
-        .with_limit(1)
-        .execute::<Stream>()
-        .await?;
-
-    Ok(documents.results.pop())
-}
-
-pub async fn find_by_id(stream_id: i32, client: &Client) -> Result<Option<Stream>, Error> {
-    let index = client.index("streams");
-
-    let query = DocumentQuery::new(&index)
-        .execute::<Stream>(&stream_id.to_string())
-        .await?;
-
-    Ok(Some(query))
-}
-
 pub async fn delete(stream_id: i32, client: &Client) -> Result<(), Error> {
     let index = client.index("streams");
 
@@ -114,19 +78,35 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
             StreamStatus::Live => "live",
             StreamStatus::Ended => "ended",
         },
-        ArrayFieldFilter("channel_id", &search.channel_ids)
+        ArrayFieldFilter("channelId", &search.channel_ids)
     );
 
     if let Some(start_at) = search.start_at {
         let _ = write!(
             &mut filter,
-            " AND {} > '{start_at}'",
-            search.sort_by.as_str()
+            " AND {} > {}",
+            match search.sort_by {
+                Column::StartTime => "startTime",
+                Column::EndTime => "endTime",
+                Column::ScheduleTime => "scheduleTime",
+                Column::UpdatedAt => "updatedAt",
+            },
+            start_at.timestamp_millis()
         );
     };
 
     if let Some(end_at) = search.end_at {
-        let _ = write!(&mut filter, " AND {} < '{end_at}'", search.sort_by.as_str());
+        let _ = write!(
+            &mut filter,
+            " AND {} < {}",
+            match search.sort_by {
+                Column::StartTime => "startTime",
+                Column::EndTime => "endTime",
+                Column::ScheduleTime => "scheduleTime",
+                Column::UpdatedAt => "updatedAt",
+            },
+            end_at.timestamp_millis()
+        );
     };
 
     let result = index
@@ -135,7 +115,12 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
         .with_filter(&filter)
         .with_sort(&[&format!(
             "{}:{}",
-            search.sort_by.as_str(),
+            match search.sort_by {
+                Column::StartTime => "startTime",
+                Column::EndTime => "endTime",
+                Column::ScheduleTime => "scheduleTime",
+                Column::UpdatedAt => "updatedAt",
+            },
             search.sort_direction.as_str().to_lowercase()
         )])
         .with_limit(24)

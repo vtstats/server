@@ -20,7 +20,10 @@ pub struct Channel {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Platform {
     #[default]
+    #[serde(alias = "youtube")]
     Youtube,
+    #[serde(alias = "bilibili")]
     Bilibili,
+    #[serde(alias = "twitch")]
     Twitch,
 }

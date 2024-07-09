@@ -8,8 +8,7 @@ use tracing::Span;
 
 use vtstats_database::channels::Platform;
 use vtstats_database::streams::{
-    filter_streams_order_by_schedule_time_asc, filter_streams_order_by_start_time_desc,
-    get_stream_by_id, get_stream_by_platform_id, StreamStatus,
+    get_stream_by_id, get_stream_by_platform_id, Column, Ordering, StreamStatus,
 };
 
 use crate::error::ApiResult;
@@ -63,12 +62,17 @@ pub async fn list_scheduled_streams(
     Query(query): Query<ListReqQuery>,
     State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let streams = filter_streams_order_by_schedule_time_asc(
-        &query.channel_ids,
-        StreamStatus::Scheduled,
-        query.start_at,
-        query.end_at,
-        state.pool,
+    let streams = vtstats_database::streams::meilisearch::search(
+        vtstats_database::streams::meilisearch::Search {
+            channel_ids: query.channel_ids,
+            status: StreamStatus::Scheduled,
+            start_at: query.start_at,
+            end_at: query.end_at,
+            sort_by: Column::ScheduleTime,
+            sort_direction: Ordering::Asc,
+            ..Default::default()
+        },
+        &state.search,
     )
     .await?;
 
@@ -83,15 +87,21 @@ pub async fn list_live_streams(
         .keyword
         .as_ref()
         .map(|s| s.trim())
-        .filter(|s| !s.is_empty());
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string());
 
-    let streams = filter_streams_order_by_start_time_desc(
-        &query.channel_ids,
-        StreamStatus::Live,
-        query.start_at,
-        query.end_at,
-        keyword,
-        state.pool,
+    let streams = vtstats_database::streams::meilisearch::search(
+        vtstats_database::streams::meilisearch::Search {
+            channel_ids: query.channel_ids,
+            status: StreamStatus::Live,
+            start_at: query.start_at,
+            end_at: query.end_at,
+            sort_by: Column::StartTime,
+            sort_direction: Ordering::Desc,
+            query: keyword,
+            ..Default::default()
+        },
+        &state.search,
     )
     .await?;
 
@@ -106,15 +116,21 @@ pub async fn list_ended_streams(
         .keyword
         .as_ref()
         .map(|s| s.trim())
-        .filter(|s| !s.is_empty());
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string());
 
-    let streams = filter_streams_order_by_start_time_desc(
-        &query.channel_ids,
-        StreamStatus::Ended,
-        query.start_at,
-        query.end_at,
-        keyword,
-        state.pool,
+    let streams = vtstats_database::streams::meilisearch::search(
+        vtstats_database::streams::meilisearch::Search {
+            channel_ids: query.channel_ids,
+            status: StreamStatus::Ended,
+            start_at: query.start_at,
+            end_at: query.end_at,
+            sort_by: Column::StartTime,
+            sort_direction: Ordering::Desc,
+            query: keyword,
+            ..Default::default()
+        },
+        &state.search,
     )
     .await?;
 

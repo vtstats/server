@@ -40,8 +40,11 @@ pub struct Stream {
 #[derive(Default)]
 pub enum StreamStatus {
     #[default]
+    #[serde(alias = "scheduled")]
     Scheduled,
+    #[serde(alias = "live")]
     Live,
+    #[serde(alias = "ended")]
     Ended,
 }
 
@@ -80,141 +83,6 @@ impl Ordering {
             Ordering::Asc => "ASC",
             Ordering::Desc => "DESC",
         }
-    }
-}
-
-pub async fn filter_streams_order_by_schedule_time_asc(
-    channel_ids: &[i32],
-    status: StreamStatus,
-    start_at: Option<DateTime<Utc>>,
-    end_at: Option<DateTime<Utc>>,
-    pool: PgPool,
-) -> Result<Vec<Stream>> {
-    let query = sqlx::query_as!(
-        Stream,
-        "SELECT platform as \"platform: _\", \
-        platform_id, \
-        stream_id, \
-        title, \
-        channel_id, \
-        null as highlighted_title, \
-        vtuber_id, \
-        thumbnail_url, \
-        schedule_time, \
-        start_time, \
-        end_time, \
-        viewer_max, \
-        viewer_avg, \
-        like_max, \
-        updated_at, \
-        status as \"status: _\" \
-        FROM streams \
-        WHERE channel_id = ANY($1) \
-        AND status = $2 \
-        AND (schedule_time > $3 OR $3 IS NULL) \
-        AND (schedule_time < $4 OR $4 IS NULL) \
-        ORDER BY schedule_time ASC \
-        LIMIT 24",
-        channel_ids,
-        status as _,
-        start_at,
-        end_at
-    )
-    .fetch_all(&pool);
-
-    crate::otel::execute_query!("SELECT", "streams", query)
-}
-
-pub async fn filter_streams_order_by_start_time_desc(
-    channel_ids: &[i32],
-    status: StreamStatus,
-    start_at: Option<DateTime<Utc>>,
-    end_at: Option<DateTime<Utc>>,
-    keyword: Option<&str>,
-    pool: PgPool,
-) -> Result<Vec<Stream>> {
-    if let Some(keyword) = keyword {
-        let query = sqlx::query!(
-            "SELECT pgroonga_query_expand('pgroonga_synonyms', 'term', 'synonyms', $1) as expended",
-            keyword
-        )
-        .fetch_one(&pool);
-
-        let expended = crate::otel::execute_query!("SELECT", "pgroonga_query_expand", query)?;
-
-        let keyword = expended.expended.as_deref().unwrap_or(keyword);
-
-        let query = sqlx::query_as!(
-            Stream,
-            "SELECT platform as \"platform: _\", \
-            platform_id, \
-            stream_id, \
-            title, \
-            channel_id, \
-            pgroonga_highlight_html(\
-                title, pgroonga_query_extract_keywords($5)\
-            ) as highlighted_title, \
-            vtuber_id, \
-            thumbnail_url, \
-            schedule_time, \
-            start_time, \
-            end_time, \
-            viewer_max, \
-            viewer_avg, \
-            like_max, \
-            updated_at, \
-            status as \"status: _\" \
-            FROM streams \
-            WHERE channel_id = ANY($1) \
-            AND status = $2 \
-            AND (start_time > $3 OR $3 IS NULL) \
-            AND (start_time < $4 OR $4 IS NULL) \
-            AND title &@~ $5 \
-            ORDER BY start_time DESC \
-            LIMIT 24",
-            channel_ids,
-            status as _,
-            start_at,
-            end_at,
-            keyword
-        )
-        .fetch_all(&pool);
-
-        crate::otel::execute_query!("SELECT", "streams", query)
-    } else {
-        let query = sqlx::query_as!(
-            Stream,
-            "SELECT platform as \"platform: _\", \
-            platform_id, \
-            stream_id, \
-            title, \
-            channel_id, \
-            null as highlighted_title, \
-            vtuber_id, \
-            thumbnail_url, \
-            schedule_time, \
-            start_time, \
-            end_time, \
-            viewer_max, \
-            viewer_avg, \
-            like_max, \
-            updated_at, \
-            status as \"status: _\" \
-            FROM streams \
-            WHERE channel_id = ANY($1) \
-            AND status = $2 \
-            AND (start_time > $3 OR $3 IS NULL) \
-            AND (start_time < $4 OR $4 IS NULL) \
-            ORDER BY start_time DESC \
-            LIMIT 24",
-            channel_ids,
-            status as _,
-            start_at,
-            end_at
-        )
-        .fetch_all(&pool);
-
-        crate::otel::execute_query!("SELECT", "streams", query)
     }
 }
 

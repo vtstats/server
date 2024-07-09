@@ -14,8 +14,8 @@ pub async fn end_stream(stream_id: i32, pool: &PgPool, client: &Client) -> Resul
     )
     .execute(pool);
 
-    if let Err(err) = super::melisearch::add_or_update(
-        super::melisearch::Document {
+    if let Err(err) = super::meilisearch::add_or_update(
+        super::meilisearch::Document {
             stream_id,
             status: Some(StreamStatus::Ended),
             end_time: Some(now),
@@ -56,8 +56,8 @@ pub async fn end_twitch_stream(
     let rec = crate::otel::execute_query!("UPDATE", "streams", query)?;
 
     if let Some(rec) = rec {
-        if let Err(err) = super::melisearch::add_or_update(
-            super::melisearch::Document {
+        if let Err(err) = super::meilisearch::add_or_update(
+            super::meilisearch::Document {
                 stream_id: rec.stream_id,
                 end_time: Some(now),
                 status: Some(StreamStatus::Ended),

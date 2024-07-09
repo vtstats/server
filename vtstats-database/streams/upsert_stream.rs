@@ -67,8 +67,8 @@ ON CONFLICT (platform, platform_id) DO UPDATE
 
         let record = crate::otel::execute_query!("INSERT", "streams", query)?;
 
-        if let Err(err) = super::melisearch::add_or_update(
-            super::melisearch::Document {
+        if let Err(err) = super::meilisearch::add_or_update(
+            super::meilisearch::Document {
                 stream_id: record.stream_id,
                 platform: Some(self.platform),
                 platform_stream_id: Some(self.platform_stream_id),

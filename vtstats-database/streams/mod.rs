@@ -4,7 +4,7 @@ mod find_stream;
 mod get_stream_by_id;
 mod get_stream_by_platform_id;
 mod list_streams;
-mod melisearch;
+pub mod meilisearch;
 mod start_stream;
 mod stream_times;
 mod upsert_stream;
