@@ -31,6 +31,7 @@ pub async fn channel_subscriber_stats_insert(
         meilisearch::Document {
             channel_id,
             updated_at: time,
+            kind: None,
             value: Some(json!(value)),
             value_1_day_ago: value_1_day_ago.map(|v| json!(v)),
             value_7_days_ago: value_7_days_ago.map(|v| json!(v)),
@@ -62,6 +63,7 @@ pub async fn channel_view_stats_insert(
         meilisearch::Document {
             channel_id,
             updated_at: time,
+            kind: None,
             value: Some(json!(value)),
             value_1_day_ago: value_1_day_ago.map(|v| json!(v)),
             value_7_days_ago: value_7_days_ago.map(|v| json!(v)),
@@ -95,6 +97,7 @@ pub async fn channel_revenue_stats_insert(
         meilisearch::Document {
             channel_id,
             updated_at: time,
+            kind: None,
             value: Some(value),
             value_1_day_ago,
             value_7_days_ago,

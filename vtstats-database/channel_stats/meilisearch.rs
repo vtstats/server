@@ -9,7 +9,7 @@ use sqlx::types::JsonValue;
 
 use crate::streams::meilisearch::ArrayFieldFilter;
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ChannelStatsKind {
     Subscriber,
@@ -24,6 +24,8 @@ pub struct Document {
     pub channel_id: i32,
     #[serde(with = "ts_milliseconds")]
     pub updated_at: DateTime<Utc>,
+    #[serde(default)]
+    pub kind: Option<ChannelStatsKind>,
     #[serde(default)]
     pub value: Option<JsonValue>,
     #[serde(default)]
@@ -63,11 +65,16 @@ pub async fn list(
         ChannelStatsKind::Revenue => "channel_revenue_stats_summary",
     });
 
-    let result: DocumentsResults<_> = DocumentsQuery::new(&index)
+    let mut result: DocumentsResults<_> = DocumentsQuery::new(&index)
         .with_filter(&ArrayFieldFilter("channelId", channel_ids).to_string())
         .with_limit(channel_ids.len())
         .execute::<Document>()
         .await?;
+
+    // TODO: fix
+    for r in result.results.iter_mut() {
+        r.kind.replace(kind);
+    }
 
     Ok(result.results)
 }
