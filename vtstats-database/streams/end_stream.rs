@@ -8,7 +8,7 @@ pub async fn end_stream(stream_id: i32, pool: &PgPool, client: &Client) -> Resul
     let now = Utc::now();
 
     let query = sqlx::query!(
-        "UPDATE streams SET status = 'ended', end_time = $1 WHERE stream_id = $2",
+        "UPDATE streams SET status = 'ended', end_time = $1, updated_at = $1 WHERE stream_id = $2",
         now,
         stream_id
     )
@@ -17,8 +17,9 @@ pub async fn end_stream(stream_id: i32, pool: &PgPool, client: &Client) -> Resul
     if let Err(err) = super::melisearch::add_or_update(
         super::melisearch::Document {
             stream_id,
-            end_time: Some(now),
             status: Some(StreamStatus::Ended),
+            end_time: Some(now),
+            updated_at: now,
             ..Default::default()
         },
         client,

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n   UPDATE streams SET title      = COALESCE($2, title), updated_at = $1, start_time = COALESCE(start_time, $3), status     = 'live', like_max   = GREATEST($4, like_max) WHERE stream_id  = $5 RETURNING like_max\n        ",
+  "query": "UPDATE streams SET title = COALESCE($2, title), updated_at = $1, start_time = $3, status = 'live', like_max = GREATEST($4, like_max) WHERE stream_id = $5 RETURNING like_max",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       true
     ]
   },
-  "hash": "1fe727cd1683cbb8d4aec74569b766639cd308d35109a1dfb2990495c4248e76"
+  "hash": "23b0bbd5d756ef85378f2b331198eb11b161968b87e2d2af7a814a053a7862e4"
 }

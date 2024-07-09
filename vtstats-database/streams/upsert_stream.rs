@@ -24,6 +24,8 @@ pub struct UpsertStreamQuery<'q> {
 
 impl<'q> UpsertStreamQuery<'q> {
     pub async fn execute(self, pool: &PgPool, client: &Client) -> Result<i32> {
+        let now = Utc::now();
+
         let query = sqlx::query!(
             r#"
 INSERT INTO streams AS t (
@@ -36,9 +38,10 @@ INSERT INTO streams AS t (
                 schedule_time,
                 start_time,
                 end_time,
-                vtuber_id
+                vtuber_id,
+                updated_at
             )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 ON CONFLICT (platform, platform_id) DO UPDATE
         SET title          = COALESCE($4, t.title),
             status         = COALESCE($5, t.status),
@@ -58,6 +61,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
             self.start_time,         // $8
             self.end_time,           // $9
             self.vtuber_id,          // $10
+            now,                     // $11
         )
         .fetch_one(pool);
 
@@ -76,6 +80,7 @@ ON CONFLICT (platform, platform_id) DO UPDATE
                 start_time: self.start_time,
                 end_time: self.end_time,
                 vtuber_id: Some(self.vtuber_id),
+                updated_at: now,
                 ..Default::default()
             },
             client,

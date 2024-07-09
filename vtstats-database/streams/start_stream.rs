@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use meilisearch_sdk::client::Client;
 use sqlx::{PgPool, Result};
 
+use super::StreamStatus;
+
 pub async fn start_stream(
     stream_id: i32,
     title: Option<&str>,
@@ -13,16 +15,14 @@ pub async fn start_stream(
     let now = Utc::now();
 
     let query = sqlx::query!(
-        "
-   UPDATE streams \
-      SET title      = COALESCE($2, title), \
-          updated_at = $1, \
-          start_time = COALESCE(start_time, $3), \
-          status     = 'live', \
-          like_max   = GREATEST($4, like_max) \
-    WHERE stream_id  = $5 \
-RETURNING like_max
-        ",
+        "UPDATE streams \
+        SET title = COALESCE($2, title), \
+        updated_at = $1, \
+        start_time = $3, \
+        status = 'live', \
+        like_max = GREATEST($4, like_max) \
+        WHERE stream_id = $5 \
+        RETURNING like_max",
         now,        // $1
         title,      // $2
         start_time, // $3
@@ -37,6 +37,10 @@ RETURNING like_max
         if let Err(err) = super::melisearch::add_or_update(
             super::melisearch::Document {
                 stream_id,
+                title,
+                updated_at: now,
+                start_time: Some(start_time),
+                status: Some(StreamStatus::Live),
                 like_max: rec.like_max,
                 ..Default::default()
             },

@@ -34,6 +34,7 @@ pub struct Document<'q> {
     pub schedule_time: Option<DateTime<Utc>>,
     pub start_time: Option<DateTime<Utc>>,
     pub end_time: Option<DateTime<Utc>>,
+    pub updated_at: DateTime<Utc>,
     pub like_max: Option<i32>,
 }
 
