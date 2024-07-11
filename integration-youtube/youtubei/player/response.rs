@@ -61,7 +61,6 @@ impl Response {
             end_time: format.live_broadcast_details.end_timestamp,
             channel_id: 0,
             status,
-            highlighted_title: None,
             like_max: None,
             updated_at: Utc::now(),
             stream_id: 0,

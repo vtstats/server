@@ -9,7 +9,7 @@ use integration_youtube::{
 };
 use vtstats_database::{
     channels::{list_active_channels_by_platform, Platform},
-    streams::{ListYouTubeStreamsQuery, UpsertStreamQuery},
+    streams::{find_missing_stream_id, UpsertStreamQuery},
 };
 use vtstats_utils::context::AppContext;
 
@@ -35,23 +35,9 @@ pub async fn execute(ctx: &AppContext) -> anyhow::Result<JobResult> {
     .try_collect::<Vec<String>>()
     .await?;
 
-    let video_ids = feeds
-        .iter()
-        .filter_map(|feed| find_video_id(feed))
-        .collect::<Vec<_>>();
+    let platform_ids = feeds.iter().filter_map(find_video_id).collect::<Vec<_>>();
 
-    let existed = ListYouTubeStreamsQuery {
-        platform_ids: &video_ids,
-        limit: None,
-        ..Default::default()
-    }
-    .execute(&ctx.pool)
-    .await?;
-
-    let missing = video_ids
-        .into_iter()
-        .filter(|id| existed.iter().all(|stream| &stream.platform_id != id))
-        .collect::<Vec<_>>();
+    let missing = find_missing_stream_id(platform_ids, &ctx.pool).await?;
 
     if missing.is_empty() {
         return Ok(JobResult::Next {
@@ -59,7 +45,7 @@ pub async fn execute(ctx: &AppContext) -> anyhow::Result<JobResult> {
         });
     }
 
-    tracing::debug!("Missing video ids: {:?}", missing);
+    tracing::info!("Missing video ids: {}", missing.join(","));
 
     let mut streams: Vec<Stream> = Vec::with_capacity(missing.len());
 
@@ -124,7 +110,7 @@ pub async fn execute(ctx: &AppContext) -> anyhow::Result<JobResult> {
 
 // TODO: add unit tests
 
-fn find_video_id(feed: &str) -> Option<String> {
+fn find_video_id(feed: &String) -> Option<String> {
     // <yt:videoId>XXXXXXXXXXX</yt:videoId>
     Some(
         feed.lines()

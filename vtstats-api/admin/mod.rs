@@ -17,7 +17,7 @@ use chrono::{serde::ts_milliseconds_option, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use integration_googleauth::verify;
-use vtstats_database::streams::{Column, ListYouTubeStreamsQuery, Ordering};
+use vtstats_database::streams::{Column, Ordering, StreamStatus};
 
 use crate::{error::ApiResult, AppContext};
 
@@ -75,23 +75,27 @@ async fn list_jobs(
 }
 
 async fn list_streams(
-    State(state): State<AppContext>,
+    State(ctx): State<AppContext>,
     Query(parameter): Query<ListParameter>,
 ) -> ApiResult<impl IntoResponse> {
     let status = match parameter.status.as_deref() {
-        Some("scheduled") => "scheduled",
-        Some("live") => "live",
-        _ => "ended",
+        Some("scheduled") => StreamStatus::Scheduled,
+        Some("live") => StreamStatus::Live,
+        _ => StreamStatus::Ended,
     };
 
-    let streams = ListYouTubeStreamsQuery {
-        limit: Some(24),
-        order_by: Some((Column::UpdatedAt, Ordering::Desc)),
-        end_at: parameter.end_at.as_ref().map(|dt| (Column::UpdatedAt, dt)),
-        status: &[status.into()],
-        ..Default::default()
-    }
-    .execute(&state.pool)
+    let streams = vtstats_database::streams::meilisearch::search(
+        vtstats_database::streams::meilisearch::Search {
+            channel_ids: None,
+            status,
+            start_at: None,
+            end_at: parameter.end_at,
+            sort_by: Column::UpdatedAt,
+            sort_direction: Ordering::Desc,
+            query: None,
+        },
+        &ctx.search,
+    )
     .await?;
 
     Ok(Json(streams))

@@ -3,13 +3,10 @@ use crate::{
     streams::{Stream, StreamStatus},
 };
 use chrono::{serde::ts_milliseconds, serde::ts_milliseconds_option, DateTime, Utc};
-use meilisearch_sdk::errors::Error;
+use meilisearch_sdk::{client::Client, errors::Error};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 use std::{fmt::Display, fmt::Write};
-
-// re-export client
-pub use meilisearch_sdk::client::Client;
 
 use super::{Column, Ordering};
 
@@ -58,9 +55,8 @@ pub async fn delete(stream_id: i32, client: &Client) -> Result<(), Error> {
     Ok(())
 }
 
-#[derive(Default)]
 pub struct Search {
-    pub channel_ids: Vec<i32>,
+    pub channel_ids: Option<Vec<i32>>,
     pub status: StreamStatus,
     pub query: Option<String>,
     pub sort_by: Column,
@@ -70,32 +66,27 @@ pub struct Search {
 }
 
 pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Error> {
-    if search.channel_ids.is_empty() {
+    if matches!(&search.channel_ids, Some(ids) if ids.is_empty()) {
         return Ok(vec![]);
     }
 
     let index = client.index("streams");
 
-    let mut filter = format!(
-        "status = '{}' AND {}",
-        match search.status {
-            StreamStatus::Scheduled => "scheduled",
-            StreamStatus::Live => "live",
-            StreamStatus::Ended => "ended",
-        },
-        ArrayFieldFilter("channelId", &search.channel_ids)
-    );
+    let mut filter = format!("status = {}", search.status.lowercase());
+
+    if let Some(channel_ids) = search.channel_ids {
+        let _ = write!(
+            &mut filter,
+            " AND {}",
+            ArrayFieldFilter("channelId", &channel_ids)
+        );
+    }
 
     if let Some(start_at) = search.start_at {
         let _ = write!(
             &mut filter,
             " AND {} > {}",
-            match search.sort_by {
-                Column::StartTime => "startTime",
-                Column::EndTime => "endTime",
-                Column::ScheduleTime => "scheduleTime",
-                Column::UpdatedAt => "updatedAt",
-            },
+            search.sort_by.camelcase(),
             start_at.timestamp_millis()
         );
     };
@@ -104,29 +95,28 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
         let _ = write!(
             &mut filter,
             " AND {} < {}",
-            match search.sort_by {
-                Column::StartTime => "startTime",
-                Column::EndTime => "endTime",
-                Column::ScheduleTime => "scheduleTime",
-                Column::UpdatedAt => "updatedAt",
-            },
+            search.sort_by.camelcase(),
             end_at.timestamp_millis()
         );
     };
 
-    let result = index
-        .search()
-        .with_query(&search.query.unwrap_or_default())
+    let search_query = &mut index.search();
+
+    if let Some(query) = search
+        .query
+        .as_ref()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+    {
+        search_query.query = Some(&query);
+    }
+
+    let result = search_query
         .with_filter(&filter)
         .with_sort(&[&format!(
             "{}:{}",
-            match search.sort_by {
-                Column::StartTime => "startTime",
-                Column::EndTime => "endTime",
-                Column::ScheduleTime => "scheduleTime",
-                Column::UpdatedAt => "updatedAt",
-            },
-            search.sort_direction.as_str().to_lowercase()
+            search.sort_by.camelcase(),
+            search.sort_direction.lowercase()
         )])
         .with_limit(24)
         .execute::<Stream>()

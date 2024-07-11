@@ -3,7 +3,6 @@ use axum::{
 };
 use std::fmt::Write;
 
-use tokio::try_join;
 use vtstats_database::{channels::Platform, streams::list_stream_ids, vtubers::list_vtuber_ids};
 
 use crate::{error::ApiResult, AppContext};
@@ -13,13 +12,14 @@ pub fn router(pool: AppContext) -> Router {
 }
 
 // Returns a sitemap for crawler like google search
-async fn sitemap(State(pool): State<AppContext>) -> ApiResult<impl IntoResponse> {
+async fn sitemap(State(ctx): State<AppContext>) -> ApiResult<impl IntoResponse> {
     const HOSTNAME: &str = "https://vt.poi.cat";
 
-    let mut res = String::new();
+    let vtuber_ids = list_vtuber_ids(&ctx.pool).await?;
 
-    let (vtuber_ids, stream_ids) =
-        try_join!(list_vtuber_ids(&pool.pool), list_stream_ids(&pool.pool))?;
+    let stream_ids = list_stream_ids(&ctx.search).await?;
+
+    let mut res = String::new();
 
     for id in vtuber_ids {
         let _ = writeln!(res, "{HOSTNAME}/vtuber/{id}");

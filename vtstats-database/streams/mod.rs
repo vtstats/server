@@ -1,8 +1,8 @@
 mod delete_stream;
 mod end_stream;
-mod find_stream;
 mod get_stream_by_id;
 mod get_stream_by_platform_id;
+mod if_stream_is_live;
 mod list_streams;
 pub mod meilisearch;
 mod start_stream;
@@ -11,27 +11,35 @@ mod upsert_stream;
 
 pub use self::delete_stream::*;
 pub use self::end_stream::*;
-pub use self::find_stream::*;
 pub use self::get_stream_by_id::*;
 pub use self::get_stream_by_platform_id::*;
+pub use self::if_stream_is_live::*;
 pub use self::list_streams::*;
 pub use self::start_stream::*;
 pub use self::stream_times::*;
 pub use self::upsert_stream::*;
 
 use crate::channels::Platform;
-use sqlx::{PgPool, Result};
+use meilisearch_sdk::{
+    client::Client,
+    documents::{DocumentsQuery, DocumentsResults},
+};
+use serde::Deserialize;
 
-pub struct Record {
+#[derive(Deserialize)]
+pub struct Document {
     pub platform: Platform,
     pub platform_id: String,
 }
 
-pub async fn list_stream_ids(pool: &PgPool) -> Result<Vec<Record>> {
-    let query = sqlx::query_as!(
-        Record,
-        "SELECT platform \"platform: _\", platform_id FROM streams"
-    )
-    .fetch_all(pool);
-    crate::otel::execute_query!("SELECT", "vtubers", query)
+pub async fn list_stream_ids(client: &Client) -> anyhow::Result<Vec<Document>> {
+    let index = client.index("streams");
+
+    let result: DocumentsResults<_> = DocumentsQuery::new(&index)
+        .with_limit(1_000_000)
+        .with_fields(["platform", "platformId"])
+        .execute::<Document>()
+        .await?;
+
+    Ok(result.results)
 }

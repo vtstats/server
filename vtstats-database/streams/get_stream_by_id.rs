@@ -10,7 +10,6 @@ pub async fn get_stream_by_id(stream_id: i32, pool: &PgPool) -> Result<Option<St
         stream_id, \
         channel_id, \
         title, \
-        null as highlighted_title, \
         vtuber_id, \
         thumbnail_url, \
         schedule_time, \

@@ -7,6 +7,7 @@ use serde_with::{formats::CommaSeparator, serde_as, StringWithSeparator};
 use tracing::Span;
 
 use vtstats_database::channels::Platform;
+use vtstats_database::streams::meilisearch::{search, Search};
 use vtstats_database::streams::{
     get_stream_by_id, get_stream_by_platform_id, Column, Ordering, StreamStatus,
 };
@@ -62,15 +63,15 @@ pub async fn list_scheduled_streams(
     Query(query): Query<ListReqQuery>,
     State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let streams = vtstats_database::streams::meilisearch::search(
-        vtstats_database::streams::meilisearch::Search {
-            channel_ids: query.channel_ids,
+    let streams = search(
+        Search {
+            channel_ids: Some(query.channel_ids),
             status: StreamStatus::Scheduled,
             start_at: query.start_at,
             end_at: query.end_at,
             sort_by: Column::ScheduleTime,
             sort_direction: Ordering::Asc,
-            ..Default::default()
+            query: None,
         },
         &state.search,
     )
@@ -83,23 +84,15 @@ pub async fn list_live_streams(
     Query(query): Query<ListReqQuery>,
     State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let keyword = query
-        .keyword
-        .as_ref()
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .map(|s| s.to_string());
-
-    let streams = vtstats_database::streams::meilisearch::search(
-        vtstats_database::streams::meilisearch::Search {
-            channel_ids: query.channel_ids,
+    let streams = search(
+        Search {
+            channel_ids: Some(query.channel_ids),
             status: StreamStatus::Live,
             start_at: query.start_at,
             end_at: query.end_at,
             sort_by: Column::StartTime,
             sort_direction: Ordering::Desc,
-            query: keyword,
-            ..Default::default()
+            query: query.keyword,
         },
         &state.search,
     )
@@ -112,23 +105,15 @@ pub async fn list_ended_streams(
     Query(query): Query<ListReqQuery>,
     State(state): State<AppContext>,
 ) -> ApiResult<impl IntoResponse> {
-    let keyword = query
-        .keyword
-        .as_ref()
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .map(|s| s.to_string());
-
-    let streams = vtstats_database::streams::meilisearch::search(
-        vtstats_database::streams::meilisearch::Search {
-            channel_ids: query.channel_ids,
+    let streams = search(
+        Search {
+            channel_ids: Some(query.channel_ids),
             status: StreamStatus::Ended,
             start_at: query.start_at,
             end_at: query.end_at,
             sort_by: Column::StartTime,
             sort_direction: Ordering::Desc,
-            query: keyword,
-            ..Default::default()
+            query: query.keyword,
         },
         &state.search,
     )
