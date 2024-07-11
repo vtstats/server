@@ -47,9 +47,7 @@ pub async fn add_or_update(
         ChannelStatsKind::Revenue => "channel_revenue_stats_summary",
     });
 
-    let _task = index
-        .add_or_update(&[&document], Some("channelId".into()))
-        .await?;
+    let _task = index.add_or_update(&[&document], Some("channelId")).await?;
 
     Ok(())
 }

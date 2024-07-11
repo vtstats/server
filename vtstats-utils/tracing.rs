@@ -101,6 +101,12 @@ pub struct JsonMessageLayer {
     stdout: io::Stdout,
 }
 
+impl Default for JsonMessageLayer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl JsonMessageLayer {
     pub fn new() -> Self {
         JsonMessageLayer {
@@ -137,7 +143,8 @@ where
                         .fields
                         .iter()
                         // inherit fields from span expect "message" field
-                        .filter_map(|(k, v)| (*k != "message").then(|| (*k, v.clone()))),
+                        .filter(|(k, _)| (**k != "message"))
+                        .map(|(k, v)| (*k, v.clone())),
                 );
             }
         }

@@ -44,7 +44,7 @@ pub async fn execute(
         }
         Platform::Youtube => {
             tokio::select! {
-                res = youtube::collect_viewers(&stream, &ctx) => {
+                res = youtube::collect_viewers(&stream, ctx) => {
                     res.map(|_| JobResult::Completed)
                 },
                 res = youtube::collect_chats(&channel, &stream, &ctx.client, &ctx.pool) => {

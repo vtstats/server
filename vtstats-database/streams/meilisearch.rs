@@ -40,9 +40,7 @@ pub struct Document<'q> {
 pub async fn add_or_update<'a>(patch: Document<'a>, client: &Client) -> Result<(), Error> {
     let index = client.index("streams");
 
-    let _task = index
-        .add_or_update(&[&patch], Some("streamId".into()))
-        .await?;
+    let _task = index.add_or_update(&[&patch], Some("streamId")).await?;
 
     Ok(())
 }
@@ -108,7 +106,7 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
         .map(|s| s.trim())
         .filter(|s| !s.is_empty())
     {
-        search_query.query = Some(&query);
+        search_query.query = Some(query);
     }
 
     let result = search_query
@@ -133,7 +131,7 @@ impl<'a> Display for ArrayFieldFilter<'a> {
             return Ok(());
         };
 
-        f.write_str(&self.0)?;
+        f.write_str(self.0)?;
 
         if self.1.len() == 1 {
             f.write_str(" = ")?;
