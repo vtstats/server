@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS streams_start_time;
