@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT platform as \"platform: _\", platform_id, stream_id, title, channel_id, null as highlighted_title, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status as \"status: _\" FROM streams WHERE platform = $1 AND platform_id = $2",
+  "query": "SELECT platform as \"platform: _\", platform_id, stream_id, title, channel_id, vtuber_id, thumbnail_url, schedule_time, start_time, end_time, viewer_max, viewer_avg, like_max, updated_at, status as \"status: _\" FROM streams WHERE platform = $1 AND platform_id = $2",
   "describe": {
     "columns": [
       {
@@ -41,56 +41,51 @@
       },
       {
         "ordinal": 5,
-        "name": "highlighted_title",
-        "type_info": "Text"
-      },
-      {
-        "ordinal": 6,
         "name": "vtuber_id",
         "type_info": "Text"
       },
       {
-        "ordinal": 7,
+        "ordinal": 6,
         "name": "thumbnail_url",
         "type_info": "Text"
       },
       {
-        "ordinal": 8,
+        "ordinal": 7,
         "name": "schedule_time",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 9,
+        "ordinal": 8,
         "name": "start_time",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 10,
+        "ordinal": 9,
         "name": "end_time",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 11,
+        "ordinal": 10,
         "name": "viewer_max",
         "type_info": "Int4"
       },
       {
-        "ordinal": 12,
+        "ordinal": 11,
         "name": "viewer_avg",
         "type_info": "Int4"
       },
       {
-        "ordinal": 13,
+        "ordinal": 12,
         "name": "like_max",
         "type_info": "Int4"
       },
       {
-        "ordinal": 14,
+        "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 15,
+        "ordinal": 14,
         "name": "status: _",
         "type_info": {
           "Custom": {
@@ -129,7 +124,6 @@
       false,
       false,
       false,
-      null,
       false,
       true,
       true,
@@ -142,5 +136,5 @@
       false
     ]
   },
-  "hash": "f528f2656ad1fc875654cbea50efac11e2e6b3d67d89c53322a0368724a7b61f"
+  "hash": "704df024ff848d086291249d699c3cc334c295886898877689ae87f51f818ee8"
 }

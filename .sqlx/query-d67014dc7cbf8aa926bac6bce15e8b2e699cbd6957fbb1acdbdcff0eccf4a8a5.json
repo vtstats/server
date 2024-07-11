@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT status = 'live'::stream_status AS is_online FROM streams WHERE stream_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_online",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d67014dc7cbf8aa926bac6bce15e8b2e699cbd6957fbb1acdbdcff0eccf4a8a5"
+}
