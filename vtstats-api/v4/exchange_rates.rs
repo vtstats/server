@@ -8,7 +8,7 @@ pub async fn exchange_rates(State(state): State<AppContext>) -> ApiResult<impl I
     let res = list_exchange_rates(&state.pool).await?;
 
     Ok((
-        [(CACHE_CONTROL, "max-age=864000")], // 10 days
+        [(CACHE_CONTROL, "public, max-age=864000")], // 10 days
         Json(res),
     ))
 }

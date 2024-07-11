@@ -29,7 +29,7 @@ pub async fn catalog(State(state): State<AppContext>) -> ApiResult<impl IntoResp
     };
 
     Ok((
-        [(CACHE_CONTROL, "max-age=3600")], // 1 hour
+        [(CACHE_CONTROL, "public, max-age=3600")], // 1 hour
         Json(res),
     ))
 }
