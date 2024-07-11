@@ -120,6 +120,13 @@ pub async fn search(search: Search, client: &Client) -> Result<Vec<Stream>, Erro
         .execute::<Stream>()
         .await?;
 
+    tracing::info!(
+        query = search.query.unwrap_or_default(),
+        filter,
+        duration = format!("{}ms", result.processing_time_ms),
+        "SEARCH streams",
+    );
+
     Ok(result.hits.into_iter().map(|x| x.result).collect())
 }
 

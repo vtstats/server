@@ -46,13 +46,13 @@ struct JsonMessage {
     #[serde(skip)]
     line: Option<u32>,
     #[serde(skip)]
-    start: Instant,
+    start: Option<Instant>,
 }
 
 impl JsonMessage {
     fn new(metadata: &Metadata<'static>) -> JsonMessage {
         JsonMessage {
-            start: Instant::now(),
+            start: None,
             file: metadata.file(),
             line: metadata.line(),
             target: metadata.target(),
@@ -71,9 +71,8 @@ impl JsonMessage {
             self.message += &format!(" caller={file}:{line}");
         }
 
-        let ms = self.start.elapsed().as_millis();
-        if ms > 0 {
-            self.message += &format!(" duration={ms}ms");
+        if let Some(duration) = self.start.map(|d| d.elapsed()).filter(|d| !d.is_zero()) {
+            self.message += &format!(" duration={}ms", duration.as_millis());
         }
 
         if let Some(job_id) = self.fields.remove("job_id") {
@@ -123,6 +122,7 @@ where
         let span = ctx.span(id).expect("span not found");
 
         let mut msg = JsonMessage::new(span.metadata());
+        msg.start = Some(Instant::now());
 
         attrs.record(&mut msg);
 

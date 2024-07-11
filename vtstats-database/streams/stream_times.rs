@@ -33,7 +33,7 @@ async fn stream_times_start_at(
     let index = client.index("streams");
 
     let filter = format!(
-        "{} AND startTime > {} AND endTime IS NOT NULL",
+        "{} AND startTime > {} AND endTime EXISTS",
         ArrayFieldFilter("channelId", channel_ids),
         start_at.timestamp_millis()
     );
